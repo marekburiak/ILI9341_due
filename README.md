@@ -14,7 +14,7 @@ One class from SdFat library is used for utilizing Due's DMA in SPI transfers wh
 gText class from GLCD library was used as a base for rendering custom fonts. Custom font .h files can be generated with GLCDFontCreator2 tool:<br>
 https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&can=2&q=
 
-As for the wiring, use Due's HW SPI pins. A pin for CS depends on the SPI mode you choose.
+As for the wiring, use Due's HW SPI pins (e.g. described here: http://21stdigitalhome.blogspot.com/2013/02/arduino-due-hardware-spi.html). A pin for CS depends on the SPI mode you choose.
 If you look into ILI9341_due.h, you should find this:
 ```Arduino
 // comment out the SPI mode you want to use
