@@ -19,14 +19,14 @@ If you look into ILI9341_due.h, you should find this:
 ```Arduino
 // comment out the SPI mode you want to use
 //#define ILI9341_SPI_MODE_NORMAL
-//#define ILI9341_SPI_MODE_EXTENDED
+//#define ILI9341_SPI_MODE_EXTENDED	// make sure you use pin 4, 10 or 52 for CS
 #define ILI9341_SPI_MODE_DMA
 ```
 
 Uncomment the line depending on the SPI mode you want to use. As you can see, DMA mode is the default.
 
-<b>SPI_MODE_NORMA</b>L is the standard SPI mode where you can use any digital pin for CS but you have to drive it yourself.<br>
-<b>SPI_MODE_EXTENDED</b> is the extended SPI mode available in Due where CS pin is handled by the chip (which is faster than handling it yourself). You are restricted to these pins for CS though - 4, 10 and 52 (as described here: http://arduino.cc/en/Reference/DueExtendedSPI).<br>
+<b>SPI_MODE_NORMAL</b> is the standard SPI mode where you can use any digital pin for CS but you/library has to drive it manually.<br>
+<b>SPI_MODE_EXTENDED</b> is the extended SPI mode available in Due where CS pin is handled by the chip (which is faster than handling it manually). You are restricted to these pins for CS though - 4, 10 and 52 (as described here: http://arduino.cc/en/Reference/DueExtendedSPI).<br>
 <b>SPI_MODE_DMA</b> utilized DMA to do SPI transfers. You should be able to use any digital pin for CS.
 
 ```Arduino
