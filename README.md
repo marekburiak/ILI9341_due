@@ -5,14 +5,13 @@ Arduino Due library for interfacing with ILI9341-based TFT's in SPI, Extended SP
 
 This library is based on 3 libraries:
 
-ili9341_t3 from Paul Stoffregen - https://github.com/PaulStoffregen/ILI9341_t3
-SdFat from Bill Greiman - https://github.com/greiman/SdFat
-GLCD from Michael Margolis and Bill Perry - https://code.google.com/p/glcd-arduino/
+ili9341_t3 from Paul Stoffregen - https://github.com/PaulStoffregen/ILI9341_t3<br>
+SdFat from Bill Greiman - https://github.com/greiman/SdFat<br>
+GLCD from Michael Margolis and Bill Perry - https://code.google.com/p/glcd-arduino<br>
 
-ili9341_t3 library was used as a base where various optimizations for Adafruit's ili9341 and GFX libraries were implemented.
-One class from SdFat library is used for utilizing Due's DMA in SPI transfers which provides the main speed boost.
-gText class from GLCD library was used as a base for rendering custom fonts. Custom font .h files can be generated with GLCDFontCreator2 tool:
-https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&can=2&q=
+ili9341_t3 library was used as a base where various optimizations for Adafruit's ili9341 and GFX libraries were implemented.<br>
+One class from SdFat library is used for utilizing Due's DMA in SPI transfers which provides the main speed boost.<br>
+gText class from GLCD library was used as a base for rendering custom fonts. Custom font .h files can be generated with GLCDFontCreator2 tool: https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&can=2&q=
 
 As for the wiring, use Due's HW SPI pins.
 If you look into ILI9341_due.h, you should find this:
@@ -37,7 +36,7 @@ This is used to set the SPI clock divider, which at 2 means 84/2=42MHz (the max)
 
 
 
-
+```
 ------------------------------------------
 
 This is a library for the Adafruit ILI9341 display products
@@ -55,3 +54,4 @@ products from Adafruit!
 
 Written by Limor Fried/Ladyada for Adafruit Industries.
 MIT license, all text above must be included in any redistribution
+```
