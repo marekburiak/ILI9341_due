@@ -9,7 +9,7 @@ This library is based on 3 libraries:
 <b>SdFat</b> from Bill Greiman - https://github.com/greiman/SdFat<br>
 <b>GLCD</b> from Michael Margolis and Bill Perry - https://code.google.com/p/glcd-arduino<br>
 
-ili9341_t3 library was used as a base where various optimizations for Adafruit's ili9341 and GFX libraries were implemented.<br>
+ili9341_t3 library where various optimizations for Adafruit's ili9341 and GFX libraries were implemented was used as a base for ili9341_due.<br>
 One class from SdFat library is used for utilizing Due's DMA in SPI transfers which provides the main speed boost.<br>
 gText class from GLCD library was used as a base for rendering custom fonts. Custom font .h files can be generated with GLCDFontCreator2 tool:<br>
 https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&can=2&q=
