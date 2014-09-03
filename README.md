@@ -16,11 +16,12 @@ https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zi
 
 As for the wiring, use Due's HW SPI pins.
 If you look into ILI9341_due.h, you should find this:
-
+```Arduino
 // comment out the SPI mode you want to use
 //#define ILI9341_SPI_MODE_NORMAL
 //#define ILI9341_SPI_MODE_EXTENDED
 #define ILI9341_SPI_MODE_DMA
+```
 
 Uncomment the line depending on the SPI mode you want to use. As you can see, DMA mode is the default.
 
@@ -28,7 +29,9 @@ SPI_MODE_NORMAL is the standard SPI mode where you can use any CS line but you h
 SPI_MODE_EXTENDED is the extended SPI mode available in Due where CS line is handled by the chip (which is faster than handling it yourself). You are restricted to these CS pins though - 4, 10 and 52 (as described here: http://arduino.cc/en/Reference/DueExtendedSPI).
 SPI_MODE_DMA utilized DMA to do SPI transfers. You should be able to use any digital pin for CS.
 
+```Arduino
 #define ILI9341_SPI_CLKDIVIDER 2
+```
 
 This is used to set the SPI clock divider, which at 2 means 84/2=42MHz (the max). If you are getting glitches on the screen or it just does not work try to use a higher divider to bring the frequency down (e.g. 11 to run it at 8-ish MHz).
 
