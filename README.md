@@ -36,7 +36,6 @@ Uncomment the line depending on the SPI mode you want to use. As you can see, DM
 This is used to set the SPI clock divider, which at 2 means 84/2=42MHz (the max). If you are getting glitches on the screen or it just does not work try to use a higher divider to bring the frequency down (e.g. 11 to run it at 8-ish MHz). I was using 20cm dupont cables to connect TFT with Due and haven't had any issues running it at 42MHz.
 
 
-
 ```
 ------------------------------------------
 
