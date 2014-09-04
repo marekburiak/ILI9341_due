@@ -27,7 +27,7 @@ Uncomment the line depending on the SPI mode you want to use. As you can see, DM
 
 <b>SPI_MODE_NORMAL</b> is the standard SPI mode where you can use any digital pin for CS but you/library has to drive it manually.<br>
 <b>SPI_MODE_EXTENDED</b> is the extended SPI mode available in Due where CS pin is handled by the chip (which is faster than handling it manually). You are restricted to these pins for CS though - 4, 10 and 52 (as described here: http://arduino.cc/en/Reference/DueExtendedSPI).<br>
-<b>SPI_MODE_DMA</b> utilized DMA to do SPI transfers. You should be able to use any digital pin for CS.
+<b>SPI_MODE_DMA</b> is utilizing DMA to do SPI transfers. You should be able to use any digital pin for CS.
 
 ```Arduino
 #define ILI9341_SPI_CLKDIVIDER 2
