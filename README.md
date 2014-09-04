@@ -11,7 +11,7 @@ This library is based on 3 libraries:
 
 ili9341_t3 library where various optimizations for Adafruit's ili9341 and GFX libraries were implemented was used as a base for ili9341_due.<br>
 One class from SdFat library is used for utilizing Due's DMA in SPI transfers which provides the main speed boost.<br>
-gText class from GLCD library was used as a base for rendering custom fonts. Currently only font rendering with solid background is supported. Custom font .h files can be generated with GLCDFontCreator2 tool (requires Java):<br>
+gText class from GLCD library was used as a base for rendering custom fonts. The maximum height of the font is 255px. Custom font .h files can be generated with GLCDFontCreator2 tool (requires Java):<br>
 https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&can=2&q=
 
 As for the wiring, use Due's HW SPI pins (e.g. described here: http://21stdigitalhome.blogspot.com/2013/02/arduino-due-hardware-spi.html). A pin for CS depends on the SPI mode you choose.
