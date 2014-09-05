@@ -705,7 +705,7 @@ void ILI9341_due::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
 	int16_t y     = r;
 
 #if SPI_MODE_DMA
-	fillScanline(color, r);
+	fillScanline(color, 2*max(x,y)+1+delta);
 #endif
 	enableCS();
 	while (x<y) {

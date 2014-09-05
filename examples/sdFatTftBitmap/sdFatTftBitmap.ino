@@ -1,50 +1,74 @@
-/***************************************************
-  This is our Bitmap drawing example for the Adafruit ILI9341 Breakout and Shield
-  ----> http://www.adafruit.com/products/1651
+#include <SdFat.h>
+#include <SdFatUtil.h>
+#include <ILI9341_due_gText.h>
+#include <ILI9341_due.h>
 
-  Check out the links above for our tutorials and wiring diagrams
-  These displays use SPI to communicate, 4 or 5 pins are required to
-  interface (RST is optional)
-  Adafruit invests time and resources providing this open source code,
-  please support Adafruit and open-source hardware by purchasing
-  products from Adafruit!
-
-  Written by Limor Fried/Ladyada for Adafruit Industries.
-  MIT license, all text above must be included in any redistribution
- ****************************************************/
+// BMP-loading example specifically for the TFTLCD breakout board.
+// If using the Arduino shield, use the tftbmp_shield.pde sketch instead!
+// If using an Arduino Mega, make sure the SD library is configured for
+// 'soft' SPI in the file Sd2Card.h.
 
 
-#include <ILI9341_t3.h> // Hardware-specific library
-#include <SPI.h>
-#include <SD.h>
+// The control pins for the LCD can be assigned to any digital or
+// analog pins...but we'll use the analog pins as this allows us to
+// double up the pins with the touch screen (see the TFT paint example).
+#define LCD_CS 4 // Chip Select goes to Analog 3
+#define LCD_DC 5 // Command/Data goes to Analog 2
 
-// TFT display and SD card will share the hardware SPI interface.
-// Hardware SPI pins are specific to the Arduino board type and
-// cannot be remapped to alternate pins.  For Arduino Uno,
-// Duemilanove, etc., pin 11 = MOSI, pin 12 = MISO, pin 13 = SCK.
 
-#define TFT_DC  9
-#define TFT_CS 10
-ILI9341_t3 tft = ILI9341_t3(TFT_CS, TFT_DC);
+// For Arduino Uno/Duemilanove, etc
+//  connect the SD card with DI going to pin 11, DO going to pin 12 and SCK going to pin 13 (standard)
+//  Then pin 10 goes to CS (or whatever you have set up)
+#define SD_CS 10     // Set the chip select line to whatever you use (10 doesnt conflict with the library)
+#define BUF_SIZE 10240
+SdFat sd; // set filesystem
+SdFile bmpFile; // set filesystem
 
-#define SD_CS 4
+#define BUFFPIXEL 20
 
-void setup(void) {
+// In the SD card, place 24 bit color BMP files (be sure they are 24-bit!)
+// There are examples in the sketch folder
+
+ArduinoOutStream cout(Serial);
+// our TFT wiring
+ILI9341_due tft(LCD_CS, LCD_DC);
+uint8_t buf[BUF_SIZE];
+
+
+
+
+// store error strings in flash to save RAM
+#define error(s) sd.errorHalt_P(PSTR(s))
+
+
+void setup()
+{
   Serial.begin(9600);
-
-  tft.begin();
-  tft.fillScreen(ILI9341_BLUE);
   
-  Serial.print("Initializing SD card...");
-  if (!SD.begin(SD_CS)) {
-    Serial.println("failed!");
-  }
-  Serial.println("OK!");
+  tft.begin();
 
-  bmpDraw("purple.bmp", 0, 0);
+  progmemPrint(PSTR("Initializing SD card..."));
+//  !sd.begin(SD_CS, SPI_FULL_SPEED);
+  if (!sd.begin(SD_CS, SPI_FULL_SPEED)) {
+    progmemPrintln(PSTR("failed!"));
+    return;
+  }
+  progmemPrintln(PSTR("OK!"));
+
+  bmpDraw("woof.bmp", 0, 0);
+  delay(1000);
 }
 
-void loop() {
+void loop()
+{
+  for(int i = 0; i<4; i++) {
+    tft.setRotation(i);
+    tft.fillScreen(0);
+    for(int j=0; j <= 200; j += 50) {
+      bmpDraw("HEALTH~1.BMP", j, j);
+    }
+    delay(1000);
+  }
 }
 
 // This function opens a Windows Bitmap (BMP) file and
@@ -55,53 +79,59 @@ void loop() {
 // makes loading a little faster.  20 pixels seems a
 // good balance.
 
-#define BUFFPIXEL 20
+void bmpDraw(char* filename, int x, int y) {
 
-void bmpDraw(char *filename, uint8_t x, uint16_t y) {
-
-  File     bmpFile;
+  SdFile     bmpFile;
   int      bmpWidth, bmpHeight;   // W+H in pixels
   uint8_t  bmpDepth;              // Bit depth (currently must be 24)
   uint32_t bmpImageoffset;        // Start of image data in file
   uint32_t rowSize;               // Not always = bmpWidth; may have padding
-  uint8_t  sdbuffer[3*BUFFPIXEL]; // pixel buffer (R+G+B per pixel)
+  uint8_t  sdbuffer[3*BUFFPIXEL]; // pixel in buffer (R+G+B per pixel)
+  uint16_t lcdbuffer[BUFFPIXEL];  // pixel out buffer (16-bit per pixel)
   uint8_t  buffidx = sizeof(sdbuffer); // Current position in sdbuffer
   boolean  goodBmp = false;       // Set to true on valid header parse
   boolean  flip    = true;        // BMP is stored bottom-to-top
   int      w, h, row, col;
   uint8_t  r, g, b;
   uint32_t pos = 0, startTime = millis();
+  uint8_t  lcdidx = 0;
+  boolean  first = true;
 
   if((x >= tft.width()) || (y >= tft.height())) return;
 
   Serial.println();
-  Serial.print(F("Loading image '"));
+  progmemPrint(PSTR("Loading image '"));
   Serial.print(filename);
   Serial.println('\'');
-
   // Open requested file on SD card
-  if ((bmpFile = SD.open(filename)) == NULL) {
-    Serial.print(F("File not found"));
-    return;
+  if (!bmpFile.open(filename, O_READ)) {
+    Serial.println("File open failed.");
+  } else {
+    Serial.println("File opened.");
   }
+// does not compile, dont know why yet
+//  if ((bmpFile = SdFile.open(filename, O_READ)) == NULL) {
+//    progmemPrintln(PSTR("File not found"));
+//    return;
+//  }
 
   // Parse BMP header
   if(read16(bmpFile) == 0x4D42) { // BMP signature
-    Serial.print(F("File size: ")); Serial.println(read32(bmpFile));
+    progmemPrint(PSTR("File size: ")); Serial.println(read32(bmpFile));
     (void)read32(bmpFile); // Read & ignore creator bytes
     bmpImageoffset = read32(bmpFile); // Start of image data
-    Serial.print(F("Image Offset: ")); Serial.println(bmpImageoffset, DEC);
+    progmemPrint(PSTR("Image Offset: ")); Serial.println(bmpImageoffset, DEC);
     // Read DIB header
-    Serial.print(F("Header size: ")); Serial.println(read32(bmpFile));
+    progmemPrint(PSTR("Header size: ")); Serial.println(read32(bmpFile));
     bmpWidth  = read32(bmpFile);
     bmpHeight = read32(bmpFile);
     if(read16(bmpFile) == 1) { // # planes -- must be '1'
       bmpDepth = read16(bmpFile); // bits per pixel
-      Serial.print(F("Bit Depth: ")); Serial.println(bmpDepth);
+      progmemPrint(PSTR("Bit Depth: ")); Serial.println(bmpDepth);
       if((bmpDepth == 24) && (read32(bmpFile) == 0)) { // 0 = uncompressed
 
         goodBmp = true; // Supported BMP format -- proceed!
-        Serial.print(F("Image size: "));
+        progmemPrint(PSTR("Image size: "));
         Serial.print(bmpWidth);
         Serial.print('x');
         Serial.println(bmpHeight);
@@ -126,7 +156,6 @@ void bmpDraw(char *filename, uint8_t x, uint16_t y) {
         tft.setAddrWindow(x, y, x+w-1, y+h-1);
 
         for (row=0; row<h; row++) { // For each scanline...
-
           // Seek to start of scan line.  It might seem labor-
           // intensive to be doing this on every line, but this
           // method covers a lot of gritty details like cropping
@@ -137,52 +166,76 @@ void bmpDraw(char *filename, uint8_t x, uint16_t y) {
             pos = bmpImageoffset + (bmpHeight - 1 - row) * rowSize;
           else     // Bitmap is stored top-to-bottom
             pos = bmpImageoffset + row * rowSize;
-          if(bmpFile.position() != pos) { // Need seek?
-            bmpFile.seek(pos);
+          if(bmpFile.curPosition() != pos) { // Need seek?
+            bmpFile.seekSet(pos);
             buffidx = sizeof(sdbuffer); // Force buffer reload
           }
 
-          for (col=0; col<w; col++) { // For each pixel...
+          for (col=0; col<w; col++) { // For each column...
             // Time to read more pixel data?
             if (buffidx >= sizeof(sdbuffer)) { // Indeed
+              // Push LCD buffer to the display first
+              if(lcdidx > 0) {
+                tft.pushColors(lcdbuffer, lcdidx, first);
+                lcdidx = 0;
+                first  = false;
+              }
               bmpFile.read(sdbuffer, sizeof(sdbuffer));
               buffidx = 0; // Set index to beginning
             }
 
-            // Convert pixel from BMP to TFT format, push to display
+            // Convert pixel from BMP to TFT format
             b = sdbuffer[buffidx++];
             g = sdbuffer[buffidx++];
             r = sdbuffer[buffidx++];
-            tft.pushColor(tft.color565(r,g,b));
+            lcdbuffer[lcdidx++] = tft.color565(r,g,b);
           } // end pixel
         } // end scanline
-        Serial.print(F("Loaded in "));
+        // Write any remaining data to LCD
+        if(lcdidx > 0) {
+          tft.pushColors(lcdbuffer, lcdidx, first);
+        } 
+        progmemPrint(PSTR("Loaded in "));
         Serial.print(millis() - startTime);
         Serial.println(" ms");
       } // end goodBmp
     }
   }
+  Serial.println(read16(bmpFile), HEX);
 
   bmpFile.close();
-  if(!goodBmp) Serial.println(F("BMP format not recognized."));
+  if(!goodBmp) progmemPrintln(PSTR("BMP format not recognized."));
 }
 
 // These read 16- and 32-bit types from the SD card file.
 // BMP data is stored little-endian, Arduino is little-endian too.
 // May need to reverse subscript order if porting elsewhere.
 
-uint16_t read16(File &f) {
+uint16_t read16(SdFile& f) {
   uint16_t result;
   ((uint8_t *)&result)[0] = f.read(); // LSB
   ((uint8_t *)&result)[1] = f.read(); // MSB
   return result;
 }
 
-uint32_t read32(File &f) {
+uint32_t read32(SdFile& f) {
   uint32_t result;
   ((uint8_t *)&result)[0] = f.read(); // LSB
   ((uint8_t *)&result)[1] = f.read();
   ((uint8_t *)&result)[2] = f.read();
   ((uint8_t *)&result)[3] = f.read(); // MSB
   return result;
+}
+
+// Copy string from flash to serial port
+// Source string MUST be inside a PSTR() declaration!
+void progmemPrint(const char *str) {
+  char c;
+  while(c = pgm_read_byte(str++)) Serial.print(c);
+}
+
+// Same as above, with trailing newline
+void progmemPrintln(const char *str) {
+  progmemPrint(str);
+  Serial.println();
 }

@@ -571,17 +571,17 @@ public:
 
 	// Sets all pixels in the scanline buffer to the specified color
 	void fillScanline(uint16_t color) __attribute__((always_inline)) {
-		//hiByte = highByte(color);
-		//loByte = lowByte(color);
-		//for(uint16_t i=0; i<sizeof(_scanlineBuffer); i+=2)
-		//{
-		//	_scanlineBuffer[i]=hiByte
-		//	_scanlineBuffer[i+1]=loByte;
-		//}
-		_scanlineBuffer[0]=highByte(color);
+		hiByte = highByte(color);
+		loByte = lowByte(color);
+		for(uint16_t i=0; i<sizeof(_scanlineBuffer); i+=2)
+		{
+			_scanlineBuffer[i]=hiByte;
+			_scanlineBuffer[i+1]=loByte;
+		}
+		/*_scanlineBuffer[0]=highByte(color);
 		_scanlineBuffer[1]=lowByte(color);
 		memmove(_scanlineBuffer+2*sizeof(_scanlineBuffer[0]), _scanlineBuffer, sizeof(_scanlineBuffer)-2*sizeof(_scanlineBuffer[0]));
-
+*/
 		//arr[0]=highByte(color);
 		//arr[1]=lowByte(color);
 		//memcpy( ((uint8_t*)arr)+2*sizeof(arr[0]), arr, sizeof(arr)-2*sizeof(arr[0]) );
@@ -589,16 +589,16 @@ public:
 
 	// Sets first n pixels in scanline buffer to the specified color
 	void fillScanline(uint16_t color, size_t n) __attribute__((always_inline)) {
-		//hiByte = highByte(color);
-		//loByte = lowByte(color);
-		//for(uint16_t i=0; i<(seedCopyCount << 1); i+=2)
-		//{
-		//	_scanlineBuffer[i]=hiByte;
-		//	_scanlineBuffer[i+1]=loByte;
-		//}
-		_scanlineBuffer[0]=highByte(color);
-		_scanlineBuffer[1]=lowByte(color);
-		memmove(_scanlineBuffer+2*sizeof(_scanlineBuffer[0]), _scanlineBuffer, (n << 1) -2*sizeof(_scanlineBuffer[0]));
+		hiByte = highByte(color);
+		loByte = lowByte(color);
+		for(uint16_t i=0; i<(n << 1); i+=2)
+		{
+			_scanlineBuffer[i]=hiByte;
+			_scanlineBuffer[i+1]=loByte;
+		}
+		//_scanlineBuffer[0]=highByte(color);
+		//_scanlineBuffer[1]=lowByte(color);
+		//memmove(_scanlineBuffer+2*sizeof(_scanlineBuffer[0]), _scanlineBuffer, (n << 1) -2*sizeof(_scanlineBuffer[0]));
 	}
 #endif
 
