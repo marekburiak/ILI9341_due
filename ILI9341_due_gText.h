@@ -197,7 +197,7 @@ typedef struct _area
 */
 
 // graphical device text routines
-class ILI9341_due_gText
+class ILI9341_due_gText : public Print
 {
 private:
 	ILI9341_due *_ili;

@@ -594,6 +594,8 @@ int ILI9341_due_gText::putChar(uint8_t c)
 
 void ILI9341_due_gText::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight)
 {
+	
+
 	uint8_t bitId=0;
 	int16_t cx = _x;
 	int16_t cy = _y;
@@ -609,14 +611,14 @@ void ILI9341_due_gText::drawSolidChar(char c, uint16_t index, uint16_t charWidth
 	uint16_t lineId=0;
 	uint8_t numRenderBits = 8;
 	const uint8_t numRemainingBits = charHeight % 8;
-
+	//_ili->enableCS();
 	for(uint16_t j=0; j<charWidth; j++) /* each column */
 	{
 		//Serial << "Printing row" << endl;
 		lineId = 0;
 		numRenderBits = 8;
-		_ili->setAddr_cont(cx, cy, cx, cy+charHeight -1);
-		_ili->writecommand_cont(ILI9341_RAMWR);
+		_ili->setAddrAndRW_cont(cx, cy, cx, cy+charHeight -1);
+		//_ili->setDCForData();
 		for(uint8_t i=0; i<charHeightInBytes; i++)	/* each vertical byte */
 		{
 			uint16_t page = i*charWidth; // page must be 16 bit to prevent overflow
@@ -702,6 +704,8 @@ void ILI9341_due_gText::drawTransparentChar(char c, uint16_t index, uint16_t cha
 	uint16_t lineId=0;
 	uint8_t numRenderBits = 8;
 	const uint8_t numRemainingBits = charHeight % 8;
+	
+	_ili->enableCS();
 
 	for(uint8_t j=0; j<charWidth; j++) /* each column */
 	{
@@ -748,12 +752,13 @@ void ILI9341_due_gText::drawTransparentChar(char c, uint16_t index, uint16_t cha
 					} 
 					else 
 					{
-						_ili->setAddr_cont(cx, cy+lineStart, cx, cy+lineEnd);
-						_ili->writecommand_cont(ILI9341_RAMWR);
+						_ili->setAddrAndRW_cont(cx, cy+lineStart, cx, cy+lineEnd);
+						
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+						_ili->setDCForData();
 						for(int p=0; p<lineEnd-lineStart+1; p++)
 						{
-							_ili->writedata16_cont(_fontColor);
+							_ili->write16(_fontColor);
 						}
 #elif SPI_MODE_DMA
 						_ili->writeScanline_cont(lineEnd-lineStart+1);
@@ -771,12 +776,12 @@ void ILI9341_due_gText::drawTransparentChar(char c, uint16_t index, uint16_t cha
 
 			if(lineEnd == charHeight - 1)	// we have a line that goes all the way to the bottom
 			{
-				_ili->setAddr_cont(cx, cy+lineStart, cx, cy+lineEnd);
-				_ili->writecommand_cont(ILI9341_RAMWR);
+				_ili->setAddrAndRW_cont(cx, cy+lineStart, cx, cy+lineEnd);
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+				_ili->setDCForData();
 				for(int p=0; p<lineEnd-lineStart+1; p++)
 				{
-					_ili->writedata16_cont(_fontColor);
+					_ili->write16(_fontColor);
 				}
 #elif SPI_MODE_DMA
 				_ili->writeScanline_cont(lineEnd-lineStart+1);
@@ -1020,7 +1025,7 @@ void ILI9341_due_gText::cursorTo( uint8_t column, uint8_t row)
 *
 * @see cursorToXY()
 */
-void ILI9341_due_gText::cursorTo( int8_t column)
+void ILI9341_due_gText::cursorTo(int8_t column)
 {
 	if(_font == 0)
 		return; // no font selected
@@ -1272,7 +1277,7 @@ uint16_t ILI9341_due_gText::charWidth(uint8_t c)
 	int16_t width = 0;
 
 	if(isFixedWidthFont(_font){
-		width = pgm_read_byte(_font+FONT_FIXED_WIDTH)+1;  // there is 1 pixel pad here
+		width = pgm_read_byte(_font+FONT_FIXED_WIDTH);
 	} 
 	else{ 
 		// variable width font 
@@ -1305,9 +1310,9 @@ uint16_t ILI9341_due_gText::stringWidth(const char* str)
 	uint16_t width = 0;
 
 	while(*str != 0) {
-		width += charWidth(*str++);
+		width += charWidth(*str++) + _letterSpacing;
 	}
-
+	width -= _letterSpacing;
 	return width;
 }
 
@@ -1328,9 +1333,9 @@ uint16_t ILI9341_due_gText::stringWidth_P(PGM_P str)
 	uint16_t width = 0;
 
 	while(pgm_read_byte(str) != 0) {
-		width += charWidth(pgm_read_byte(str++));
+		width += charWidth(pgm_read_byte(str++)) + _letterSpacing;
 	}
-
+	width -= _letterSpacing;
 	return width;
 }
 
@@ -1352,9 +1357,9 @@ uint16_t ILI9341_due_gText::stringWidth_P(String &str)
 
 	for (int i = 0; i < str.length(); i++)
 	{
-		width += charWidth(str[i]);
+		width += charWidth(str[i]) + _letterSpacing;
 	}
-
+	width -= _letterSpacing;
 	return width;
 }
 

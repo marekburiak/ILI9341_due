@@ -47,7 +47,7 @@ MIT license, all text above must be included in any redistribution
 #elif SPI_MODE_DMA
 #include "ILI_SdSpi.h"
 #endif
-//#include "Streaming.h"
+#include "..\Streaming\Streaming.h"
 
 static const uint8_t init_commands[] = {
 	4, 0xEF, 0x03, 0x80, 0x02,
@@ -193,7 +193,7 @@ void ILI9341_due::pushColor(uint16_t color)
 void ILI9341_due::pushColors(uint16_t *colors, uint8_t offset, uint8_t len) {
 	enableCS();
 	colors = colors + offset*2;
-	
+
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 	for (uint8_t i = 0; i < len; ++i) {
 		uint16_t color = *colors;
@@ -212,6 +212,12 @@ void ILI9341_due::drawPixel(int16_t x, int16_t y, uint16_t color) {
 
 	if((x < 0) ||(x >= _width) || (y < 0) || (y >= _height)) return;
 	writePixel_last(x, y, color);
+}
+
+void ILI9341_due::drawPixel_cont(int16_t x, int16_t y, uint16_t color) {
+
+	if((x < 0) ||(x >= _width) || (y < 0) || (y >= _height)) return;
+	writePixel_cont(x, y, color);
 }
 
 //void ILI9341_due::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color)
@@ -240,11 +246,11 @@ void ILI9341_due::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color)
 
 	setAddrAndRW_cont(x, y, x, y+h-1);
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-
+	setDCForData();
 	while (h-- > 1) {
-		writedata16_cont(color);
+		write16(color);
 	}
-	writedata16_last(color);
+	write16_last(color);
 #elif SPI_MODE_DMA
 	fillScanline(color, h);
 	writeScanline_last(h);
@@ -259,8 +265,9 @@ void ILI9341_due::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color)
 
 	setAddrAndRW_cont(x, y, x+w-1, y);
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+	setDCForData();
 	while (w-- > 1) {
-		writedata16_cont(color);
+		write16(color);
 	}
 	writedata16_last(color);
 #elif SPI_MODE_DMA
@@ -345,31 +352,30 @@ void ILI9341_due::fillScreen(uint16_t color)
 
 void ILI9341_due::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
 {
+	//Serial << "x:" << x << " y:" << y << " w:" << x << " h:" << h << " width:" << _width << " height:" << _height <<endl;
 	// rudimentary clipping (drawChar w/big text requires this)
 	if((x >= _width) || (y >= _height)) return;
 	if((x + w - 1) >= _width)  w = _width  - x;
 	if((y + h - 1) >= _height) h = _height - y;
 
+	setAddrAndRW_cont(x, y, x+w-1, y+h-1);
 #if SPI_MODE_DMA
 	const uint16_t maxNumLinesInScanlineBuffer = (LINE_BUFFER_SIZE >> 1) / w;
 	const uint16_t numPixelsInOneGo = w*maxNumLinesInScanlineBuffer;
 
 	fillScanline(color, numPixelsInOneGo);
 
-	setAddrAndRW_cont(x, y, x+w-1, y+h-1);
-	setDCForData();
 	for(uint16_t p=0; p<h/maxNumLinesInScanlineBuffer; p++)
 	{
-		write_cont(_scanlineBuffer, numPixelsInOneGo);
+		writeScanline_cont(numPixelsInOneGo);
 	}
-	write_last(_scanlineBuffer, (w*h) % numPixelsInOneGo); 
+	writeScanline_last((w*h) % numPixelsInOneGo); 
 
 #elif SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 	// TODO: this can result in a very long transaction time
 	// should break this into multiple transactions, even though
 	// it'll cost more overhead, so we don't stall other SPI libs
 	//enableCS();	//setAddrAndRW_cont will enable CS 
-	setAddrAndRW_cont(x, y, x+w-1, y+h-1);
 	setDCForData();
 	for(y=h; y>0; y--) {
 		for(x=w; x>0; x--) {
@@ -425,27 +431,11 @@ void ILI9341_due::invertDisplay(boolean i)
 
 
 uint8_t ILI9341_due::readcommand8(uint8_t c, uint8_t index) {
-	//digitalWrite(_cs, LOW);
-	//digitalWrite(_dc, LOW); // command
-	//spiwrite(0xD9);  // woo sekret command?
-	writecommand_cont(0xD9);
-	//digitalWrite(_dc, HIGH); // data
-	//spiwrite(0x10 + index);
+	writecommand_cont(0xD9);  // woo sekret command?
 	writedata8_last(0x10 + index);
-	//digitalWrite(_cs, HIGH);
-
-	//digitalWrite(_dc, LOW);
-	//digitalWrite(_sclk, LOW);
-	//digitalWrite(_cs, LOW);
-	//spiwrite(c);
 	writecommand_cont(c);
 
 	return readdata8_last();
-
-	//digitalWrite(_dc, HIGH);
-	//uint8_t r = spiread();
-	//digitalWrite(_cs, HIGH);
-	//return r;
 }
 
 
@@ -551,11 +541,10 @@ void ILI9341_due::drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color)
 	int16_t x = 0;
 	int16_t y = r;
 
-	enableCS();
-	writePixel_cont_noCS(x0  , y0+r, color);
-	writePixel_cont_noCS(x0  , y0-r, color);
-	writePixel_cont_noCS(x0+r, y0  , color);
-	writePixel_cont_noCS(x0-r, y0  , color);
+	drawPixel_cont(x0  , y0+r, color);
+	drawPixel_cont(x0  , y0-r, color);
+	drawPixel_cont(x0+r, y0  , color);
+	drawPixel_cont(x0-r, y0  , color);
 
 	while (x<y) {
 		if (f >= 0) {
@@ -567,14 +556,14 @@ void ILI9341_due::drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color)
 		ddF_x += 2;
 		f += ddF_x;
 
-		writePixel_cont_noCS(x0 + x, y0 + y, color);
-		writePixel_cont_noCS(x0 - x, y0 + y, color);
-		writePixel_cont_noCS(x0 + x, y0 - y, color);
-		writePixel_cont_noCS(x0 - x, y0 - y, color);
-		writePixel_cont_noCS(x0 + y, y0 + x, color);
-		writePixel_cont_noCS(x0 - y, y0 + x, color);
-		writePixel_cont_noCS(x0 + y, y0 - x, color);
-		writePixel_cont_noCS(x0 - y, y0 - x, color);
+		drawPixel_cont(x0 + x, y0 + y, color);
+		drawPixel_cont(x0 - x, y0 + y, color);
+		drawPixel_cont(x0 + x, y0 - y, color);
+		drawPixel_cont(x0 - x, y0 - y, color);
+		drawPixel_cont(x0 + y, y0 + x, color);
+		drawPixel_cont(x0 - y, y0 + x, color);
+		drawPixel_cont(x0 + y, y0 - x, color);
+		drawPixel_cont(x0 - y, y0 - x, color);
 	}
 	disableCS();
 }
@@ -625,7 +614,6 @@ void ILI9341_due::drawCircleHelper( int16_t x0, int16_t y0,
 	int16_t x     = 0;
 	int16_t y     = r;
 
-	enableCS();
 	while (x<y) {
 		if (f >= 0) {
 			y--;
@@ -636,20 +624,20 @@ void ILI9341_due::drawCircleHelper( int16_t x0, int16_t y0,
 		ddF_x += 2;
 		f     += ddF_x;
 		if (cornername & 0x4) {
-			writePixel_cont_noCS(x0 + x, y0 + y, color);
-			writePixel_cont_noCS(x0 + y, y0 + x, color);
+			drawPixel_cont(x0 + x, y0 + y, color);
+			drawPixel_cont(x0 + y, y0 + x, color);
 		} 
 		if (cornername & 0x2) {
-			writePixel_cont_noCS(x0 + x, y0 - y, color);
-			writePixel_cont_noCS(x0 + y, y0 - x, color);
+			drawPixel_cont(x0 + x, y0 - y, color);
+			drawPixel_cont(x0 + y, y0 - x, color);
 		}
 		if (cornername & 0x8) {
-			writePixel_cont_noCS(x0 - y, y0 + x, color);
-			writePixel_cont_noCS(x0 - x, y0 + y, color);
+			drawPixel_cont(x0 - y, y0 + x, color);
+			drawPixel_cont(x0 - x, y0 + y, color);
 		}
 		if (cornername & 0x1) {
-			writePixel_cont_noCS(x0 - y, y0 - x, color);
-			writePixel_cont_noCS(x0 - x, y0 - y, color);
+			drawPixel_cont(x0 - y, y0 - x, color);
+			drawPixel_cont(x0 - x, y0 - y, color);
 		}
 	}
 	disableCS();
@@ -719,12 +707,12 @@ void ILI9341_due::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
 		f     += ddF_x;
 
 		if (cornername & 0x1) {
-			writeVLine_cont_noCS(x0+x, y0-y, 2*y+1+delta, color);
-			writeVLine_cont_noCS(x0+y, y0-x, 2*x+1+delta, color);
+			drawFastVLine(x0+x, y0-y, 2*y+1+delta, color);
+			drawFastVLine(x0+y, y0-x, 2*x+1+delta, color);
 		}
 		if (cornername & 0x2) {
-			writeVLine_cont_noCS(x0-x, y0-y, 2*y+1+delta, color);
-			writeVLine_cont_noCS(x0-y, y0-x, 2*x+1+delta, color);
+			drawFastVLine(x0-x, y0-y, 2*y+1+delta, color);
+			drawFastVLine(x0-y, y0-x, 2*x+1+delta, color);
 		}
 	}
 	disableCS();
@@ -1480,7 +1468,7 @@ void ILI9341_due::drawChar(int16_t x, int16_t y, unsigned char c,
 #endif	
 				}
 #if SPI_MODE_DMA
-				write_cont(_scanlineBuffer, scanlineId - 1);
+				writeScanline_cont(scanlineId - 1);
 #endif	
 			}
 			mask = mask << 1;
@@ -1496,7 +1484,7 @@ void ILI9341_due::drawChar(int16_t x, int16_t y, unsigned char c,
 		fillScanline(bgcolor, 6*size);
 		for(y=0; y<size; y++)
 		{
-			write_cont(_scanlineBuffer, 6*size);
+			writeScanline_cont(6*size);
 		}
 #endif	
 	}

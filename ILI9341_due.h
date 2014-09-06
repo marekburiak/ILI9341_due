@@ -166,6 +166,7 @@ public:
 	void pushColors(uint16_t *colors, uint8_t offset, uint8_t len);
 	void fillScreen(uint16_t color);
 	void drawPixel(int16_t x, int16_t y, uint16_t color);
+	void drawPixel_cont(int16_t x, int16_t y, uint16_t color);
 	void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
 	void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
 	void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
@@ -268,18 +269,19 @@ public:
 	}
 
 	// Writes commands to set the GRAM area where data/pixels will be written
-	//void setAddr_cont(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
-	//	__attribute__((always_inline)) {
-	//		writecommand_cont(ILI9341_CASET); // Column addr set
-	//		writedata16_cont(x0);   // XSTART
-	//		writedata16_cont(x1);   // XEND
-	//		writecommand_cont(ILI9341_PASET); // Row addr set
-	//		writedata16_cont(y0);   // YSTART
-	//		writedata16_cont(y1);   // YEND
-	//}
+	void setAddr_cont(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+		__attribute__((always_inline)) {
+			writecommand_cont(ILI9341_CASET); // Column addr set
+			writedata16_cont(x0);   // XSTART
+			writedata16_cont(x1);   // XEND
+			writecommand_cont(ILI9341_PASET); // Row addr set
+			writedata16_cont(y0);   // YSTART
+			writedata16_cont(y1);   // YEND
+	}
 
+	//__attribute__((always_inline))
 	//void setAddrAndRW_cont(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
-	//	__attribute__((always_inline)) {
+	//	 {
 	//		writecommand_cont(ILI9341_CASET); // Column addr set
 	//		writedata16_cont(x0);   // XSTART
 	//		writedata16_cont(x1);   // XEND
@@ -290,25 +292,25 @@ public:
 	//}
 
 	// Enables CS, writes commands to set the GRAM area where data/pixels will be written
-	__attribute__((always_inline))
-		void setAddr_cont(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
-	{
-		enableCS();
-		setDCForCommand();
-		write8(ILI9341_CASET); // Column addr set
-		setDCForData();
-		write16(x0);   // XSTART
-		write16(x1);   // XEND
-		setDCForCommand();
-		write8(ILI9341_PASET); // Row addr set
-		setDCForData();
-		write16(y0);   // XSTART
-		write16(y1);   // XEND
-	}
+	//__attribute__((always_inline))
+	//	void setAddr_cont(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+	//{
+	//	enableCS();
+	//	setDCForCommand();
+	//	write8(ILI9341_CASET); // Column addr set
+	//	setDCForData();
+	//	write16(x0);   // XSTART
+	//	write16(x1);   // XEND
+	//	setDCForCommand();
+	//	write8(ILI9341_PASET); // Row addr set
+	//	setDCForData();
+	//	write16(y0);   // XSTART
+	//	write16(y1);   // XEND
+	//}
 
 	// Enables CS, writes commands to set the GRAM area where data/pixels will be written
 	// Also sends RAM WRITE command which should be followed by writing data/pixels 
-	__attribute__((always_inline))
+	inline __attribute__((always_inline))
 		void setAddrAndRW_cont(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 	{
 		enableCS();
@@ -325,6 +327,26 @@ public:
 		setDCForCommand();
 		write8(ILI9341_RAMWR); // Row addr set
 	}
+
+	// Writes commands to set the GRAM area where data/pixels will be written
+	// Also sends RAM WRITE command which should be followed by writing data/pixels 
+	// CS has to be enabled prior to calling this method
+	//__attribute__((always_inline))
+	//	void setAddrAndRW_cont_noCS(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+	//{
+	//	setDCForCommand();
+	//	write8(ILI9341_CASET); // Column addr set
+	//	setDCForData();
+	//	write16(x0);   // XSTART
+	//	write16(x1);   // XEND
+	//	setDCForCommand();
+	//	write8(ILI9341_PASET); // Row addr set
+	//	setDCForData();
+	//	write16(y0);   // XSTART
+	//	write16(y1);   // XEND
+	//	setDCForCommand();
+	//	write8(ILI9341_RAMWR); // Row addr set
+	//}
 
 	// Enables CS, sets DC for Command, writes 1 byte
 	// Does not disable CS
@@ -402,12 +424,13 @@ public:
 	}
 
 	// Enables CS, sets DC to Data, writes 2 bytes, disables CS
-	void writedata16_last(uint16_t d) __attribute__((always_inline)) {
-		setDCForData();
+	__attribute__((always_inline))
+		void writedata16_last(uint16_t d) {
+			setDCForData();
 #if SPI_MODE_NORMAL | SPI_MODE_DMA
-		enableCS();
+			enableCS();
 #endif
-		write16_last(d);
+			write16_last(d);
 	}
 
 #if SPI_MODE_DMA
@@ -452,6 +475,13 @@ public:
 			enableCS();
 			_dmaSpi.send(_scanlineBuffer, n << 1);	// each pixel is 2 bytes
 	}
+
+	// writes n-bytes from the scanline buffer via DMA
+	// Does not enable CS nor sets DS nor disables CS
+	//inline __attribute__((always_inline))
+	//	void writeScanline_cont_noCS_noDC(size_t n) {
+	//		_dmaSpi.send(_scanlineBuffer, n << 1);	// each pixel is 2 bytes
+	//}
 
 	// Enables CS, sets DC, writes n-bytes from the scanline buffer via DMA and disabled CS
 	inline __attribute__((always_inline))
@@ -580,8 +610,8 @@ public:
 		}
 		/*_scanlineBuffer[0]=highByte(color);
 		_scanlineBuffer[1]=lowByte(color);
-		memmove(_scanlineBuffer+2*sizeof(_scanlineBuffer[0]), _scanlineBuffer, sizeof(_scanlineBuffer)-2*sizeof(_scanlineBuffer[0]));
-*/
+		memmove(((uint8_t*)_scanlineBuffer)+2*sizeof(_scanlineBuffer[0]), _scanlineBuffer, sizeof(_scanlineBuffer)-2*sizeof(_scanlineBuffer[0]));
+		*/
 		//arr[0]=highByte(color);
 		//arr[1]=lowByte(color);
 		//memcpy( ((uint8_t*)arr)+2*sizeof(arr[0]), arr, sizeof(arr)-2*sizeof(arr[0]) );
@@ -596,9 +626,10 @@ public:
 			_scanlineBuffer[i]=hiByte;
 			_scanlineBuffer[i+1]=loByte;
 		}
-		//_scanlineBuffer[0]=highByte(color);
-		//_scanlineBuffer[1]=lowByte(color);
-		//memmove(_scanlineBuffer+2*sizeof(_scanlineBuffer[0]), _scanlineBuffer, (n << 1) -2*sizeof(_scanlineBuffer[0]));
+		/*_scanlineBuffer[0]=highByte(color);
+		_scanlineBuffer[1]=lowByte(color);
+		memmove(((uint8_t*)_scanlineBuffer)+2*sizeof(_scanlineBuffer[0]), _scanlineBuffer, (n << 1) -2*sizeof(_scanlineBuffer[0]));
+		*/
 	}
 #endif
 
@@ -837,11 +868,25 @@ private:
 		write16(color);
 	}
 
-	/*void writePixel_cont(int16_t x, int16_t y, uint16_t color)
-	__attribute__((always_inline)) {
-	setAddrAndRW_cont(x, y, x, y);
-	writedata16_cont(color);
-	}*/
+	inline __attribute__((always_inline)) 
+		void writePixel_cont(int16_t x, int16_t y, uint16_t color)
+	{
+		enableCS();
+		setDCForCommand();
+		write8(ILI9341_CASET); // Column addr set
+		setDCForData();
+		write16(x);   // XSTART
+		write16(x);   // XEND
+		setDCForCommand();
+		write8(ILI9341_PASET); // Row addr set
+		setDCForData();
+		write16(y);   // XSTART
+		write16(y);   // XEND
+		setDCForCommand();
+		write8(ILI9341_RAMWR);
+		setDCForData();
+		write16(color);
+	}
 
 	// Enables CS, writes a sequence that will render a pixel and disables CS
 	inline __attribute__((always_inline))
