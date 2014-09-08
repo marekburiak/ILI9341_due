@@ -66,4 +66,4 @@ Known bugs/issues/missing functionality:
 - sdFatTftBitmap demo not working properly
 - new line is not handled when rendering with gText
 
-I am not an Arduino expert so please feel free to fix/enhance this lib. I plan to add some more features (like the ones above) but I am not sure when that will happen as I have very little time to work on it (if I want to get at least 5 hours of sleep).
+I am not an Arduino expert so please feel free to fix/enhance this lib. I plan to add some more features (like the ones above) but I am not sure when will that happen as I have very little time to work on it (if I want to get at least 5 hours of sleep).
