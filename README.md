@@ -55,3 +55,7 @@ products from Adafruit!
 Written by Limor Fried/Ladyada for Adafruit Industries.
 MIT license, all text above must be included in any redistribution
 ```
+
+Known bugs/issues:
+- sdFatTftBitmap demo not working properly
+- new line is not handled when rendering with gText
