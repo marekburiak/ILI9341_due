@@ -56,6 +56,9 @@ Written by Limor Fried/Ladyada for Adafruit Industries.
 MIT license, all text above must be included in any redistribution
 ```
 
-Known bugs/issues:
+Known bugs/issues/missing functionality:
+- I am sure there are bugs
 - sdFatTftBitmap demo not working properly
 - new line is not handled when rendering with gText
+
+I am not an Arduino expert so please feel free to fix/enhance this lib. I plan to add some more features (like the ones above) but I am not sure when that will happen as I have very little time to work on it (if I want to get at least 5 hours of sleep).
