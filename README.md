@@ -13,6 +13,8 @@ ili9341_t3 library where various optimizations for Adafruit's ili9341 and GFX li
 One class from SdFat library is used for utilizing Due's DMA in SPI transfers which provides the main speed boost.<br>
 gText class from GLCD library was used as a base for rendering custom fonts. The maximum height of the font is 255px. Custom font .h files can be generated with GLCDFontCreator2 tool (requires Java):<br>
 https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&can=2&q=
+Here is a video of font rendering: https://www.youtube.com/watch?v=OcTz_YBDXmo
+
 
 As for the wiring, use Due's HW SPI pins (e.g. described here: http://21stdigitalhome.blogspot.com/2013/02/arduino-due-hardware-spi.html). A pin for CS depends on the SPI mode you choose.
 If you look into ILI9341_due.h, you should find this:
@@ -28,6 +30,9 @@ Uncomment the line depending on the SPI mode you want to use. As you can see, DM
 <b>SPI_MODE_NORMAL</b> is the standard SPI mode where you can use any digital pin for CS but you/library has to drive it manually.<br>
 <b>SPI_MODE_EXTENDED</b> is the extended SPI mode available in Due where CS pin is handled by the chip (which is faster than handling it manually). You are restricted to these pins for CS though - 4, 10 and 52 (as described here: http://arduino.cc/en/Reference/DueExtendedSPI).<br>
 <b>SPI_MODE_DMA</b> is utilizing DMA to do SPI transfers. You should be able to use any digital pin for CS.
+
+Here is a video where you can see the speed difference: 
+https://www.youtube.com/watch?v=vnEwzN14BsU
 
 ```Arduino
 #define ILI9341_SPI_CLKDIVIDER 2
