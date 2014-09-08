@@ -1,4 +1,4 @@
-ILI9341_Due
+ILI9341_due
 ===========
 
 Arduino Due library for interfacing with ILI9341-based TFT's in SPI, Extended SPI and DMA SPI mode.
