@@ -41,6 +41,14 @@ https://www.youtube.com/watch?v=vnEwzN14BsU
 This is used to set the SPI clock frequency, which at 2 means 84/2=42MHz (the max). If you are getting glitches on the screen or it just does not work try to use a higher divider to bring the frequency down (e.g. 11 to run it at 8-ish MHz). I was using 20cm dupont cables to connect TFT with Due and haven't had any issues running it with the divider set to 2.
 
 
+Known bugs/issues/missing functionality:
+- I am sure there are bugs
+- sdFatTftBitmap demo not working properly
+- new line is not handled when rendering with gText
+
+I am not an Arduino expert so please feel free to fix/enhance this lib. I plan to add some more features (like the ones above) but I am not sure when will that happen as I have very little time to work on it (if I want to get at least 5 hours of sleep).
+
+
 ```
 ------------------------------------------
 
@@ -60,10 +68,3 @@ products from Adafruit!
 Written by Limor Fried/Ladyada for Adafruit Industries.
 MIT license, all text above must be included in any redistribution
 ```
-
-Known bugs/issues/missing functionality:
-- I am sure there are bugs
-- sdFatTftBitmap demo not working properly
-- new line is not handled when rendering with gText
-
-I am not an Arduino expert so please feel free to fix/enhance this lib. I plan to add some more features (like the ones above) but I am not sure when will that happen as I have very little time to work on it (if I want to get at least 5 hours of sleep).
