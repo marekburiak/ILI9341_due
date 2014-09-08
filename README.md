@@ -13,7 +13,7 @@ ili9341_t3 library where various optimizations for Adafruit's ili9341 and GFX li
 One class from SdFat library is used for utilizing Due's DMA in SPI transfers which provides the main speed boost.<br>
 gText class from GLCD library was used as a base for rendering custom fonts. The maximum height of the font is 255px. Custom font .h files can be generated with GLCDFontCreator2 tool (requires Java). It is included in the tools folder or you can dowload it from:<br>
 https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&can=2&q=<br>
-Here is a video of rendering 255px high font: https://www.youtube.com/watch?v=OcTz_YBDXmo
+Here is a video of rendering a 255px-high font: https://www.youtube.com/watch?v=OcTz_YBDXmo
 
 
 As for the wiring, use Due's HW SPI pins (e.g. described here: http://21stdigitalhome.blogspot.com/2013/02/arduino-due-hardware-spi.html). A pin for CS depends on the SPI mode you choose.
