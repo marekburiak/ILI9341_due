@@ -35,7 +35,7 @@
 <a name="ili9341_due" class="anchor" href="#ili9341_due"><span class="octicon octicon-link"></span></a>ILI9341_due</h1>
 
 <p>Arduino Due library for interfacing with ILI9341-based TFT's in SPI, Extended SPI and DMA SPI mode.</p>
-BBB
+
 <iframe width="560" height="315" src="http://www.youtube.com/embed/vnEwzN14BsU?color=white" frameborder="0">aaa</iframe>
 
 <p>This library is based on 3 libraries:</p>
@@ -45,7 +45,9 @@ BBB
 <p>ili9341_t3 library where various optimizations for Adafruit's ili9341 and GFX libraries were implemented was used as a base for ili9341_due.<br>
 One class from SdFat library is used for utilizing Due's DMA in SPI transfers which provides the main speed boost.<br>
 gText class from GLCD library was used as a base for rendering custom fonts. The maximum height of the font is 255px. Custom font .h files can be generated with GLCDFontCreator2 tool (requires Java). It is included in the tools folder or you can dowload it from:<br><a href="https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&amp;can=2&amp;q=">https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&amp;can=2&amp;q=</a><br>
-Here is a video of rendering a 255px-high font: <a href="https://www.youtube.com/watch?v=OcTz_YBDXmo">https://www.youtube.com/watch?v=OcTz_YBDXmo</a></p>
+Here is a video of rendering a 255px-high font: 
+  <iframe width="560" height="315" src="http://www.youtube.com/embed/OcTz_YBDXmo?color=white" frameborder="0"></iframe>
+</p>
 
 <p>As for the wiring, use Due's HW SPI pins (e.g. described here: <a href="http://21stdigitalhome.blogspot.com/2013/02/arduino-due-hardware-spi.html">http://21stdigitalhome.blogspot.com/2013/02/arduino-due-hardware-spi.html</a>). A pin for CS depends on the SPI mode you choose.
 If you look into ILI9341_due.h, you should find this:</p>
@@ -61,7 +63,7 @@ If you look into ILI9341_due.h, you should find this:</p>
 <p><b>SPI_MODE_NORMAL</b> is the standard SPI mode where you can use any digital pin for CS but you/library has to drive it manually.<br><b>SPI_MODE_EXTENDED</b> is the extended SPI mode available in Due where CS pin is handled by the chip (which is faster than handling it manually). You are restricted to these pins for CS though - 4, 10 and 52 (as described here: <a href="http://arduino.cc/en/Reference/DueExtendedSPI">http://arduino.cc/en/Reference/DueExtendedSPI</a>).<br><b>SPI_MODE_DMA</b> is utilizing DMA to do SPI transfers. You should be able to use any digital pin for CS.</p>
 
 <p>Here is a video where you can see the speed difference: 
-<a href="https://www.youtube.com/watch?v=vnEwzN14BsU">https://www.youtube.com/watch?v=vnEwzN14BsU</a></p>
+<iframe width="560" height="315" src="http://www.youtube.com/embed/vnEwzN14BsU?color=white" frameborder="0"></iframe></p>
 
 <pre lang="Arduino"><code>#define ILI9341_SPI_CLKDIVIDER 2
 </code></pre>
