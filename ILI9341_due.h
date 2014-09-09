@@ -163,7 +163,7 @@ public:
 #endif
 	bool begin(void);
 	void pushColor(uint16_t color);
-	void pushColors(uint16_t *colors, uint8_t offset, uint8_t len);
+	void pushColors(uint16_t *colors, uint16_t offset, uint16_t len);
 	void fillScreen(uint16_t color);
 	void drawPixel(int16_t x, int16_t y, uint16_t color);
 	void drawPixel_cont(int16_t x, int16_t y, uint16_t color);
@@ -325,7 +325,7 @@ public:
 		write16(y0);   // XSTART
 		write16(y1);   // XEND
 		setDCForCommand();
-		write8(ILI9341_RAMWR); // Row addr set
+		write8(ILI9341_RAMWR); // RAM write
 	}
 
 	// Writes commands to set the GRAM area where data/pixels will be written
@@ -897,6 +897,18 @@ private:
 		write16_last(color);
 	}
 
+	
+bool waitNotBusy(uint16_t timeoutMillis) {
+  uint16_t t0 = millis();
+  while (read8() != 0XFF) {
+    if (((uint16_t)millis() - t0) >= timeoutMillis) goto fail;
+    //spiYield();
+  }
+  return true;
+
+ fail:
+  return false;
+}
 
 
 };

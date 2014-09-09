@@ -182,7 +182,7 @@ bool ILI9341_due::pinIsChipSelect(uint8_t cs)
 void ILI9341_due::setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
 	setAddrAndRW_cont(x0, y0, x1, y1);
-	setDCForData();
+	disableCS();
 }
 
 void ILI9341_due::pushColor(uint16_t color)
@@ -190,18 +190,24 @@ void ILI9341_due::pushColor(uint16_t color)
 	writedata16_last(color);
 }
 
-void ILI9341_due::pushColors(uint16_t *colors, uint8_t offset, uint8_t len) {
+void ILI9341_due::pushColors(uint16_t *colors, uint16_t offset, uint16_t len) {
 	enableCS();
+	setDCForData();
 	colors = colors + offset*2;
 
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-	for (uint8_t i = 0; i < len; ++i) {
-		uint16_t color = *colors;
-		write16(color);
-		colors++;
+	for (uint16_t i = 0; i < len; i++) {
+		write16(colors[i]);
 	}
 #elif SPI_MODE_DMA
-	write_cont((uint8_t*)colors, len << 1);
+	for (uint16_t i = 0; i < len; i++) {
+		uint16_t color = *colors;
+		_scanlineBuffer[2*i] = highByte(color);
+		_scanlineBuffer[2*i+1] = lowByte(color);
+		colors++;
+	}
+	//write_cont((uint8_t*)colors, len << 1);
+	writeScanline_cont(len);
 #endif
 
 	disableCS();

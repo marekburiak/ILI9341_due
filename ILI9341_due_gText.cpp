@@ -271,16 +271,249 @@ bool ILI9341_due_gText::defineArea(predefinedArea selection, textMode mode)
 }
 #endif
 /*
-* Scroll a pixel region up.
-* 	Area scrolled is defined by x1,y1 through x2,y2 inclusive.
-*  x1,y1 is upper left corder, x2,y2 is lower right corner.
-*
-*	color is the color to be used for the created space along the
-*	bottom.
-*
-*	pixels is the *exact* pixels to scroll. 1 is 1 and 9 is 9 it is
-*  not 1 less or 1 more than what you want. It is *exact*.
-*/
+ * Scroll a pixel region up.
+ * 	Area scrolled is defined by x1,y1 through x2,y2 inclusive.
+ *  x1,y1 is upper left corder, x2,y2 is lower right corner.
+ *
+ *	color is the color to be used for the created space along the
+ *	bottom.
+ *
+ *	pixels is the *exact* pixels to scroll. 1 is 1 and 9 is 9 it is
+ *  not 1 less or 1 more than what you want. It is *exact*.
+ */
+
+//void ILI9341_due_gText::ScrollUp(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, 
+//	uint8_t pixels, uint8_t color)
+//{
+//uint8_t dy;
+//uint8_t dbyte;
+//uint8_t sy;
+//uint8_t sbyte;
+//uint8_t col;
+//
+//	/*
+//	 * Scrolling up more than area height?
+//	 */
+//	if(y1 + pixels > y2)
+//	{
+//		/*
+//		 * fill the region with "whitespace" because
+//		 * it is being totally scrolled out.
+//		 */
+//		_ili->fillRect(x1, y1, x2 - x1, y2 - y1, color);
+//		return;
+//	}
+//
+//	for(col = x1; col <= x2; col++)
+//	{
+//		dy = y1;
+//		GotoXY(col, dy & ~7);
+//		dbyte = glcd_Device::ReadData();
+//
+//
+//		/*
+//		 * preserve bits outside/above scroll region
+//		 */
+//
+//		dbyte &= (_BV((dy & 7)) - 1);
+//
+//		sy = dy + pixels;
+//		glcd_Device::GotoXY(col, sy & ~7);
+//		sbyte = glcd_Device::ReadData();
+//
+//		while(sy <= y2)
+//		{
+//			if(sbyte & _BV(sy & 7))
+//			{
+//				dbyte |= _BV(dy & 7);
+//			}
+//
+//			sy++;
+//			if((sy & 7) == 0)
+//			{
+//				/*
+//				 * If we just crossed over, then we should be done.
+//				 */
+//				if(sy < DISPLAY_HEIGHT)
+//				{
+//					glcd_Device::GotoXY(col, sy & ~7);
+//					sbyte = glcd_Device::ReadData();
+//				}
+//			}
+//
+//			if((dy & 7) == 7)
+//			{
+//				glcd_Device::GotoXY(col, dy & ~7);	// Should be able to remove this
+//				glcd_Device::WriteData(dbyte);
+//				dbyte = 0;
+//			}
+//			dy++;
+//		}
+//
+//		/*
+//		 * Handle the new area at the bottom of the region
+//		 */
+//
+//		for(uint8_t p = pixels; p; p--)
+//		{
+//			if(color == BLACK)
+//			{
+//				dbyte |= _BV(dy & 7);
+//			}
+//			else
+//			{
+//				dbyte &= ~_BV(dy & 7);
+//			}
+//
+//			if((dy & 7) == 7)
+//			{
+//				glcd_Device::GotoXY(col, dy & ~7); // should be able to remove this.
+//				glcd_Device::WriteData(dbyte);
+//				dbyte = 0;
+//			}
+//			dy++;
+//		}
+//
+//		/*
+//		 * Flush out the final destination byte
+//		 */
+//
+//
+//		if(dy & 7)
+//		{
+//			dy--;
+//
+//			glcd_Device::GotoXY(col, dy & ~7);
+//			sbyte = glcd_Device::ReadData();
+//			/*
+//			 * Preserver bits outside/below region
+//			 */
+//
+//			dy++;
+//			sbyte &= ~(_BV((dy & 7)) - 1);
+//			dbyte |= sbyte;
+//
+//			glcd_Device::WriteData(dbyte);
+//		}
+//	}
+//
+//}
+
+//#ifndef GLCD_NO_SCROLLDOWN
+//
+//void ILI9341_due_gText::ScrollDown(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, 
+//	uint8_t pixels, uint8_t color)
+//{
+//uint8_t dy;
+//uint8_t dbyte;
+//uint8_t sy;
+//uint8_t sbyte;
+//uint8_t col;
+//
+//	/*
+//	 * Scrolling up more than area height?
+//	 */
+//	if(y1 + pixels > y2)
+//	{
+//		/*
+//		 * fill the region with "whitespace" because
+//		 * it is being totally scrolled out.
+//		 */
+//		glcd_Device::SetPixels(x1, y1, x2, y2, color);
+//		return;
+//	}
+//
+//	/*
+//	 * Process region from left to right
+//	 */
+//	for(col = x1; col <= x2; col++)
+//	{
+//		dy = y2;
+//		glcd_Device::GotoXY(col, dy & ~7);
+//		dbyte = glcd_Device::ReadData();
+//
+//		/*
+//		 * preserve bits outside/below scroll region
+//		 */
+//
+//		dbyte &= ~(_BV(((dy & 7)+1)) - 1);
+//		sy = dy - pixels;
+//		glcd_Device::GotoXY(col, sy & ~7);
+//		sbyte = glcd_Device::ReadData();
+//
+//		while(sy >= y1)
+//		{
+//			if(sbyte & _BV(sy & 7))
+//			{
+//				dbyte |= _BV(dy & 7);
+//			}
+//			if((dy & 7) == 0)
+//			{
+//				glcd_Device::GotoXY(col, dy & ~7);	// Should be able to remove this
+//				glcd_Device::WriteData(dbyte);
+//				dbyte = 0;
+//			}
+//			dy--;
+//
+//			if(!sy)
+//				break; /* if we bottomed out, we are done */
+//			sy--;
+//			if((sy & 7) == 7)
+//			{
+//				glcd_Device::GotoXY(col, sy & ~7);
+//				sbyte = glcd_Device::ReadData();
+//			}
+//
+//		}
+//
+//		/*
+//		 * Handle the new area at the top of the column
+//		 */
+//
+//		for(uint8_t p = pixels; p; p--)
+//		{
+//			if(color == BLACK)
+//			{
+//				dbyte |= _BV(dy & 7);
+//			}
+//			else
+//			{
+//				dbyte &= ~_BV(dy & 7);
+//			}
+//
+//			if((dy & 7) == 0)
+//			{
+//				glcd_Device::GotoXY(col, dy & ~7); // should be able to remove this.
+//				glcd_Device::WriteData(dbyte);
+//				dbyte = 0;
+//			}
+//			dy--;
+//		}
+//
+//		dy++; /* point dy back to last destination row */
+//
+//		/*
+//		 * Flush out the final destination byte
+//		 */
+//
+//		if(dy & 7)
+//		{
+//			glcd_Device::GotoXY(col, dy & ~7);
+//			sbyte = glcd_Device::ReadData();
+//			/*
+//			 * Preserve bits outside/above region
+//			 */
+//
+//			sbyte &= (_BV((dy & 7)) - 1);
+//			dbyte |= sbyte;
+//			glcd_Device::WriteData(dbyte);
+//		}
+//
+//	}
+//
+//}
+//#endif //GLCD_NO_SCROLLDOWN
+
 
 
 
@@ -288,157 +521,156 @@ bool ILI9341_due_gText::defineArea(predefinedArea selection, textMode mode)
 /*
 * Handle all special processing characters
 */
-//void ILI9341_due_gText::SpecialChar(uint8_t c)
-//{
-//
-//
-//	if(c == '\n')
-//	{
-//		uint8_t height = pgm_read_byte(_font+FONT_HEIGHT);
-//
-//		/*
-//		 * Erase all pixels remaining to edge of text area.on all wraps
-//		 * It looks better when using inverted (WHITE) text, on proportional fonts, and
-//		 * doing WHITE scroll fills.
-//		 *
-//		 */
-//
-//
-//		if(_x < _area.x2)
-//			glcd_Device::SetPixels(_x, _y, _area.x2, _y+height, _fontColor == BLACK ? WHITE : BLACK);
-//
-//		/*
-//		 * Check for scroll up vs scroll down (scrollup is normal)
-//		 */
-//#ifndef GLCD_NO_SCROLLDOWN
-//		if(_area.mode == SCROLL_UP)
-//#endif
-//		{
-//
-//			/*
-//			 * Normal/up scroll
-//			 */
-//
-//			/*
-//			 * Note this comparison and the pixel calcuation below takes into 
-//			 * consideration that fonts
-//			 * are atually 1 pixel taller when rendered. 
-//			 * This extra pixel is along the bottom for a "gap" between the character below.
-//			 */
-//			if(_y + 2*height >= _area.y2)
-//			{
-//#ifndef GLCD_NODEFER_SCROLL
-//					if(!_needScroll)
-//					{
-//						_needScroll = 1;
-//						return;
-//					}
-//#endif
-//
-//				/*
-//				 * forumula for pixels to scroll is:
-//				 *	(assumes "height" is one less than rendered height)
-//				 *
-//				 *		pixels = height - ((_area.y2 - _y)  - height) +1;
-//				 *
-//				 *		The forumala below is unchanged 
-//				 *		But has been re-written/simplified in hopes of better code
-//				 *
-//				 */
-//
-//				uint8_t pixels = 2*height + _y - _area.y2 +1;
-//		
-//				/*
-//				 * Scroll everything to make room
-//				 * * NOTE: (FIXME, slight "bug")
-//				 * When less than the full character height of pixels is scrolled,
-//				 * There can be an issue with the newly created empty line.
-//				 * This is because only the # of pixels scrolled will be colored.
-//				 * What it means is that if the area starts off as white and the text
-//				 * color is also white, the newly created empty text line after a scroll 
-//				 * operation will not be colored BLACK for the full height of the character.
-//				 * The only way to fix this would be alter the code use a "move pixels"
-//				 * rather than a scroll pixels, and then do a clear to end line immediately
-//				 * after the move and wrap.
-//				 *
-//				 * Currently this only shows up when
-//				 * there are are less than 2xheight pixels below the current Y coordinate to
-//				 * the bottom of the text area
-//				 * and the current background of the pixels below the current text line
-//				 * matches the text color
-//				 * and  a wrap was just completed.
-//				 *
-//				 * After a full row of text is printed, the issue will resolve itself.
-//				 * 
-//				 * 
-//				 */
-//				ScrollUp(_area.x1, _area.y1, 
-//					_area.x2, _area.y2, pixels, _fontColor == BLACK ? WHITE : BLACK);
-//
-//				_x = _area.x1;
-//				_y = _area.y2 - height;
-//			}
-//			else
-//			{
-//				/*
-//				 * Room for simple wrap
-//				 */
-//
-//				_x = _area.x1;
-//				_y = _y+height+1;
-//			}
-//		}
-//#ifndef GLCD_NO_SCROLLDOWN
-//		else
-//		{
-//			/*
-//			 * Reverse/Down scroll
-//			 */
-//
-//			/*
-//			 * Check for Wrap vs scroll.
-//			 *
-//			 * Note this comparison and the pixel calcuation below takes into 
-//			 * consideration that fonts
-//			 * are atually 1 pixel taller when rendered. 
-//			 *
-//			 */
-//			if(_y > _area.y1 + height)
-//			{
-//				/*
-//				 * There is room so just do a simple wrap
-//				 */
-//				_x = _area.x1;
-//				_y = _y - (height+1);
-//			}
-//			else
-//			{
-//#ifndef GLCD_NODEFER_SCROLL
-//					if(!_needScroll)
-//					{
-//						_needScroll = 1;
-//						return;
-//					}
-//#endif
-//
-//				/*
-//				 * Scroll down everything to make room for new line
-//				 *	(assumes "height" is one less than rendered height)
-//				 */
-//
-//				uint8_t pixels = height+1 - (_area.y1 - _y);
-//
-//				ScrollDown(_area.x1, _area.y1, 
-//					_area.x2, _area.y2, pixels, _fontColor == BLACK ? WHITE : BLACK);
-//
-//				_x = _area.x1;
-//				_y = _area.y1;
-//			}
-//		}
-//#endif
-//	}
-//
-//}
+void ILI9341_due_gText::specialChar(uint8_t c)
+{
+
+
+	if(c == '\n')
+	{
+		uint8_t height = pgm_read_byte(_font+FONT_HEIGHT);
+
+		/*
+		 * Erase all pixels remaining to edge of text area.on all wraps
+		 * It looks better when using inverted (WHITE) text, on proportional fonts, and
+		 * doing WHITE scroll fills.
+		 *
+		 */
+
+
+		if(_x < _area.x2)
+			_ili->fillRect(_x, _y, _area.x2 - _x, height, _fontBgColor);
+			//glcd_Device::SetPixels(_x, _y, _area.x2, _y+height, _fontColor == BLACK ? WHITE : BLACK);
+
+		/*
+		 * Check for scroll up vs scroll down (scrollup is normal)
+		 */
+#ifndef GLCD_NO_SCROLLDOWN
+		if(_area.mode == SCROLL_UP)
+#endif
+		{
+
+			/*
+			 * Normal/up scroll
+			 */
+
+			/*
+			 * Note this comparison and the pixel calcuation below takes into 
+			 * consideration that fonts
+			 * are atually 1 pixel taller when rendered. 
+			 * This extra pixel is along the bottom for a "gap" between the character below.
+			 */
+			if(_y + 2*height >= _area.y2)
+			{
+#ifndef GLCD_NODEFER_SCROLL
+					if(!_needScroll)
+					{
+						_needScroll = 1;
+						return;
+					}
+#endif
+
+				/*
+				 * forumula for pixels to scroll is:
+				 *	(assumes "height" is one less than rendered height)
+				 *
+				 *		pixels = height - ((_area.y2 - _y)  - height) +1;
+				 *
+				 *		The forumala below is unchanged 
+				 *		But has been re-written/simplified in hopes of better code
+				 *
+				 */
+
+				uint8_t pixels = 2*height + _y - _area.y2 +1;
+		
+				/*
+				 * Scroll everything to make room
+				 * * NOTE: (FIXME, slight "bug")
+				 * When less than the full character height of pixels is scrolled,
+				 * There can be an issue with the newly created empty line.
+				 * This is because only the # of pixels scrolled will be colored.
+				 * What it means is that if the area starts off as white and the text
+				 * color is also white, the newly created empty text line after a scroll 
+				 * operation will not be colored BLACK for the full height of the character.
+				 * The only way to fix this would be alter the code use a "move pixels"
+				 * rather than a scroll pixels, and then do a clear to end line immediately
+				 * after the move and wrap.
+				 *
+				 * Currently this only shows up when
+				 * there are are less than 2xheight pixels below the current Y coordinate to
+				 * the bottom of the text area
+				 * and the current background of the pixels below the current text line
+				 * matches the text color
+				 * and  a wrap was just completed.
+				 *
+				 * After a full row of text is printed, the issue will resolve itself.
+				 * 
+				 * 
+				 */
+				//ScrollUp(_area.x1, _area.y1, _area.x2, _area.y2, pixels, _fontBgColor);
+
+				_x = _area.x1;
+				_y = _area.y2 - height;
+			}
+			else
+			{
+				/*
+				 * Room for simple wrap
+				 */
+
+				_x = _area.x1;
+				_y = _y+height+1;
+			}
+		}
+#ifndef GLCD_NO_SCROLLDOWN
+		else
+		{
+			/*
+			 * Reverse/Down scroll
+			 */
+
+			/*
+			 * Check for Wrap vs scroll.
+			 *
+			 * Note this comparison and the pixel calcuation below takes into 
+			 * consideration that fonts
+			 * are atually 1 pixel taller when rendered. 
+			 *
+			 */
+			if(_y > _area.y1 + height)
+			{
+				/*
+				 * There is room so just do a simple wrap
+				 */
+				_x = _area.x1;
+				_y = _y - (height+1);
+			}
+			else
+			{
+#ifndef GLCD_NODEFER_SCROLL
+					if(!_needScroll)
+					{
+						_needScroll = 1;
+						return;
+					}
+#endif
+
+				/*
+				 * Scroll down everything to make room for new line
+				 *	(assumes "height" is one less than rendered height)
+				 */
+
+				uint8_t pixels = height+1 - (_area.y1 - _y);
+
+				//ScrollDown(_area.x1, _area.y1, _area.x2, _area.y2, pixels, _fontBgColor);
+
+				_x = _area.x1;
+				_y = _area.y1;
+			}
+		}
+#endif
+	}
+
+}
 
 /**
 * output a character
@@ -475,7 +707,7 @@ int ILI9341_due_gText::putChar(uint8_t c)
 
 	if(c < 0x20)
 	{
-		//SpecialChar(c);
+		//specialChar(c);
 		return 1;
 	}
 	uint16_t charWidth = 0;

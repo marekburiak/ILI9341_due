@@ -218,8 +218,8 @@ private:
 	void drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight);
 	void drawTransparentChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight);
 	// Scroll routines are private for now
-	//void ScrollUp(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t pixels, uint8_t color);
-	//void ScrollDown(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t pixels, uint8_t color);
+	void ScrollUp(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t pixels, uint8_t color);
+	void ScrollDown(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t pixels, uint8_t color);
 
 public:
 	ILI9341_due_gText(ILI9341_due *ili); // default - uses the entire display

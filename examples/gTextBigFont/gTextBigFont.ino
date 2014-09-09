@@ -1,10 +1,10 @@
 #include <SPI.h> //uncomment when using SPI_MODE_NORMAL or SPI_MODE_EXTENDED
-#include <SdSpi.h>
-#include <SdFatConfig.h>
+#include <ILI_SdSpi.h>
+#include <ILI_SdFatConfig.h>
 #include <ILI9341_due_gText.h>
 #include <ILI9341_due.h>
 
-#include "ILI9341_due\fonts\jokerman_255.h"
+#include "fonts\jokerman_255.h"
 
 #define TFT_CS 10
 #define TFT_DC 9
@@ -20,7 +20,6 @@ void setup()
 	
 	Serial.print("TFT begin successful: ");
 	Serial.println(result ? "YES" : "NO");
-
 	myTFT.fillScreen(ILI9341_BLACK);
 
 	t1.defineArea(18, 32, 222, 287);
@@ -33,7 +32,6 @@ void loop()
 	
 	t1.setFontLetterSpacing(2);
 	t1.setFontColor(255,230,0,0,0,0);
-	unsigned long start = micros();
 	t1.drawString("0", 0, 0);
 	delay(750);
 	t1.setFontLetterSpacing(91); //a lazy way of erasing the remains of previous number
@@ -69,6 +67,4 @@ void loop()
 	t1.setFontColor(132,255,13);
 	t1.drawString("9", 0, 0);
 	delay(750);
-	Serial.println( (micros() - start)/10000);
-
 }
