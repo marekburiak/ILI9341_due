@@ -1,6 +1,8 @@
 #include <SPI.h>
 #include <SdFat.h>
 #include <SdFatUtil.h>
+#include <ILI_SdSpi.h>
+#include <ILI_SdFatConfig.h>
 #include <ILI9341_due_gText.h>
 #include <ILI9341_due.h>
 
