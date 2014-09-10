@@ -68,6 +68,10 @@ If you look into ILI9341_due.h, you should find this:</p>
 
 <p>This is used to set the SPI clock frequency, which at 2 means 84/2=42MHz (the max). If you are getting glitches on the screen or it just does not work try to use a higher divider to bring the frequency down (e.g. 11 to run it at 8-ish MHz). I was using 20cm dupont cables to connect TFT with Due and haven't had any issues running it with the divider set to 2.</p>
 
+<p>This is the SdFatTftBitmap example sketch demonstrating loading images from an SD card. The images were converted to RGB565 format using BMP24toILI565 tool (see the Tools folder). One image loads and displays in around 190ms (using half speed for SD card SPI as the full speed did not work for me, probably because the SD card pins were connected to Due via a breadboard).</p>
+<iframe width="560" height="315" src="https://www.youtube.com/watch?v=4adTpVc_Qog?rel=0&color=white" frameborder="0"></iframe>
+
+
 <p>Known bugs/issues/missing functionality:</p>
 
 <ul>
