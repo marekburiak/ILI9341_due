@@ -335,7 +335,7 @@ void ILI9341_due::fillScreen(uint16_t color)
 	setDCForData();
 	for(uint16_t y=0; y<_height; y++)
 	{
-		write_cont(_scanlineBuffer, _width);
+		write_cont(_scanlineBuffer, _width << 1);
 	}
 	disableCS();
 
