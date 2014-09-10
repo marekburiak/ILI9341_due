@@ -1,5 +1,5 @@
 /*
-v.0.9.0010
+v.0.9.0025
 
 ILI9341_due_.h - Arduino Due library for interfacing with ILI9341-based TFTs
 
@@ -166,6 +166,7 @@ public:
 	bool begin(void);
 	void pushColor(uint16_t color);
 	void pushColors(uint16_t *colors, uint16_t offset, uint16_t len);
+	void pushColors565(uint8_t *colors, uint16_t offset, uint16_t len);
 	void fillScreen(uint16_t color);
 	void drawPixel(int16_t x, int16_t y, uint16_t color);
 	void drawPixel_cont(int16_t x, int16_t y, uint16_t color);
@@ -458,16 +459,16 @@ public:
 	// CS and DC have to be set prior to calling this method
 	inline __attribute__((always_inline))
 		void write_cont(const uint8_t* buf , size_t n) {
-			_dmaSpi.send(buf, n << 1);
+			_dmaSpi.send(buf, n);
 	}
 
 	// Writes n-bytes from the buffer via DMA and disables CS
 	// DC has to be set prior to calling this method
-	inline __attribute__((always_inline))
+	/*inline __attribute__((always_inline))
 		void write_last(const uint8_t* buf , size_t n) {
 			_dmaSpi.send(buf, n << 1);
 			disableCS();
-	}
+	}*/
 
 	// Enables CS, sets DC and writes n-bytes from the scanline buffer via DMA
 	// Does not disable CS
@@ -804,7 +805,7 @@ private:
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 			do { write16(color); } while (--w > 0);
 #elif SPI_MODE_DMA
-			write_cont(_scanlineBuffer, w);
+			write_cont(_scanlineBuffer, w << 1);
 #endif
 	}
 
@@ -832,7 +833,7 @@ private:
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 			do { write16(color); } while (--h > 0);
 #elif SPI_MODE_DMA
-			write_cont(_scanlineBuffer, h);
+			write_cont(_scanlineBuffer, h << 1);
 #endif
 	}
 

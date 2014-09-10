@@ -1,6 +1,4 @@
 /*
-v.0.9.0010
-
 ILI9341_due_.cpp - Arduino Due library for interfacing with ILI9341-based TFTs
 
 Copyright (c) 2014  Marek Buriak
@@ -49,7 +47,7 @@ MIT license, all text above must be included in any redistribution
 #elif SPI_MODE_DMA
 #include "ILI_SdSpi.h"
 #endif
-#include "..\Streaming\Streaming.h"
+//#include "..\Streaming\Streaming.h"
 
 static const uint8_t init_commands[] = {
 	4, 0xEF, 0x03, 0x80, 0x02,
@@ -210,6 +208,29 @@ void ILI9341_due::pushColors(uint16_t *colors, uint16_t offset, uint16_t len) {
 	}
 	//write_cont((uint8_t*)colors, len << 1);
 	writeScanline_cont(len);
+#endif
+
+	disableCS();
+}
+
+void ILI9341_due::pushColors565(uint8_t *colors, uint16_t offset, uint16_t len) {
+	enableCS();
+	setDCForData();
+	//colors = colors + offset*2;
+
+#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+	for (uint16_t i = 0; i < len; i++) {
+		write16(colors[i]);
+	}
+#elif SPI_MODE_DMA
+	/*for (uint16_t i = 0; i < len; i++) {
+		uint16_t color = *colors;
+		_scanlineBuffer[2*i] = highByte(color);
+		_scanlineBuffer[2*i+1] = lowByte(color);
+		colors++;
+	}*/
+	write_cont(colors, len);
+	//writeScanline_cont(len);
 #endif
 
 	disableCS();
