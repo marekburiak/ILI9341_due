@@ -142,6 +142,7 @@ bool ILI9341_due::begin(void)
 		delay(120); 		
 		writecommand_last(ILI9341_DISPON);    // Display on
 		delay(120); 
+		_isInSleep = _isIdle = false;
 
 		uint8_t x = readcommand8(ILI9341_RDMODE);
 		Serial.print("\nDisplay Power Mode: 0x"); Serial.println(x, HEX);
@@ -224,10 +225,10 @@ void ILI9341_due::pushColors565(uint8_t *colors, uint16_t offset, uint16_t len) 
 	}
 #elif SPI_MODE_DMA
 	/*for (uint16_t i = 0; i < len; i++) {
-		uint16_t color = *colors;
-		_scanlineBuffer[2*i] = highByte(color);
-		_scanlineBuffer[2*i+1] = lowByte(color);
-		colors++;
+	uint16_t color = *colors;
+	_scanlineBuffer[2*i] = highByte(color);
+	_scanlineBuffer[2*i+1] = lowByte(color);
+	colors++;
 	}*/
 	write_cont(colors, len);
 	//writeScanline_cont(len);
@@ -329,7 +330,7 @@ void ILI9341_due::fillScreen(uint16_t color)
 	fillRect(0, 0, _width, _height, color);
 #elif SPI_MODE_DMA
 
-	fillScanline(color, _width);
+	fillScanline(color);
 
 	setAddrAndRW_cont(0,0,_width-1,_height-1);
 	setDCForData();
@@ -389,7 +390,7 @@ void ILI9341_due::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t 
 
 	setAddrAndRW_cont(x, y, x+w-1, y+h-1);
 #if SPI_MODE_DMA
-	const uint16_t maxNumLinesInScanlineBuffer = (LINE_BUFFER_SIZE >> 1) / w;
+	const uint16_t maxNumLinesInScanlineBuffer = (SCANLINE_BUFFER_SIZE >> 1) / w;
 	const uint16_t numPixelsInOneGo = w*maxNumLinesInScanlineBuffer;
 
 	fillScanline(color, numPixelsInOneGo);
@@ -1546,6 +1547,44 @@ void ILI9341_due::setTextWrap(boolean w) {
 
 uint8_t ILI9341_due::getRotation(void) {
 	return rotation;
+}
+
+// if true, tft will be blank (white), 
+// display's frame buffer is unaffected
+// (you can write to it without showing content on the screen)
+void ILI9341_due::display(boolean d){
+	writecommand_last(d ? ILI9341_DISPON : ILI9341_DISPOFF);
+}
+
+// puts display in/out of sleep mode
+void ILI9341_due::sleep(boolean s)
+{
+	writecommand_last(s ? ILI9341_SLPIN : ILI9341_SLPOUT);
+	delay(120);
+}
+
+void ILI9341_due::idle(boolean i){
+	writecommand_last(i ? ILI9341_IDMON : ILI9341_IDMOFF);
+}
+
+
+void ILI9341_due::setPowerLevel(pwrLevel p)
+{
+	switch(p)
+	{
+	case PWRLEVEL_NORMAL:
+		if(_isIdle) { idle(false); _isIdle = false;}
+		if(_isInSleep) { sleep(false); _isInSleep = false;}
+		break;
+	case PWRLEVEL_IDLE:
+		if(!_isIdle) { idle(true); _isIdle = true;}
+		if(_isInSleep) { sleep(false); _isInSleep = false;}
+		break;
+	case PWRLEVEL_SLEEP:
+		if(!_isInSleep) { sleep(true); _isInSleep = true;}
+		if(_isIdle) { idle(false); _isIdle = false;}
+		break;
+	}
 }
 
 //uint8_t ILI9341_due::spiread(void) {

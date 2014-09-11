@@ -1,5 +1,5 @@
 /*
-v.0.9.0026
+v.0.91
 
 ILI9341_due_.h - Arduino Due library for interfacing with ILI9341-based TFTs
 
@@ -114,6 +114,8 @@ MIT license, all text above must be included in any redistribution
 
 #define ILI9341_PTLAR   0x30
 #define ILI9341_MADCTL  0x36
+#define ILI9341_IDMOFF  0x38
+#define ILI9341_IDMON   0x39
 #define ILI9341_PIXFMT  0x3A
 
 #define ILI9341_FRMCTR1 0xB1
@@ -152,7 +154,21 @@ MIT license, all text above must be included in any redistribution
 #define ILI9341_YELLOW  0xFFE0
 #define ILI9341_WHITE   0xFFFF
 
-#define LINE_BUFFER_SIZE 640 // 320 2-byte pixels
+typedef uint8_t pwrLevel;
+
+// Normal Mode On (full display), Idle Mode Off, Sleep Out. 
+// In this mode, the display is able to show maximum 262,144 colors. 
+#define PWRLEVEL_NORMAL 1
+
+// Normal Mode On (full display), Idle Mode On, Sleep Out. 
+// In this mode, the full display area is used but with 8 colors. 
+#define PWRLEVEL_IDLE 2
+
+//In this mode, the DC : DC converter, Internal oscillator and panel driver circuit are stopped. Only the MCU 
+// interface and memory works with VDDI power supply. Contents of the memory are safe. 
+#define PWRLEVEL_SLEEP 3
+
+#define SCANLINE_BUFFER_SIZE 640 // 320 2-byte pixels
 
 class ILI9341_due : public Print
 {
@@ -160,8 +176,9 @@ public:
 	ILI9341_due(uint8_t cs, uint8_t dc, uint8_t rst = 255);
 #if SPI_MODE_DMA
 	ILI_SdSpi _dmaSpi;
-	uint8_t _scanlineBuffer[LINE_BUFFER_SIZE]; // 320 points
-	uint8_t hiByte, loByte;
+	uint8_t _scanlineBuffer[SCANLINE_BUFFER_SIZE];
+	uint8_t _hiByte, _loByte;
+	bool _isIdle, _isInSleep;
 #endif
 	bool begin(void);
 	void pushColor(uint16_t color);
@@ -176,6 +193,11 @@ public:
 	void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 	void setRotation(uint8_t r);
 	void invertDisplay(boolean i);
+	void display(boolean d);
+	void normalModeOn();
+	void sleep(boolean s);
+	void idle(boolean i);
+	void setPowerLevel(pwrLevel p);
 	void setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 	// Pass 8-bit (each) R,G,B, get back 16-bit packed color
 	static uint16_t color565(uint8_t r, uint8_t g, uint8_t b) {
@@ -465,9 +487,9 @@ public:
 	// Writes n-bytes from the buffer via DMA and disables CS
 	// DC has to be set prior to calling this method
 	/*inline __attribute__((always_inline))
-		void write_last(const uint8_t* buf , size_t n) {
-			_dmaSpi.send(buf, n << 1);
-			disableCS();
+	void write_last(const uint8_t* buf , size_t n) {
+	_dmaSpi.send(buf, n << 1);
+	disableCS();
 	}*/
 
 	// Enables CS, sets DC and writes n-bytes from the scanline buffer via DMA
@@ -603,37 +625,67 @@ public:
 	//}
 
 	// Sets all pixels in the scanline buffer to the specified color
-	void fillScanline(uint16_t color) __attribute__((always_inline)) {
-		hiByte = highByte(color);
-		loByte = lowByte(color);
-		for(uint16_t i=0; i<sizeof(_scanlineBuffer); i+=2)
-		{
-			_scanlineBuffer[i]=hiByte;
-			_scanlineBuffer[i+1]=loByte;
-		}
-		/*_scanlineBuffer[0]=highByte(color);
-		_scanlineBuffer[1]=lowByte(color);
-		memmove(((uint8_t*)_scanlineBuffer)+2*sizeof(_scanlineBuffer[0]), _scanlineBuffer, sizeof(_scanlineBuffer)-2*sizeof(_scanlineBuffer[0]));
-		*/
-		//arr[0]=highByte(color);
-		//arr[1]=lowByte(color);
-		//memcpy( ((uint8_t*)arr)+2*sizeof(arr[0]), arr, sizeof(arr)-2*sizeof(arr[0]) );
+	__attribute__((always_inline))
+		void fillScanline(uint16_t color) {
+			_hiByte = highByte(ILI9341_BLACK);
+			_loByte = lowByte(ILI9341_BLACK);
+			for(uint16_t i=0; i<sizeof(_scanlineBuffer); i+=2)
+			{
+			_scanlineBuffer[i]=_hiByte;
+			_scanlineBuffer[i+1]=_loByte;
+			}
+			/*_scanlineBuffer[0]=highByte(color);
+			_scanlineBuffer[1]=lowByte(color);
+			_scanlineBuffer[2]=_scanlineBuffer[0];
+			_scanlineBuffer[3]=_scanlineBuffer[1];
+
+			memcpy(_scanlineBuffer+4, _scanlineBuffer, 4);
+			memcpy(_scanlineBuffer+8, _scanlineBuffer, 8);
+			memcpy(_scanlineBuffer+16, _scanlineBuffer, 16);
+			memcpy(_scanlineBuffer+32, _scanlineBuffer, 32);
+			memcpy(_scanlineBuffer+64, _scanlineBuffer, 64);
+			memcpy(_scanlineBuffer+128, _scanlineBuffer, 128);
+			memcpy(_scanlineBuffer+256, _scanlineBuffer, 256);
+			memcpy(_scanlineBuffer+512, _scanlineBuffer, 128);*/
+
+			/*for(uint16_t i=0; i<sizeof(_scanlineBuffer); i+=2)
+			{
+				memcpy(_scanlineBuffer+i, _scanlineBuffer, 2);
+			}*/
+
+			//arr[0]=highByte(color);
+			//arr[1]=lowByte(color);
+			//memcpy( ((uint8_t*)arr)+2*sizeof(arr[0]), arr, sizeof(arr)-2*sizeof(arr[0]) );
 	}
 
 	// Sets first n pixels in scanline buffer to the specified color
-	void fillScanline(uint16_t color, size_t n) __attribute__((always_inline)) {
-		hiByte = highByte(color);
-		loByte = lowByte(color);
-		for(uint16_t i=0; i<(n << 1); i+=2)
-		{
-			_scanlineBuffer[i]=hiByte;
-			_scanlineBuffer[i+1]=loByte;
-		}
-		/*_scanlineBuffer[0]=highByte(color);
-		_scanlineBuffer[1]=lowByte(color);
-		memmove(((uint8_t*)_scanlineBuffer)+2*sizeof(_scanlineBuffer[0]), _scanlineBuffer, (n << 1) -2*sizeof(_scanlineBuffer[0]));
-		*/
+	__attribute__((always_inline))
+		void fillScanline(uint16_t color, size_t n){
+			_hiByte = highByte(color);
+			_loByte = lowByte(color);
+			for(uint16_t i=0; i<(n << 1); i+=2)
+			{
+				_scanlineBuffer[i]=_hiByte;
+				_scanlineBuffer[i+1]=_loByte;
+			}
+
+			/*_scanlineBuffer[0]=highByte(color);
+			_scanlineBuffer[1]=lowByte(color);
+			memmove(((uint8_t*)_scanlineBuffer)+2*sizeof(_scanlineBuffer[0]), _scanlineBuffer, (n << 1) -2*sizeof(_scanlineBuffer[0]));
+			*/
 	}
+
+	//inline __attribute__((always_inline))
+	//	void *memcpy_forward(uint8_t *dst, const uint8_t *src, size_t n)
+	//{
+	//	uint8_t *pdst;
+	//	const uint8_t *psrc;
+
+	//	for (pdst = dst, psrc = src; n > 0; --n, ++pdst, ++psrc)
+	//		*pdst = *psrc;
+
+	//	return dst;
+	//}
 #endif
 
 	// Enables CS
@@ -900,18 +952,18 @@ private:
 		write16_last(color);
 	}
 
-	
-bool waitNotBusy(uint16_t timeoutMillis) {
-  uint16_t t0 = millis();
-  while (read8() != 0XFF) {
-    if (((uint16_t)millis() - t0) >= timeoutMillis) goto fail;
-    //spiYield();
-  }
-  return true;
 
- fail:
-  return false;
-}
+	bool waitNotBusy(uint16_t timeoutMillis) {
+		uint16_t t0 = millis();
+		while (read8() != 0XFF) {
+			if (((uint16_t)millis() - t0) >= timeoutMillis) goto fail;
+			//spiYield();
+		}
+		return true;
+
+fail:
+		return false;
+	}
 
 
 };
