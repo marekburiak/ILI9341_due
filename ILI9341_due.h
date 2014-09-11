@@ -1,5 +1,5 @@
 /*
-v.0.91
+v0.91.001
 
 ILI9341_due_.h - Arduino Due library for interfacing with ILI9341-based TFTs
 
@@ -627,12 +627,12 @@ public:
 	// Sets all pixels in the scanline buffer to the specified color
 	__attribute__((always_inline))
 		void fillScanline(uint16_t color) {
-			_hiByte = highByte(ILI9341_BLACK);
-			_loByte = lowByte(ILI9341_BLACK);
+			_hiByte = highByte(color);
+			_loByte = lowByte(color);
 			for(uint16_t i=0; i<sizeof(_scanlineBuffer); i+=2)
 			{
-			_scanlineBuffer[i]=_hiByte;
-			_scanlineBuffer[i+1]=_loByte;
+				_scanlineBuffer[i]=_hiByte;
+				_scanlineBuffer[i+1]=_loByte;
 			}
 			/*_scanlineBuffer[0]=highByte(color);
 			_scanlineBuffer[1]=lowByte(color);
@@ -650,7 +650,7 @@ public:
 
 			/*for(uint16_t i=0; i<sizeof(_scanlineBuffer); i+=2)
 			{
-				memcpy(_scanlineBuffer+i, _scanlineBuffer, 2);
+			memcpy(_scanlineBuffer+i, _scanlineBuffer, 2);
 			}*/
 
 			//arr[0]=highByte(color);
@@ -732,6 +732,7 @@ protected:
 	boolean
 		wrap; // If set, 'wrap' text at right edge of display
 
+	void drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uint16_t color);
 
 private:
 	uint8_t  _rst;
@@ -838,7 +839,7 @@ private:
 	// Advantage over writeHLine_cont is that CS line is not being set and 
 	// the scanlineBuffer not filled on every call
 	inline __attribute__((always_inline))
-		void writeHLine_cont_noCS(int16_t x, int16_t y, int16_t w, uint16_t color)
+		void writeHLine_cont_noCS_noFill(int16_t x, int16_t y, int16_t w, uint16_t color)
 		__attribute__((always_inline)) {
 			//setAddrAndRW_cont(x, y, x+w-1, y);
 			setDCForCommand();
@@ -867,7 +868,7 @@ private:
 	// Advantage over writeVLine_cont is that CS line is not being set and 
 	// the scanlineBuffer not filled on every call
 	inline __attribute__((always_inline))
-		void writeVLine_cont_noCS(int16_t x, int16_t y, int16_t h, uint16_t color)
+		void writeVLine_cont_noCS_noFill(int16_t x, int16_t y, int16_t h, uint16_t color)
 		__attribute__((always_inline)) {
 			setDCForCommand();
 			write8(ILI9341_CASET); // Column addr set
