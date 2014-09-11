@@ -19,9 +19,7 @@ MIT license, all text above must be included in any redistribution
 #include <ILI_SdFatConfig.h>
 #include <ILI9341_due_gText.h>
 #include <ILI9341_due.h>
-#include "ILI9341_due\fonts\Arial_bold_14.h"
-
-#include "Streaming.h"
+#include "fonts\Arial_bold_14.h"
 
 // For the Adafruit shield, these are the default.
 #define TFT_DC 9
@@ -153,29 +151,29 @@ void printStats()
 	tft.setRotation(3);
 	tft.fillScreen(ILI9341_BLUE);
 	t1.cursorTo(0, 0);
-	t1 << "Screen fill              "; t1.cursorTo(18); t1 << Screenfill;
+	t1.print("Screen fill              "); t1.cursorTo(18); t1.print(Screenfill);
 	t1.cursorTo(0, 1);
-	t1 << "Text                     "; t1.cursorTo(18); t1 << Text;
+	t1.print("Text                     "); t1.cursorTo(18); t1.print(Text);
 	t1.cursorTo(0, 2);
-	t1 << "Lines                    "; t1.cursorTo(18); t1 << Lines;
+	t1.print("Lines                    "); t1.cursorTo(18); t1.print(Lines);
 	t1.cursorTo(0, 3);
-	t1 << "Horiz/Vert Lines         "; t1.cursorTo(18); t1 << HorizVertLines;
+	t1.print("Horiz/Vert Lines         "); t1.cursorTo(18); t1.print(HorizVertLines);
 	t1.cursorTo(0, 4);
-	t1 << "Rectangles (outline)     "; t1.cursorTo(18); t1 << Rectanglesoutline;
+	t1.print("Rectangles (outline)     "); t1.cursorTo(18); t1.print(Rectanglesoutline);
 	t1.cursorTo(0, 5);
-	t1 << "Rectangles (filled)      "; t1.cursorTo(18); t1 << Rectanglesfilled;
+	t1.print("Rectangles (filled)      "); t1.cursorTo(18); t1.print(Rectanglesfilled);
 	t1.cursorTo(0, 6);
-	t1 << "Circles (filled)         "; t1.cursorTo(18); t1 << Circlesfilled;
+	t1.print("Circles (filled)         "); t1.cursorTo(18); t1.print(Circlesfilled);
 	t1.cursorTo(0, 7);
-	t1 << "Circles (outline)        "; t1.cursorTo(18); t1 << Circlesoutline;
+	t1.print("Circles (outline)        "); t1.cursorTo(18); t1.print(Circlesoutline);
 	t1.cursorTo(0, 8);
-	t1 << "Triangles (outline)      "; t1.cursorTo(18); t1 << Trianglesoutline;
+	t1.print("Triangles (outline)      "); t1.cursorTo(18); t1.print(Trianglesoutline);
 	t1.cursorTo(0, 9);
-	t1 << "Triangles (filled)       "; t1.cursorTo(18); t1 << Trianglesfilled;
+	t1.print("Triangles (filled)       "); t1.cursorTo(18); t1.print(Trianglesfilled);
 	t1.cursorTo(0, 10);
-	t1 << "Rounded rects (outline)  "; t1.cursorTo(18); t1 << Roundedrectsoutline;
+	t1.print("Rounded rects (outline)  "); t1.cursorTo(18); t1.print(Roundedrectsoutline);
 	t1.cursorTo(0, 11);
-	t1 << "Rounded rects (filled)   "; t1.cursorTo(18); t1 << Roundedrectsfilled;
+	t1.print("Rounded rects (filled)   "); t1.cursorTo(18); t1.print(Roundedrectsfilled);
 
 }
 
