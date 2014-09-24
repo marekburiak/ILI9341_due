@@ -51,7 +51,7 @@
             </p>
 
             <p>
-                As for the wiring, use Due's HW SPI pins (e.g. described here: <a href="http://21stdigitalhome.blogspot.com/2013/02/arduino-due-hardware-spi.html">http://21stdigitalhome.blogspot.com/2013/02/arduino-due-hardware-spi.html</a>). A pin for CS depends on the SPI mode you choose.
+                As for the wiring, use Due's HW SPI pins (e.g. described <a href="http://21stdigitalhome.blogspot.com/2013/02/arduino-due-hardware-spi.html">here</a>). A pin for CS depends on the SPI mode you choose.
 If you look into ILI9341_due.h, you should find this:
             </p>
 
@@ -65,7 +65,7 @@ If you look into ILI9341_due.h, you should find this:
 
             <p>
                 <b>SPI_MODE_NORMAL</b> is the standard SPI mode where you can use any digital pin for CS but you/library has to drive it manually.<br>
-                <b>SPI_MODE_EXTENDED</b> is the extended SPI mode available in Due where CS pin is handled by the chip (which is faster than handling it manually). You are restricted to these pins for CS though - 4, 10 and 52 (as described here: <a href="http://arduino.cc/en/Reference/DueExtendedSPI">http://arduino.cc/en/Reference/DueExtendedSPI</a>).<br>
+                <b>SPI_MODE_EXTENDED</b> is the extended SPI mode available in Due where CS pin is handled by the chip (which is faster than handling it manually). You are restricted to these pins for CS though - 4, 10 and 52 (as described <a href="http://arduino.cc/en/Reference/DueExtendedSPI">here</a>).<br>
                 <b>SPI_MODE_DMA</b> is utilizing DMA to do SPI transfers. You should be able to use any digital pin for CS.
             </p>
 
@@ -78,12 +78,14 @@ If you look into ILI9341_due.h, you should find this:
 
                 <p>This is used to set the SPI clock frequency, which at 2 means 84/2=42MHz (the max). If you are getting glitches on the screen or it just does not work try to use a higher divider to bring the frequency down (e.g. 11 to run it at 8-ish MHz). I was using 20cm dupont cables to connect TFT with Due and haven't had any issues running it with the divider set to 2.</p>
 
+            <p>If you want to ask me a question or just contact me, feel free to do so in the <a href="http://forum.arduino.cc/index.php?topic=265806.0">Arduino Forum</a>.</p>
+
             <h3>Rendering custom fonts wigh ILI9341_due_gText</h3>
 
             <p>
                 You have two options for rendering fonts. Either use text functions from ILI9341_due library where you have one font available (same as in Adafruit's GFX library) or use ILI9341_due_gText class to render your custom fonts.
-                The maximum height of the font is 255px. Custom font .h files can be generated with GLCDFontCreator2 tool (requires Java). It is included in the tools folder or you can dowload it from:<br>
-                <a href="https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&amp;can=2&amp;q=">https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&amp;can=2&amp;q=</a><br>
+                The maximum height of the font is 255px. Custom font .h files can be generated with GLCDFontCreator2 tool (requires Java). It is included in the tools folder or you can dowload it from
+                <a href="https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&amp;can=2&amp;q=">here</a>.<br>
                 Here is a video of rendering a 255px-high font:
             </p>
 
@@ -95,22 +97,43 @@ If you look into ILI9341_due.h, you should find this:
             <iframe width="560" height="315" src="http://www.youtube.com/embed/4adTpVc_Qog?rel=0&color=white" frameborder="0"></iframe>
 
             <h3>Drawing Arcs</h3>
-            <p>For drawing arcs (with thickness), you can use the drawArc function. Depending on the thickness and angles you might also draw pies and circles with thickness.</p>
+            <p>You can use the <i>drawArc</i> method to draw arcs (with thickness) and depending on the thickness and angles you provide as parameters you might also draw pies and circles with thickness.</p>
             <p>ILI9341_due.h has two defines which you can customize:</p>
 
             <pre lang="Arduino"><code>#define ARC_ANGLE_MAX 360
 </code></pre>
-            <p>This number represents the maximum equal to 360 degrees (full circle). The default is 360 so if you pass in start=25 and end=75 you'll get an arc going from 25 degrees to 75 degrees.
+            <p>
+                This number represents the maximum equal to 360 degrees (full circle). The default is 360 so if you pass in start=25 and end=75 you'll get an arc going from 25 degrees to 75 degrees.
             If you set ARC_ANGLE_MAX 100 and you pass in start=0 and end=50 then you get a half circle (that can represent percentages). If you set ARC_ANGLE_MAX 2*PI, you can pass in
-            angles in radians etc...</p>
-            
-            <pre lang="Arduino"><code>ARC_ANGLE_OFFSET -90
+            angles in radians etc...
+            </p>
+
+            <pre lang="Arduino"><code>#define ARC_ANGLE_OFFSET -90
 </code></pre>
-            <p>This number is an offset in degrees from the default position where the arc starts (representing value of 0). If you imagine a compass, then the default starting position is at the East. Setting the value to -90 will move the starting point 90 degress counter-clockwise (so to the South point).</p>
-            
+            <p>This number is an offset in degrees from the default position where the arc starts (representing value of 0). If you imagine a compass, then the default starting position is at the East point. Setting the value to -90 will move the starting point 90 degress counter-clockwise (so to the South point).</p>
+
             <p>This is the Arcs demo from the examples folder:</p>
             <iframe width="560" height="315" src="http://www.youtube.com/embed/99todZeKaeI?rel=0&color=white" frameborder="0"></iframe>
 
+            <h3>Taking screenshots</h3>
+
+            <p>
+                The library has a method called <i>screenshotToConsole</i>. When you call that method, you should get a string like this one in the console window:</p>
+               
+ <pre lang="Arduino"><code>==== PIXEL DATA START ====
+0000000090606060001F000000011B606060002B0000000
+11060606000350000000107606060003D00000000FF6060
+60004500000000F86060600016000000001F60606000160
+...                                     
+0000000F26060600013000000002B606060001300000000
+EC6060600011000000001B7C7E7C000E000000000C60606
+06060002B000000011B606060001F00000001D1000050F0
+==== PIXEL DATA END ====</code></pre>
+
+            <p>Now, copy all between PIXEL DATA START and END (so starting with 0000... and ending with ...50F0) into the clipboard.<br />
+            Open ILIScreenshotViewer (from the tools folder) and click "Load Image from Clipboard" button. You should then see an image
+            of what was on the screen when you called <i>screenshotToConsole</i> method.
+            </p>
 
             <h5>Known bugs/issues/missing functionality</h5>
 
