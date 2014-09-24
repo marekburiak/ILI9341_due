@@ -796,6 +796,7 @@ void ILI9341_due::screenshotToConsole()
 	PrintHex8(color, 3);
 	}
 	}*/
+	Serial.println();
 	Serial.println("==== PIXEL DATA END ====");
 	Serial.print("Total Image Data Length: ");
 	Serial.println(totalImageDataLength);
