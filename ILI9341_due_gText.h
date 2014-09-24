@@ -40,24 +40,25 @@ along with ILI9341_due.  If not, see <http://www.gnu.org/licenses/>.
 #define GTEXT_VERSION 1 // software version of this code
 
 // Font Indices
-#define FONT_LENGTH			0
-#define FONT_FIXED_WIDTH	2
-#define FONT_HEIGHT			3
-#define FONT_FIRST_CHAR		4
-#define FONT_CHAR_COUNT		5
-#define FONT_WIDTH_TABLE	6
+#define GTEXT_FONT_LENGTH			0
+#define GTEXT_FONT_FIXED_WIDTH	2
+#define GTEXT_FONT_HEIGHT			3
+#define GTEXT_FONT_FIRST_CHAR		4
+#define GTEXT_FONT_CHAR_COUNT		5
+#define GTEXT_FONT_WIDTH_TABLE	6
 
-#define DRAW_DIRECTION_RIGHT 0
-#define DRAW_DIRECTION_DOWN 1
-#define DRAW_DIRECTION_LEFT 2
-#define DRAW_DIRECTION_UP 3
+#define GTEXT_DRAW_DIRECTION_RIGHT 0
+#define GTEXT_DRAW_DIRECTION_DOWN 1
+#define GTEXT_DRAW_DIRECTION_LEFT 2
+#define GTEXT_DRAW_DIRECTION_UP 3
 
-#define FONT_MODE_SOLID 0
-#define FONT_MODE_TRANSPARENT 1
+#define GTEXT_FONT_MODE_SOLID 0
+#define GTEXT_FONT_MODE_TRANSPARENT 1
+
 
 // the following returns true if the given font is fixed width
 // zero length is flag indicating fixed width font (array does not contain width data entries)
-#define isFixedWidthFont(font)  (pgm_read_byte(font+FONT_LENGTH) == 0 && pgm_read_byte(font+FONT_LENGTH+1) == 0))
+#define isFixedWidthFont(font)  (pgm_read_byte(font+GTEXT_FONT_LENGTH) == 0 && pgm_read_byte(font+GTEXT_FONT_LENGTH+1) == 0))
 
 /*
 * Coodinates for predefined areas are compressed into a single 32 bit token.
@@ -148,6 +149,19 @@ typedef enum  {
 } predefinedArea;
 
 
+typedef enum  {
+gTextAlignTopLeft,
+gTextAlignTopCenter,
+gTextAlignTopRight,
+gTextAlignMiddleLeft,
+gTextAlignMiddleCenter,
+gTextAlignMiddleRight,
+gTextAlignBottomLeft,
+gTextAlignBottomCenter,
+gTextAlignBottomRight
+} gTextAlign;
+
+
 
 /*
 * enums for ansi style erase function
@@ -211,6 +225,7 @@ private:
 	uint8_t _scale;
 	uint8_t _letterSpacing;
 	uint8_t _fontMode;
+	bool _lastChar;
 #ifndef GLCD_NODEFER_SCROLL
 	uint8_t			_needScroll; // set when text scroll has been defered
 #endif
@@ -249,6 +264,11 @@ public:
 	void drawString(char *str, int16_t x, int16_t y);
 	void drawString(String &str, int16_t x, int16_t y); // for Arduino String class
 	void drawString_P(PGM_P str, int16_t x, int16_t y);
+	
+	void drawString(char *str, gTextAlign align);
+	void drawString(char *str, gTextAlign align, uint16_t clearBeforeAfterWidth);
+	void drawString(char *str, gTextAlign align, const uint16_t offsetX, const uint16_t offsetY);
+	void drawString(char *str, gTextAlign align, const uint16_t offsetX, const uint16_t offsetY, uint16_t clearBeforeAfterWidth);
 
 	size_t write(uint8_t c);  // character output for print base class
 

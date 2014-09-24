@@ -1,5 +1,5 @@
 /*
-v0.91.002
+v0.92.000
 
 ILI9341_due_.h - Arduino Due library for interfacing with ILI9341-based TFTs
 
@@ -46,7 +46,7 @@ MIT license, all text above must be included in any redistribution
 #ifndef _ILI9341_dueH_
 #define _ILI9341_dueH_
 
-
+//#include "../Streaming/Streaming.h"
 
 // comment out the SPI mode you want to use
 //#define ILI9341_SPI_MODE_NORMAL
@@ -55,6 +55,8 @@ MIT license, all text above must be included in any redistribution
 
 #define ILI9341_SPI_CLKDIVIDER 2
 
+#define ARC_ANGLE_MAX 360		// number representing the maximum angle (e.g. if 100, then if you pass in start=0 and end=50, you get a half circle)
+#define ARC_ANGLE_OFFSET -90	// rotational offset in degrees defining position of value 0 (-90 will put it at the top of circle)
 
 
 #ifndef ILI9341_SPI_MODE_NORMAL
@@ -178,8 +180,10 @@ public:
 	ILI_SdSpi _dmaSpi;
 	uint8_t _scanlineBuffer[SCANLINE_BUFFER_SIZE];
 	uint8_t _hiByte, _loByte;
-	bool _isIdle, _isInSleep;
+
 #endif
+	bool _isIdle, _isInSleep;
+
 	bool begin(void);
 	void pushColor(uint16_t color);
 	void pushColors(uint16_t *colors, uint16_t offset, uint16_t len);
@@ -199,6 +203,7 @@ public:
 	void idle(boolean i);
 	void setPowerLevel(pwrLevel p);
 	void setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+	void setSPIClockDivider(uint8_t divider);
 	// Pass 8-bit (each) R,G,B, get back 16-bit packed color
 	static uint16_t color565(uint8_t r, uint8_t g, uint8_t b) {
 		return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
@@ -232,11 +237,53 @@ public:
 	int16_t height(void) { return _height; }
 	uint8_t getRotation(void);
 	void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
+	void screenshotToConsole();
+	void printHex8(uint8_t *data, uint8_t length);
+	void printHex16(uint16_t *data, uint8_t length);
+	void printHex32(uint32_t *data, uint8_t length);
+
+	inline __attribute__((always_inline))
+		void drawArc(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float start, float end, uint16_t color)
+	{
+		if(start == 0  && end == ARC_ANGLE_MAX)
+			drawArcOffsetted(cx,cy,radius,thickness,0, ARC_ANGLE_MAX, color);
+		else
+			drawArcOffsetted(cx,cy,radius,thickness,start+((float)ARC_ANGLE_OFFSET/(float)360)*ARC_ANGLE_MAX, end+((float)ARC_ANGLE_OFFSET/(float)360)*ARC_ANGLE_MAX, color);
+	}
+
+	int32_t cos_lookup(int32_t angle)
+	{
+		float radians = (float)angle/(float)ARC_ANGLE_MAX * 2 * PI;
+		//Serial << "COS_LOOKUP angle:" << (float)angle << " radians:" << radians << " cos:" << cos(radians) << " return: " << cos(radians) * (double)65535 << endl;
+		return (cos(radians) * (float)ARC_ANGLE_MAX);
+	}
+
+	int32_t sin_lookup(int32_t angle)
+	{
+		float radians = (float)angle/(float)ARC_ANGLE_MAX * 2 * PI;
+		//Serial << "SIN_LOOKUP angle:" << (float)angle << " radians:" << radians << " sin:" << sin(radians) << " return: " << sin(radians) * (double)65535 << endl;
+		return (sin(radians) * (float)ARC_ANGLE_MAX);
+	}
+
+
+	float cos_lookup2(float angle)
+	{
+		float radians = angle/(float)360 * 2 * PI;
+		//Serial << "COS_LOOKUP angle:" << (float)angle << " radians:" << radians << " cos:" << cos(radians) << " return: " << cos(radians) * (double)65535 << endl;
+		return cos(radians);
+	}
+
+	float sin_lookup2(float angle)
+	{
+		float radians = angle/360 * 2 * PI;
+		//Serial << "SIN_LOOKUP angle:" << (float)angle << " radians:" << radians << " sin:" << sin(radians) << " return: " << sin(radians) * (double)65535 << endl;
+		return sin(radians);
+	}
 
 	// writes 1 byte
 	// CS and DC have to be set prior to calling this method
 	inline __attribute__((always_inline))
-		void write8(uint8_t c){
+		void write8_cont(uint8_t c){
 #if SPI_MODE_NORMAL
 			SPI.transfer(c);
 #elif SPI_MODE_EXTENDED
@@ -264,7 +311,7 @@ public:
 	// Writes 2 bytes
 	// CS, DC have to be set prior to calling this method
 	inline __attribute__((always_inline)) 
-		void write16(uint16_t d) {
+		void write16_cont(uint16_t d) {
 #if SPI_MODE_NORMAL
 			SPI.transfer(highByte(d));
 			SPI.transfer(lowByte(d));
@@ -322,15 +369,15 @@ public:
 	//{
 	//	enableCS();
 	//	setDCForCommand();
-	//	write8(ILI9341_CASET); // Column addr set
+	//	write8_cont(ILI9341_CASET); // Column addr set
 	//	setDCForData();
-	//	write16(x0);   // XSTART
-	//	write16(x1);   // XEND
+	//	write16_cont(x0);   // XSTART
+	//	write16_cont(x1);   // XEND
 	//	setDCForCommand();
-	//	write8(ILI9341_PASET); // Row addr set
+	//	write8_cont(ILI9341_PASET); // Row addr set
 	//	setDCForData();
-	//	write16(y0);   // XSTART
-	//	write16(y1);   // XEND
+	//	write16_cont(y0);   // XSTART
+	//	write16_cont(y1);   // XEND
 	//}
 
 	// Enables CS, writes commands to set the GRAM area where data/pixels will be written
@@ -340,17 +387,17 @@ public:
 	{
 		enableCS();
 		setDCForCommand();
-		write8(ILI9341_CASET); // Column addr set
+		write8_cont(ILI9341_CASET); // Column addr set
 		setDCForData();
-		write16(x0);   // XSTART
-		write16(x1);   // XEND
+		write16_cont(x0);   // XSTART
+		write16_cont(x1);   // XEND
 		setDCForCommand();
-		write8(ILI9341_PASET); // Row addr set
+		write8_cont(ILI9341_PASET); // Row addr set
 		setDCForData();
-		write16(y0);   // XSTART
-		write16(y1);   // XEND
+		write16_cont(y0);   // XSTART
+		write16_cont(y1);   // XEND
 		setDCForCommand();
-		write8(ILI9341_RAMWR); // RAM write
+		write8_cont(ILI9341_RAMWR); // RAM write
 	}
 
 	// Writes commands to set the GRAM area where data/pixels will be written
@@ -360,17 +407,17 @@ public:
 	//	void setAddrAndRW_cont_noCS(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 	//{
 	//	setDCForCommand();
-	//	write8(ILI9341_CASET); // Column addr set
+	//	write8_cont(ILI9341_CASET); // Column addr set
 	//	setDCForData();
-	//	write16(x0);   // XSTART
-	//	write16(x1);   // XEND
+	//	write16_cont(x0);   // XSTART
+	//	write16_cont(x1);   // XEND
 	//	setDCForCommand();
-	//	write8(ILI9341_PASET); // Row addr set
+	//	write8_cont(ILI9341_PASET); // Row addr set
 	//	setDCForData();
-	//	write16(y0);   // XSTART
-	//	write16(y1);   // XEND
+	//	write16_cont(y0);   // XSTART
+	//	write16_cont(y1);   // XEND
 	//	setDCForCommand();
-	//	write8(ILI9341_RAMWR); // Row addr set
+	//	write8_cont(ILI9341_RAMWR); // Row addr set
 	//}
 
 	// Enables CS, sets DC for Command, writes 1 byte
@@ -397,7 +444,7 @@ public:
 #if SPI_MODE_NORMAL | SPI_MODE_DMA
 			enableCS();
 #endif
-			write8(c);
+			write8_cont(c);
 	}
 
 	// Enables CS, sets DC for Command, writes 1 byte, disables CS
@@ -407,7 +454,7 @@ public:
 #if SPI_MODE_NORMAL | SPI_MODE_DMA
 			enableCS();
 #endif
-			write8(c);
+			write8_cont(c);
 #if SPI_MODE_NORMAL | SPI_MODE_DMA
 			disableCS();
 #endif
@@ -421,7 +468,7 @@ public:
 #if SPI_MODE_NORMAL | SPI_MODE_DMA
 			enableCS();
 #endif
-			write8(c);
+			write8_cont(c);
 	}
 
 	// Enables CS, sets DC to Data, writes 1 byte, disables CS
@@ -431,7 +478,7 @@ public:
 #if SPI_MODE_NORMAL | SPI_MODE_DMA
 			enableCS();
 #endif
-			write8(c);
+			write8_cont(c);
 #if SPI_MODE_NORMAL | SPI_MODE_DMA
 			disableCS();
 #endif
@@ -445,7 +492,7 @@ public:
 #if SPI_MODE_NORMAL | SPI_MODE_DMA
 			enableCS();
 #endif
-			write16(d);
+			write16_cont(d);
 	}
 
 	// Enables CS, sets DC to Data, writes 2 bytes, disables CS
@@ -482,6 +529,11 @@ public:
 	inline __attribute__((always_inline))
 		void write_cont(const uint8_t* buf , size_t n) {
 			_dmaSpi.send(buf, n);
+	}
+
+	inline __attribute__((always_inline))
+		void read_cont(uint8_t* buf , size_t n) {
+			_dmaSpi.receive(buf, n);
 	}
 
 	// Writes n-bytes from the buffer via DMA and disables CS
@@ -532,6 +584,24 @@ public:
 
 	// Reads 2 bytes
 	uint16_t read16() __attribute__((always_inline)) {
+#if SPI_MODE_NORMAL
+		uint16_t r = SPI.transfer(ILI9341_NOP);
+		r <<= 8;
+		r |= SPI.transfer(ILI9341_NOP);
+#elif SPI_MODE_EXTENDED
+		uint16_t r = SPI.transfer(_cs, ILI9341_NOP, SPI_CONTINUE);
+		r <<= 8;
+		r |= SPI.transfer(_cs,ILI9341_NOP, SPI_CONTINUE);
+#elif SPI_MODE_DMA
+		uint16_t r = _dmaSpi.receive();
+		r <<= 8;
+		r |= _dmaSpi.receive();
+#endif
+		return r;
+	}
+
+	// Reads 2 bytes
+	uint16_t readPixel_start_cont() __attribute__((always_inline)) {
 #if SPI_MODE_NORMAL
 		uint16_t r = SPI.transfer(ILI9341_NOP);
 		r <<= 8;
@@ -688,6 +758,206 @@ public:
 	//}
 #endif
 
+	// Writes a sequence that will render a horizontal line
+	// At the end CS is kept enabled.
+	// In case of DMA mode, the content of scanline buffer is written
+	__attribute__((always_inline))
+		void writeHLine_cont(int16_t x, int16_t y, int16_t w, uint16_t color)
+	{
+#if SPI_MODE_DMA
+		//TOTRY move this down
+		fillScanline(color, w);
+#endif
+		setAddrAndRW_cont(x, y, x+w-1, y);
+#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+		setDCForData();
+		do { write16_cont(color); } while (--w > 0);
+#elif SPI_MODE_DMA
+		writeScanline_cont(w);
+#endif
+	}
+
+	// Writes a sequence that will render a horizontal line
+	// At the end CS is disabled.
+	// In case of DMA mode, the content of scanline buffer is written
+	__attribute__((always_inline))
+		void writeHLine_last(int16_t x, int16_t y, int16_t w, uint16_t color)
+	{
+#if SPI_MODE_DMA
+		//TOTRY move this down
+		fillScanline(color, w);
+#endif
+		setAddrAndRW_cont(x, y, x+w-1, y);
+#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+		setDCForData();
+		while (w-- > 1) {
+			write16_cont(color);
+		}
+		write16_last(color);
+#elif SPI_MODE_DMA
+		writeScanline_last(w);
+#endif
+	}
+
+	// Writes a sequence that will render a vertical line
+	// At the end CS is kept enabled.
+	// In case of DMA mode, the content of scanline buffer is filled and written
+	__attribute__((always_inline))
+		void writeVLine_cont(int16_t x, int16_t y, int16_t h, uint16_t color)
+	{
+#if SPI_MODE_DMA
+		// TRY move this down
+		fillScanline(color, h);
+#endif
+		setAddrAndRW_cont(x, y, x, y+h-1);
+#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+		setDCForData();
+		do { write16_cont(color); } while (--h > 0);
+#elif SPI_MODE_DMA
+		writeScanline_cont(h);
+#endif
+	}
+
+	// Writes a sequence that will render a vertical line
+	// At the end CS is disabled.
+	// In case of DMA mode, the content of scanline buffer is filled and written
+	__attribute__((always_inline))
+		void writeVLine_last(int16_t x, int16_t y, int16_t h, uint16_t color)
+	{
+#if SPI_MODE_DMA
+		fillScanline(color, h);
+#endif
+		setAddrAndRW_cont(x, y, x, y+h-1);
+#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+		while (h-- > 1) {
+			write16_cont(color);
+		}
+		write16_last(color);
+#elif SPI_MODE_DMA
+		writeScanline_last(h);
+#endif
+	}
+
+	// Writes a sequence that will render a horizontal line
+	// CS must be set prior to calling this method
+	// for DMA mode, scanline buffer must be filled with the desired color
+	// Advantage over writeHLine_cont is that CS line is not being set and 
+	// the scanlineBuffer not filled on every call
+	inline __attribute__((always_inline))
+		void writeHLine_cont_noCS_noFill(int16_t x, int16_t y, int16_t w, uint16_t color)
+		__attribute__((always_inline)) {
+			//setAddrAndRW_cont(x, y, x+w-1, y);
+			setDCForCommand();
+			write8_cont(ILI9341_CASET); // Column addr set
+			setDCForData();
+			write16_cont(x);   // XSTART
+			write16_cont(x+w-1);   // XEND
+			setDCForCommand();
+			write8_cont(ILI9341_PASET); // Row addr set
+			setDCForData();
+			write16_cont(y);   // XSTART
+			write16_cont(y);   // XEND
+			setDCForCommand();
+			write8_cont(ILI9341_RAMWR);
+			setDCForData();
+#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+			do { write16_cont(color); } while (--w > 0);
+#elif SPI_MODE_DMA
+			write_cont(_scanlineBuffer, w << 1);
+#endif
+	}
+
+	// Writes a sequence that will render a vertical line
+	// CS must be set prior to calling this method
+	// for DMA mode, scanline buffer must be filled with the desired color
+	// Advantage over writeVLine_cont is that CS line is not being set and 
+	// the scanlineBuffer not filled on every call
+	inline __attribute__((always_inline))
+		void writeVLine_cont_noCS_noFill(int16_t x, int16_t y, int16_t h, uint16_t color)
+		__attribute__((always_inline)) {
+			setDCForCommand();
+			write8_cont(ILI9341_CASET); // Column addr set
+			setDCForData();
+			write16_cont(x);   // XSTART
+			write16_cont(x);   // XEND
+			setDCForCommand();
+			write8_cont(ILI9341_PASET); // Row addr set
+			setDCForData();
+			write16_cont(y);   // XSTART
+			write16_cont(y+h-1);   // XEND
+			setDCForCommand();
+			write8_cont(ILI9341_RAMWR);
+			setDCForData();
+#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+			do { write16_cont(color); } while (--h > 0);
+#elif SPI_MODE_DMA
+			write_cont(_scanlineBuffer, h << 1);
+#endif
+	}
+
+
+	//void HLine_cont(int16_t x, int16_t y, int16_t w, uint16_t color)
+	//	__attribute__((always_inline)) {
+	//		setAddrAndRW_cont(x, y, x+w-1, y);
+	//		do { writedata16_cont(color); } while (--w > 0);
+	//}
+	//void VLine_cont(int16_t x, int16_t y, int16_t h, uint16_t color)
+	//	__attribute__((always_inline)) {
+	//		setAddrAndRW_cont(x, y, x, y+h-1);
+	//		do { writedata16_cont(color); } while (--h > 0);
+	//}
+
+	// Writes a sequence that will render a pixel
+	// CS must be enabled prior to calling this method
+	// Advantage over writePixel_cont is that CS line is not set on every call
+	inline __attribute__((always_inline))
+		void writePixel_cont_noCS(int16_t x, int16_t y, uint16_t color)
+	{
+		setDCForCommand();
+		write8_cont(ILI9341_CASET); // Column addr set
+		setDCForData();
+		write16_cont(x);   // XSTART
+		write16_cont(x);   // XEND
+		setDCForCommand();
+		write8_cont(ILI9341_PASET); // Row addr set
+		setDCForData();
+		write16_cont(y);   // XSTART
+		write16_cont(y);   // XEND
+		setDCForCommand();
+		write8_cont(ILI9341_RAMWR);
+		setDCForData();
+		write16_cont(color);
+	}
+
+	inline __attribute__((always_inline)) 
+		void writePixel_cont(int16_t x, int16_t y, uint16_t color)
+	{
+		enableCS();
+		setDCForCommand();
+		write8_cont(ILI9341_CASET); // Column addr set
+		setDCForData();
+		write16_cont(x);   // XSTART
+		write16_cont(x);   // XEND
+		setDCForCommand();
+		write8_cont(ILI9341_PASET); // Row addr set
+		setDCForData();
+		write16_cont(y);   // XSTART
+		write16_cont(y);   // XEND
+		setDCForCommand();
+		write8_cont(ILI9341_RAMWR);
+		setDCForData();
+		write16_cont(color);
+	}
+
+	// Enables CS, writes a sequence that will render a pixel and disables CS
+	inline __attribute__((always_inline))
+		void writePixel_last(int16_t x, int16_t y, uint16_t color)
+	{
+		setAddrAndRW_cont(x, y, x, y);
+		setDCForData();
+		write16_last(color);
+	}
+
 	// Enables CS
 	inline __attribute__((always_inline))
 		void enableCS(){
@@ -733,6 +1003,8 @@ protected:
 		wrap; // If set, 'wrap' text at right edge of display
 
 	void drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uint16_t color);
+	void drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float startAngle, float endAngle, uint16_t color);
+
 
 private:
 	uint8_t  _rst;
@@ -752,220 +1024,6 @@ private:
 	uint8_t spiread(void) ;*/
 
 	bool pinIsChipSelect(uint8_t cs);
-
-	// Writes a sequence that will render a horizontal line
-	// At the end CS is kept enabled.
-	// In case of DMA mode, the content of scanline buffer is written
-	__attribute__((always_inline))
-		void writeHLine_cont(int16_t x, int16_t y, int16_t w, uint16_t color)
-	{
-#if SPI_MODE_DMA
-		//TOTRY move this down
-		fillScanline(color, w);
-#endif
-		setAddrAndRW_cont(x, y, x+w-1, y);
-#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-		setDCForData();
-		do { write16(color); } while (--w > 0);
-#elif SPI_MODE_DMA
-		writeScanline_cont(w);
-#endif
-	}
-
-	// Writes a sequence that will render a horizontal line
-	// At the end CS is disabled.
-	// In case of DMA mode, the content of scanline buffer is written
-	__attribute__((always_inline))
-		void writeHLine_last(int16_t x, int16_t y, int16_t w, uint16_t color)
-	{
-#if SPI_MODE_DMA
-		//TOTRY move this down
-		fillScanline(color, w);
-#endif
-		setAddrAndRW_cont(x, y, x+w-1, y);
-#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-		setDCForData();
-		while (w-- > 1) {
-			write16(color);
-		}
-		write16_last(color);
-#elif SPI_MODE_DMA
-		writeScanline_last(w);
-#endif
-	}
-
-	// Writes a sequence that will render a vertical line
-	// At the end CS is kept enabled.
-	// In case of DMA mode, the content of scanline buffer is filled and written
-	__attribute__((always_inline))
-		void writeVLine_cont(int16_t x, int16_t y, int16_t h, uint16_t color)
-	{
-#if SPI_MODE_DMA
-		// TRY move this down
-		fillScanline(color, h);
-#endif
-		setAddrAndRW_cont(x, y, x, y+h-1);
-#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-		setDCForData();
-		do { write16(color); } while (--h > 0);
-#elif SPI_MODE_DMA
-		writeScanline_cont(h);
-#endif
-	}
-
-	// Writes a sequence that will render a vertical line
-	// At the end CS is disabled.
-	// In case of DMA mode, the content of scanline buffer is filled and written
-	__attribute__((always_inline))
-		void writeVLine_last(int16_t x, int16_t y, int16_t h, uint16_t color)
-	{
-#if SPI_MODE_DMA
-		fillScanline(color, h);
-#endif
-		setAddrAndRW_cont(x, y, x, y+h-1);
-#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-		while (h-- > 1) {
-			write16(color);
-		}
-		write16_last(color);
-#elif SPI_MODE_DMA
-		writeScanline_last(h);
-#endif
-	}
-
-	// Writes a sequence that will render a horizontal line
-	// CS must be set prior to calling this method
-	// for DMA mode, scanline buffer must be filled with the desired color
-	// Advantage over writeHLine_cont is that CS line is not being set and 
-	// the scanlineBuffer not filled on every call
-	inline __attribute__((always_inline))
-		void writeHLine_cont_noCS_noFill(int16_t x, int16_t y, int16_t w, uint16_t color)
-		__attribute__((always_inline)) {
-			//setAddrAndRW_cont(x, y, x+w-1, y);
-			setDCForCommand();
-			write8(ILI9341_CASET); // Column addr set
-			setDCForData();
-			write16(x);   // XSTART
-			write16(x+w-1);   // XEND
-			setDCForCommand();
-			write8(ILI9341_PASET); // Row addr set
-			setDCForData();
-			write16(y);   // XSTART
-			write16(y);   // XEND
-			setDCForCommand();
-			write8(ILI9341_RAMWR);
-			setDCForData();
-#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-			do { write16(color); } while (--w > 0);
-#elif SPI_MODE_DMA
-			write_cont(_scanlineBuffer, w << 1);
-#endif
-	}
-
-	// Writes a sequence that will render a vertical line
-	// CS must be set prior to calling this method
-	// for DMA mode, scanline buffer must be filled with the desired color
-	// Advantage over writeVLine_cont is that CS line is not being set and 
-	// the scanlineBuffer not filled on every call
-	inline __attribute__((always_inline))
-		void writeVLine_cont_noCS_noFill(int16_t x, int16_t y, int16_t h, uint16_t color)
-		__attribute__((always_inline)) {
-			setDCForCommand();
-			write8(ILI9341_CASET); // Column addr set
-			setDCForData();
-			write16(x);   // XSTART
-			write16(x);   // XEND
-			setDCForCommand();
-			write8(ILI9341_PASET); // Row addr set
-			setDCForData();
-			write16(y);   // XSTART
-			write16(y+h-1);   // XEND
-			setDCForCommand();
-			write8(ILI9341_RAMWR);
-			setDCForData();
-#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-			do { write16(color); } while (--h > 0);
-#elif SPI_MODE_DMA
-			write_cont(_scanlineBuffer, h << 1);
-#endif
-	}
-
-
-	//void HLine_cont(int16_t x, int16_t y, int16_t w, uint16_t color)
-	//	__attribute__((always_inline)) {
-	//		setAddrAndRW_cont(x, y, x+w-1, y);
-	//		do { writedata16_cont(color); } while (--w > 0);
-	//}
-	//void VLine_cont(int16_t x, int16_t y, int16_t h, uint16_t color)
-	//	__attribute__((always_inline)) {
-	//		setAddrAndRW_cont(x, y, x, y+h-1);
-	//		do { writedata16_cont(color); } while (--h > 0);
-	//}
-
-	// Writes a sequence that will render a pixel
-	// CS must be enabled prior to calling this method
-	// Advantage over writePixel_cont is that CS line is not set on every call
-	inline __attribute__((always_inline))
-		void writePixel_cont_noCS(int16_t x, int16_t y, uint16_t color)
-	{
-		setDCForCommand();
-		write8(ILI9341_CASET); // Column addr set
-		setDCForData();
-		write16(x);   // XSTART
-		write16(x);   // XEND
-		setDCForCommand();
-		write8(ILI9341_PASET); // Row addr set
-		setDCForData();
-		write16(y);   // XSTART
-		write16(y);   // XEND
-		setDCForCommand();
-		write8(ILI9341_RAMWR);
-		setDCForData();
-		write16(color);
-	}
-
-	inline __attribute__((always_inline)) 
-		void writePixel_cont(int16_t x, int16_t y, uint16_t color)
-	{
-		enableCS();
-		setDCForCommand();
-		write8(ILI9341_CASET); // Column addr set
-		setDCForData();
-		write16(x);   // XSTART
-		write16(x);   // XEND
-		setDCForCommand();
-		write8(ILI9341_PASET); // Row addr set
-		setDCForData();
-		write16(y);   // XSTART
-		write16(y);   // XEND
-		setDCForCommand();
-		write8(ILI9341_RAMWR);
-		setDCForData();
-		write16(color);
-	}
-
-	// Enables CS, writes a sequence that will render a pixel and disables CS
-	inline __attribute__((always_inline))
-		void writePixel_last(int16_t x, int16_t y, uint16_t color)
-	{
-		setAddrAndRW_cont(x, y, x, y);
-		setDCForData();
-		write16_last(color);
-	}
-
-
-	bool waitNotBusy(uint16_t timeoutMillis) {
-		uint16_t t0 = millis();
-		while (read8() != 0XFF) {
-			if (((uint16_t)millis() - t0) >= timeoutMillis) goto fail;
-			//spiYield();
-		}
-		return true;
-
-fail:
-		return false;
-	}
-
 
 };
 

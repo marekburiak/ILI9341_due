@@ -49,6 +49,12 @@ MIT license, all text above must be included in any redistribution
 #endif
 //#include "..\Streaming\Streaming.h"
 
+
+
+static int angle_90 = 360 / 4;
+static int angle_180 = 360 / 2;
+static int angle_270 = 3 * 360 / 4;
+
 static const uint8_t init_commands[] = {
 	4, 0xEF, 0x03, 0x80, 0x02,
 	4, 0xCF, 0x00, 0XC1, 0X30,
@@ -104,12 +110,12 @@ bool ILI9341_due::begin(void)
 
 #if SPI_MODE_NORMAL
 		SPI.begin();
-		SPI.setClockDivider(ILI9341_SPI_CLKDIVIDER); // 8-ish MHz (full! speed!)
+		SPI.setClockDivider(ILI9341_SPI_CLKDIVIDER);
 		SPI.setBitOrder(MSBFIRST);
 		SPI.setDataMode(SPI_MODE0);
 #elif SPI_MODE_EXTENDED
 		SPI.begin(_cs);
-		SPI.setClockDivider(_cs, ILI9341_SPI_CLKDIVIDER); // 8-ish MHz (full! speed!)
+		SPI.setClockDivider(_cs, ILI9341_SPI_CLKDIVIDER);
 		SPI.setBitOrder(_cs, MSBFIRST);
 		SPI.setDataMode(_cs, SPI_MODE0);
 #elif SPI_MODE_DMA
@@ -184,6 +190,17 @@ void ILI9341_due::setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t 
 {
 	setAddrAndRW_cont(x0, y0, x1, y1);
 	disableCS();
+}
+
+void ILI9341_due::setSPIClockDivider(uint8_t divider)
+{
+#if SPI_MODE_NORMAL
+	SPI.setClockDivider(divider);
+#elif SPI_MODE_EXTENDED
+	SPI.setClockDivider(_cs, divider);
+#elif SPI_MODE_DMA
+	_dmaSpi.init(divider);
+#endif
 }
 
 void ILI9341_due::pushColor(uint16_t color)
@@ -407,29 +424,386 @@ uint8_t ILI9341_due::readcommand8(uint8_t c, uint8_t index) {
 	return readdata8_last();
 }
 
-
-
-// KJE Added functions to read pixel data...
+// Reads one pixel/color from the TFT's GRAM
 uint16_t ILI9341_due::readPixel(int16_t x, int16_t y)
 {
-	//writecommand_cont(ILI9341_CASET); // Column addr set
-	//writedata16_cont(x);  // XSTART
-	//x++;
-	//writedata16_cont(x);  // XEND
-
-	//writecommand_cont(ILI9341_PASET); // Row addr set
-	//writedata16_cont(y);     // YSTART
-	//y++;
-	//writedata16_cont(y);     // YEND
-
 	setAddr_cont(x,y,x+1,y+1);
 	writecommand_cont(ILI9341_RAMRD); // read from RAM
-	return readdata16_last();
+	readdata8_cont(); // dummy read
+	uint8_t red = readdata8_cont();
+	uint8_t green = readdata8_cont();
+	uint8_t blue = readdata8_last();
 
-	//digitalWrite(_cs, HIGH);
+	return color565(red, green, blue);	
+}
+
+//void ILI9341_due::drawArc(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, uint16_t start, uint16_t end, uint16_t color) {
+//	//void graphics_draw_arc(GContext *ctx, GPoint p, int radius, int thickness, int start, int end) {
+//	start = start % 360;
+//	end = end % 360;
+//
+//	while (start < 0) start += 360;
+//	while (end < 0) end += 360;
+//
+//	if (end == 0) end = 360;
+//
+//	//Serial << "start: " << start << " end:" << end << endl;
+//
+//	// Serial <<  (float)cos_lookup(start * ARC_MAX_STEPS / 360) << " x " << (float)sin_lookup(start * ARC_MAX_STEPS / 360) << endl;
+//
+//	float sslope = (float)cos_lookup(start * ARC_MAX_STEPS / 360) / (float)sin_lookup(start * ARC_MAX_STEPS / 360);
+//	float eslope = (float)cos_lookup(end * ARC_MAX_STEPS / 360) / (float)sin_lookup(end * ARC_MAX_STEPS / 360);
+//
+//	//Serial << "sslope: " << sslope << " eslope:" << eslope << endl;
+//
+//	if (end == 360) eslope = -1000000;
+//
+//	int ir2 = (radius - thickness) * (radius - thickness);
+//	int or2 = radius * radius;
+//
+//	for (int x = -radius; x <= radius; x++)
+//		for (int y = -radius; y <= radius; y++)
+//		{
+//			int x2 = x * x;
+//			int y2 = y * y;
+//
+//			if (
+//				(x2 + y2 < or2 && x2 + y2 >= ir2) &&
+//				(
+//				(y > 0 && start < 180 && x <= y * sslope) ||
+//				(y < 0 && start > 180 && x >= y * sslope) ||
+//				(y < 0 && start <= 180) ||
+//				(y == 0 && start <= 180 && x < 0) ||
+//				(y == 0 && start == 0 && x > 0)
+//				) &&
+//				(
+//				(y > 0 && end < 180 && x >= y * eslope) ||
+//				(y < 0 && end > 180 && x <= y * eslope) ||
+//				(y > 0 && end >= 180) ||
+//				(y == 0 && end >= 180 && x < 0) ||
+//				(y == 0 && start == 0 && x > 0)
+//				)
+//				)
+//				drawPixel_cont(cx+x, cy+y, color);
+//		}
+//}
+
+
+
+
+// DrawArc function thanks to Jnmattern and his Arc_2.0 (https://github.com/Jnmattern)
+void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float start, float end, uint16_t color) {
+	int32_t xmin = 65535000, xmax = -65535000, ymin = 65535000, ymax = -65535000;
+	float cosStart, sinStart, cosEnd, sinEnd;
+	float r, t;
+	float startAngle, endAngle;
+
+	//Serial << "start: " << start << " end: " << end << endl;
+	startAngle = (start / (float)ARC_ANGLE_MAX) * 360;	// 252
+	endAngle = (end / (float)ARC_ANGLE_MAX) * 360;		// 807
+	//Serial << "startAngle: " << startAngle << " endAngle: " << endAngle << endl;
+
+	while (startAngle < 0) startAngle += 360;
+	while (endAngle < 0) endAngle += 360;
+	while (startAngle > 360) startAngle -= 360;
+	while (endAngle >360) endAngle -= 360;
+	//Serial << "startAngleAdj: " << startAngle << " endAngleAdj: " << endAngle << endl;
+	//if (endAngle == 0) endAngle = 360;
+
+	if (startAngle > endAngle) {
+		drawArcOffsetted(cx, cy, radius, thickness, ((startAngle)/(float)360) * ARC_ANGLE_MAX, ARC_ANGLE_MAX, color);
+		drawArcOffsetted(cx, cy, radius, thickness, 0, ((endAngle)/(float)360) * ARC_ANGLE_MAX, color);
+	} else {
+		// Calculate bounding box for the arc to be drawn
+		cosStart = cos_lookup2(startAngle);
+		sinStart = sin_lookup2(startAngle);
+		cosEnd = cos_lookup2(endAngle);
+		sinEnd = sin_lookup2(endAngle);
+
+		//Serial << cosStart << " " << sinStart << " " << cosEnd << " " << sinEnd << endl;
+
+		r = radius;
+		// Point 1: radius & startAngle
+		t = r * cosStart;
+		if (t < xmin) xmin = t;
+		if (t > xmax) xmax = t;
+		t = r * sinStart;
+		if (t < ymin) ymin = t;
+		if (t > ymax) ymax = t;
+
+		// Point 2: radius & endAngle
+		t = r * cosEnd;
+		if (t < xmin) xmin = t;
+		if (t > xmax) xmax = t;
+		t = r * sinEnd;
+		if (t < ymin) ymin = t;
+		if (t > ymax) ymax = t;
+
+		r = radius - thickness;
+		// Point 3: radius-thickness & startAngle
+		t = r * cosStart;
+		if (t < xmin) xmin = t;
+		if (t > xmax) xmax = t;
+		t = r * sinStart;
+		if (t < ymin) ymin = t;
+		if (t > ymax) ymax = t;
+
+		// Point 4: radius-thickness & endAngle
+		t = r * cosEnd;
+		if (t < xmin) xmin = t;
+		if (t > xmax) xmax = t;
+		t = r * sinEnd;
+		if (t < ymin) ymin = t;
+		if (t > ymax) ymax = t;
+
+
+		//Serial << xmin << " " << xmax << " " << ymin << " " << ymax << endl;
+		// Corrections if arc crosses X or Y axis
+		if ((startAngle < 90) && (endAngle > 90)) {
+			ymax = radius;
+		}
+
+		if ((startAngle < 180) && (endAngle > 180)) {
+			xmin = -radius;
+		}
+
+		if ((startAngle < 270) && (endAngle > 270)) {
+			ymin = -radius;
+		}
+
+		// Slopes for the two sides of the arc
+		float sslope = (float)cosStart/ (float)sinStart;
+		float eslope = (float)cosEnd / (float)sinEnd;
+
+		//Serial << "sslope2: " << sslope << " eslope2:" << eslope << endl;
+
+		if (endAngle == 360) eslope = -1000000;
+
+		int ir2 = (radius - thickness) * (radius - thickness);
+		int or2 = radius * radius;
+		//Serial << "ymin: " << ymin << " ymax: " << ymax << endl;
+#if SPI_MODE_DMA
+		fillScanline(color, radius << 1);
+#endif
+		for (int x = xmin; x <= xmax; x++) {
+			bool y1StartFound = false, y2StartFound = false;
+			bool y1EndFound = false, y2EndFound = false, y2EndSearching = false;
+			int y1s=0, y1e=0, y2s=0, y2e=0;
+			for (int y = ymin; y <= ymax; y++)
+			{
+				int x2 = x * x;
+				int y2 = y * y;
+
+				if (
+					(x2 + y2 < or2 && x2 + y2 >= ir2) && (
+					(y > 0 && startAngle < 180 && x <= y * sslope) ||
+					(y < 0 && startAngle > 180 && x >= y * sslope) ||
+					(y < 0 && startAngle <= 180) ||
+					(y == 0 && startAngle <= 180 && x < 0) ||
+					(y == 0 && startAngle == 0 && x > 0)
+					) && (
+					(y > 0 && endAngle < 180 && x >= y * eslope) ||
+					(y < 0 && endAngle > 180 && x <= y * eslope) ||
+					(y > 0 && endAngle >= 180) ||
+					(y == 0 && endAngle >= 180 && x < 0) ||
+					(y == 0 && startAngle == 0 && x > 0)))
+				{
+					if (!y1StartFound)	//start of the higher line found
+					{
+						y1StartFound = true;
+						y1s = y;
+					}
+					else if(y1EndFound && !y2StartFound) //start of the lower line found
+					{
+						//Serial << "Found y2 start x: " << x << " y:" << y << endl;
+						y2StartFound = true;
+						y2s = y;
+						y += y1e - y1s - 1;	// calculate the most probable end of the lower line (in most cases the length of lower line is equal to length of upper line), in the next loop we will validate if the end of line is really there
+						if(y > ymax - 1) // the most probable end of line 2 is beyond ymax so line 2 must be shorter, thus continue with pixel by pixel search
+						{
+							y = y2s;	// reset y and continue with pixel by pixel search
+							y2EndSearching = true;
+						}
+
+						//Serial << "Upper line length: " << (y1e - y1s) << " Setting y to " << y << endl;
+					}
+					else if(y2StartFound && !y2EndSearching)
+					{
+						// we validated that the probable end of the lower line has a pixel, continue with pixel by pixel search, in most cases next loop with confirm the end of lower line as it will not find a valid pixel
+						y2EndSearching = true;
+					}
+
+
+					//Serial << "x:" << x << " y:" << y << endl;
+					//drawPixel_cont(cx+x, cy+y, ILI9341_BLUE);
+				}
+				else
+				{
+					if(y1StartFound && !y1EndFound) //higher line end found
+					{
+						y1EndFound = true;
+						y1e = y-1;
+						//Serial << "line: " << y1s << " - " << y1e << endl;
+						drawFastVLine_cont_noFill(cx+x, cy+y1s, y - y1s, color);
+						if(y < 0)
+						{
+							//Serial << x << " " << y << endl;
+							y=abs(y); // skip the empty middle
+						}
+						else 
+							break;
+					}
+					else if(y2StartFound)
+					{
+						if(y2EndSearching)
+						{
+							//Serial << "Found final end at y: " << y << endl;
+							// we found the end of the lower line after pixel by pixel search
+							drawFastVLine_cont_noFill(cx+x, cy+y2s, y - y2s, color);
+							break;
+						}
+						else
+						{
+							//Serial << "Expected end not found" << endl;
+							// the expected end of the lower line is not there so the lower line must be shorter
+							y = y2s;	// put the y back to the lower line start and go pixel by pixel to find the end
+							y2EndSearching = true;
+						}
+					}
+					/*else
+					drawPixel_cont(cx+x, cy+y, ILI9341_RED);*/
+				}
+				//
+
+				//delay(75);
+			}
+			if(y1StartFound && !y1EndFound)
+			{
+				y1e = ymax;
+				//Serial << "line: " << y1s << " - " << y1e << endl;
+				drawFastVLine_cont_noFill(cx+x, cy+y1s, y1e - y1s + 1, color);
+			}
+			//else if(y2StartFound && !y2EndFound)
+			//{
+			//	y2e = ymax;
+			//	//Serial << "line: " << y1s << " - " << y1e << endl;
+			//	drawFastVLine_cont_noFill(cx+x, cy+y2s, y2e - y2s + 1, color);
+			//}
+
+		}
+		disableCS();
+	}
 }
 
 
+
+void ILI9341_due::screenshotToConsole()
+{
+	uint16_t color565;
+	uint8_t lastColor[3];
+	uint8_t color[3];
+	uint32_t sameColorPixelCount = 0;
+	uint16_t sameColorPixelCount16 = 0;
+	uint32_t sameColorStartIndex = 0;
+	uint32_t totalImageDataLength = 0;
+
+	Serial.println("==== PIXEL DATA START ====");
+	//uint16_t x=0;
+	//uint16_t y=0;
+	setAddr_cont(0,0,_width-1,_height-1);
+	writecommand_cont(ILI9341_RAMRD); // read from RAM
+	readdata8_cont(); // dummy read, also sets DC high
+
+#if SPI_MODE_DMA
+	read_cont(color, 3);
+	lastColor[0] = color[0];
+	lastColor[1] = color[1];
+	lastColor[2] = color[2];
+#elif SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+	lastColor[0] = color[0] = read8();
+	lastColor[1] = color[1] = read8();
+	lastColor[2] = color[2] = read8();
+#endif
+	printHex8(color, 3);	//write color of the first pixel
+	totalImageDataLength+=6;
+	sameColorStartIndex = 0;
+
+	for(uint32_t i=1; i<_width*_height; i++)
+	{
+#if SPI_MODE_DMA
+		read_cont(color, 3);
+#elif SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+		color[0] = read8();
+		color[1] = read8();
+		color[2] = read8();
+#endif
+
+		if( color[0] != lastColor[0] ||
+			color[1] != lastColor[1] ||
+			color[2] != lastColor[2])
+		{
+			sameColorPixelCount = i-sameColorStartIndex;
+			if(sameColorPixelCount > 65535)
+			{
+				sameColorPixelCount16 = 65535;
+				printHex16(&sameColorPixelCount16, 1);
+				printHex8(lastColor, 3);
+				totalImageDataLength+=10;
+				sameColorPixelCount16 = sameColorPixelCount - 65535;
+			}
+			else
+				sameColorPixelCount16 = sameColorPixelCount;
+			printHex16(&sameColorPixelCount16, 1);
+			printHex8(color, 3);
+			totalImageDataLength+=10;
+
+			sameColorStartIndex = i;
+			lastColor[0] = color[0];
+			lastColor[1] = color[1];
+			lastColor[2] = color[2];
+		}
+	}
+	sameColorPixelCount = _width*_height-sameColorStartIndex;
+	if(sameColorPixelCount > 65535)
+	{
+		sameColorPixelCount16 = 65535;
+		printHex16(&sameColorPixelCount16, 1);
+		printHex8(lastColor, 3);
+		totalImageDataLength+=10;
+		sameColorPixelCount16 = sameColorPixelCount - 65535;
+	}
+	else
+		sameColorPixelCount16 = sameColorPixelCount;
+	printHex16(&sameColorPixelCount16, 1);
+	totalImageDataLength+=4;
+	printHex32(&totalImageDataLength, 1);
+
+	/*for(uint16_t x=0; x<_width; x++)
+	{
+	for(uint16_t y=0; y<_height; y++)
+	{
+	color[0] = read8();
+	color[1] = read8();
+	color[2] = read8();
+
+	if(color[0] != lastColor[0] ||
+	color[1] != lastColor[1] ||
+	color[2] != lastColor[2])
+	{
+
+	}
+
+	PrintHex8(color, 3);
+	}
+	}*/
+	Serial.println("==== PIXEL DATA END ====");
+	Serial.print("Total Image Data Length: ");
+	Serial.println(totalImageDataLength);
+#if SPI_MODE_DMA
+	_dmaSpi.init(ILI9341_SPI_CLKDIVIDER);
+#endif
+	disableCS();
+}
 
 
 /*
@@ -1161,4 +1535,93 @@ void ILI9341_due::setPowerLevel(pwrLevel p)
 //	//*csport |= cspinmask;
 //} 
 
+void ILI9341_due::printHex8(uint8_t *data, uint8_t length) // prints 8-bit data in hex
+{
+	char tmp[length*2+1];
+	byte first;
+	byte second;
+	for (int i=0; i<length; i++) {
+		first = (data[i] >> 4) & 0x0f;
+		second = data[i] & 0x0f;
+		// base for converting single digit numbers to ASCII is 48
+		// base for 10-16 to become upper-case characters A-F is 55
+		// note: difference is 7
+		tmp[i*2] = first+48;
+		tmp[i*2+1] = second+48;
+		if (first > 9) tmp[i*2] += 7;
+		if (second > 9) tmp[i*2+1] += 7;
+	}
+	tmp[length*2] = 0;
+	Serial.print(tmp);
+}
+
+
+void ILI9341_due::printHex16(uint16_t *data, uint8_t length) // prints 8-bit data in hex
+{
+	char tmp[length*4+1];
+	byte first;
+	byte second;
+	byte third;
+	byte fourth;
+	for (int i=0; i<length; i++) {
+		first = (data[i] >> 12) & 0x0f;
+		second = (data[i] >> 8) & 0x0f;
+		third = (data[i] >> 4) & 0x0f;
+		fourth = data[i] & 0x0f;
+		//Serial << first << " " << second << " " << third << " " << fourth << endl;
+		// base for converting single digit numbers to ASCII is 48
+		// base for 10-16 to become upper-case characters A-F is 55
+		// note: difference is 7
+		tmp[i*4] = first+48;
+		tmp[i*4+1] = second+48;
+		tmp[i*4+2] = third+48;
+		tmp[i*4+3] = fourth+48;
+		//tmp[i*5+4] = 32; // add trailing space
+		if (first > 9) tmp[i*4] += 7;
+		if (second > 9) tmp[i*4+1] += 7;
+		if (third > 9) tmp[i*4+2] += 7;
+		if (fourth > 9) tmp[i*4+3] += 7;
+	}
+	tmp[length*4] = 0;
+	Serial.print(tmp);
+}
+
+void ILI9341_due::printHex32(uint32_t *data, uint8_t length) // prints 8-bit data in hex
+{
+	char tmp[length*8+1];
+	byte dataByte[8];
+	for (int i=0; i<length; i++) {
+		dataByte[0] = (data[i] >> 28) & 0x0f;
+		dataByte[1] = (data[i] >> 24) & 0x0f;
+		dataByte[2] = (data[i] >> 20) & 0x0f;
+		dataByte[3] = (data[i] >> 16) & 0x0f;
+		dataByte[4] = (data[i] >> 12) & 0x0f;
+		dataByte[5] = (data[i] >> 8) & 0x0f;
+		dataByte[6] = (data[i] >> 4) & 0x0f;
+		dataByte[7] = data[i] & 0x0f;
+		//Serial << first << " " << second << " " << third << " " << fourth << endl;
+		// base for converting single digit numbers to ASCII is 48
+		// base for 10-16 to become upper-case characters A-F is 55
+		// note: difference is 7
+		tmp[i*4] = dataByte[0]+48;
+		tmp[i*4+1] = dataByte[1]+48;
+		tmp[i*4+2] = dataByte[2]+48;
+		tmp[i*4+3] = dataByte[3]+48;
+		tmp[i*4+4] = dataByte[4]+48;
+		tmp[i*4+5] = dataByte[5]+48;
+		tmp[i*4+6] = dataByte[6]+48;
+		tmp[i*4+7] = dataByte[7]+48;
+		//tmp[i*5+4] = 32; // add trailing space
+		if (dataByte[0] > 9) tmp[i*4] += 7;
+		if (dataByte[1] > 9) tmp[i*4+1] += 7;
+		if (dataByte[2] > 9) tmp[i*4+2] += 7;
+		if (dataByte[3] > 9) tmp[i*4+3] += 7;
+		if (dataByte[4] > 9) tmp[i*4+4] += 7;
+		if (dataByte[5] > 9) tmp[i*4+5] += 7;
+		if (dataByte[6] > 9) tmp[i*4+6] += 7;
+		if (dataByte[7] > 9) tmp[i*4+7] += 7;
+	}
+	tmp[length*8] = 0;
+	Serial.print(tmp);
+}
 

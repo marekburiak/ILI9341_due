@@ -43,7 +43,7 @@ ILI9341_due_gText::ILI9341_due_gText(ILI9341_due *ili)
 {
 	// device = (glcd_Device*)&GLCD; 
 	_ili = ili;
-	_fontMode = FONT_MODE_SOLID;
+	_fontMode = GTEXT_FONT_MODE_SOLID;
 	_fontBgColor = ILI9341_BLACK;
 	_fontColor = ILI9341_WHITE;
 	defineArea(0,0, _ili->width() -1, _ili->height() -1, DEFAULT_SCROLLDIR); // this should never fail
@@ -93,7 +93,7 @@ void ILI9341_due_gText::clearArea(uint16_t color)
 	/*
 	* fill the area with font background color
 	*/
-	_ili->fillRect(_area.x1, _area.y1, _area.x2 - _area.x1 - 1, _area.y2-_area.y1 -1, color);
+	_ili->fillRect(_area.x1, _area.y1, _area.x2 - _area.x1+1, _area.y2-_area.y1+1, color);
 
 	/*glcd_Device::SetPixels(_area.x1, _area.y1, 
 	_area.x2, _area.y2, 
@@ -145,8 +145,8 @@ bool ILI9341_due_gText::defineArea(int16_t x, int16_t y, int16_t columns, int16_
 
 	selectFont(font);
 
-	x2 = x + columns * (pgm_read_byte(_font+FONT_FIXED_WIDTH)+1) -1;
-	y2 = y + rows * (pgm_read_byte(_font+FONT_HEIGHT)+1) -1;
+	x2 = x + columns * (pgm_read_byte(_font+GTEXT_FONT_FIXED_WIDTH)+1) -1;
+	y2 = y + rows * (pgm_read_byte(_font+GTEXT_FONT_HEIGHT)+1) -1;
 
 	return defineArea(x, y, x2, y2); //, mode);
 }
@@ -271,16 +271,16 @@ bool ILI9341_due_gText::defineArea(predefinedArea selection, textMode mode)
 }
 #endif
 /*
- * Scroll a pixel region up.
- * 	Area scrolled is defined by x1,y1 through x2,y2 inclusive.
- *  x1,y1 is upper left corder, x2,y2 is lower right corner.
- *
- *	color is the color to be used for the created space along the
- *	bottom.
- *
- *	pixels is the *exact* pixels to scroll. 1 is 1 and 9 is 9 it is
- *  not 1 less or 1 more than what you want. It is *exact*.
- */
+* Scroll a pixel region up.
+* 	Area scrolled is defined by x1,y1 through x2,y2 inclusive.
+*  x1,y1 is upper left corder, x2,y2 is lower right corner.
+*
+*	color is the color to be used for the created space along the
+*	bottom.
+*
+*	pixels is the *exact* pixels to scroll. 1 is 1 and 9 is 9 it is
+*  not 1 less or 1 more than what you want. It is *exact*.
+*/
 
 //void ILI9341_due_gText::ScrollUp(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, 
 //	uint8_t pixels, uint8_t color)
@@ -527,85 +527,85 @@ void ILI9341_due_gText::specialChar(uint8_t c)
 
 	if(c == '\n')
 	{
-		uint8_t height = pgm_read_byte(_font+FONT_HEIGHT);
+		uint8_t height = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
 
 		/*
-		 * Erase all pixels remaining to edge of text area.on all wraps
-		 * It looks better when using inverted (WHITE) text, on proportional fonts, and
-		 * doing WHITE scroll fills.
-		 *
-		 */
+		* Erase all pixels remaining to edge of text area.on all wraps
+		* It looks better when using inverted (WHITE) text, on proportional fonts, and
+		* doing WHITE scroll fills.
+		*
+		*/
 
 
 		if(_x < _area.x2)
 			_ili->fillRect(_x, _y, _area.x2 - _x, height, _fontBgColor);
-			//glcd_Device::SetPixels(_x, _y, _area.x2, _y+height, _fontColor == BLACK ? WHITE : BLACK);
+		//glcd_Device::SetPixels(_x, _y, _area.x2, _y+height, _fontColor == BLACK ? WHITE : BLACK);
 
 		/*
-		 * Check for scroll up vs scroll down (scrollup is normal)
-		 */
+		* Check for scroll up vs scroll down (scrollup is normal)
+		*/
 #ifndef GLCD_NO_SCROLLDOWN
 		if(_area.mode == SCROLL_UP)
 #endif
 		{
 
 			/*
-			 * Normal/up scroll
-			 */
+			* Normal/up scroll
+			*/
 
 			/*
-			 * Note this comparison and the pixel calcuation below takes into 
-			 * consideration that fonts
-			 * are atually 1 pixel taller when rendered. 
-			 * This extra pixel is along the bottom for a "gap" between the character below.
-			 */
+			* Note this comparison and the pixel calcuation below takes into 
+			* consideration that fonts
+			* are atually 1 pixel taller when rendered. 
+			* This extra pixel is along the bottom for a "gap" between the character below.
+			*/
 			if(_y + 2*height >= _area.y2)
 			{
 #ifndef GLCD_NODEFER_SCROLL
-					if(!_needScroll)
-					{
-						_needScroll = 1;
-						return;
-					}
+				if(!_needScroll)
+				{
+					_needScroll = 1;
+					return;
+				}
 #endif
 
 				/*
-				 * forumula for pixels to scroll is:
-				 *	(assumes "height" is one less than rendered height)
-				 *
-				 *		pixels = height - ((_area.y2 - _y)  - height) +1;
-				 *
-				 *		The forumala below is unchanged 
-				 *		But has been re-written/simplified in hopes of better code
-				 *
-				 */
+				* forumula for pixels to scroll is:
+				*	(assumes "height" is one less than rendered height)
+				*
+				*		pixels = height - ((_area.y2 - _y)  - height) +1;
+				*
+				*		The forumala below is unchanged 
+				*		But has been re-written/simplified in hopes of better code
+				*
+				*/
 
 				uint8_t pixels = 2*height + _y - _area.y2 +1;
-		
+
 				/*
-				 * Scroll everything to make room
-				 * * NOTE: (FIXME, slight "bug")
-				 * When less than the full character height of pixels is scrolled,
-				 * There can be an issue with the newly created empty line.
-				 * This is because only the # of pixels scrolled will be colored.
-				 * What it means is that if the area starts off as white and the text
-				 * color is also white, the newly created empty text line after a scroll 
-				 * operation will not be colored BLACK for the full height of the character.
-				 * The only way to fix this would be alter the code use a "move pixels"
-				 * rather than a scroll pixels, and then do a clear to end line immediately
-				 * after the move and wrap.
-				 *
-				 * Currently this only shows up when
-				 * there are are less than 2xheight pixels below the current Y coordinate to
-				 * the bottom of the text area
-				 * and the current background of the pixels below the current text line
-				 * matches the text color
-				 * and  a wrap was just completed.
-				 *
-				 * After a full row of text is printed, the issue will resolve itself.
-				 * 
-				 * 
-				 */
+				* Scroll everything to make room
+				* * NOTE: (FIXME, slight "bug")
+				* When less than the full character height of pixels is scrolled,
+				* There can be an issue with the newly created empty line.
+				* This is because only the # of pixels scrolled will be colored.
+				* What it means is that if the area starts off as white and the text
+				* color is also white, the newly created empty text line after a scroll 
+				* operation will not be colored BLACK for the full height of the character.
+				* The only way to fix this would be alter the code use a "move pixels"
+				* rather than a scroll pixels, and then do a clear to end line immediately
+				* after the move and wrap.
+				*
+				* Currently this only shows up when
+				* there are are less than 2xheight pixels below the current Y coordinate to
+				* the bottom of the text area
+				* and the current background of the pixels below the current text line
+				* matches the text color
+				* and  a wrap was just completed.
+				*
+				* After a full row of text is printed, the issue will resolve itself.
+				* 
+				* 
+				*/
 				//ScrollUp(_area.x1, _area.y1, _area.x2, _area.y2, pixels, _fontBgColor);
 
 				_x = _area.x1;
@@ -614,8 +614,8 @@ void ILI9341_due_gText::specialChar(uint8_t c)
 			else
 			{
 				/*
-				 * Room for simple wrap
-				 */
+				* Room for simple wrap
+				*/
 
 				_x = _area.x1;
 				_y = _y+height+1;
@@ -625,39 +625,39 @@ void ILI9341_due_gText::specialChar(uint8_t c)
 		else
 		{
 			/*
-			 * Reverse/Down scroll
-			 */
+			* Reverse/Down scroll
+			*/
 
 			/*
-			 * Check for Wrap vs scroll.
-			 *
-			 * Note this comparison and the pixel calcuation below takes into 
-			 * consideration that fonts
-			 * are atually 1 pixel taller when rendered. 
-			 *
-			 */
+			* Check for Wrap vs scroll.
+			*
+			* Note this comparison and the pixel calcuation below takes into 
+			* consideration that fonts
+			* are atually 1 pixel taller when rendered. 
+			*
+			*/
 			if(_y > _area.y1 + height)
 			{
 				/*
-				 * There is room so just do a simple wrap
-				 */
+				* There is room so just do a simple wrap
+				*/
 				_x = _area.x1;
 				_y = _y - (height+1);
 			}
 			else
 			{
 #ifndef GLCD_NODEFER_SCROLL
-					if(!_needScroll)
-					{
-						_needScroll = 1;
-						return;
-					}
+				if(!_needScroll)
+				{
+					_needScroll = 1;
+					return;
+				}
 #endif
 
 				/*
-				 * Scroll down everything to make room for new line
-				 *	(assumes "height" is one less than rendered height)
-				 */
+				* Scroll down everything to make room for new line
+				*	(assumes "height" is one less than rendered height)
+				*/
 
 				uint8_t pixels = height+1 - (_area.y1 - _y);
 
@@ -711,11 +711,11 @@ int ILI9341_due_gText::putChar(uint8_t c)
 		return 1;
 	}
 	uint16_t charWidth = 0;
-	uint16_t charHeight = pgm_read_byte(_font+FONT_HEIGHT);
+	uint16_t charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
 	uint8_t charHeightInBytes = (charHeight+7)/8; /* calculates height in rounded up bytes */
 
-	uint8_t firstChar = pgm_read_byte(_font+FONT_FIRST_CHAR);
-	uint8_t charCount = pgm_read_byte(_font+FONT_CHAR_COUNT);
+	uint8_t firstChar = pgm_read_byte(_font+GTEXT_FONT_FIRST_CHAR);
+	uint8_t charCount = pgm_read_byte(_font+GTEXT_FONT_CHAR_COUNT);
 
 	uint16_t index = 0;
 	uint8_t thielefont;
@@ -727,8 +727,8 @@ int ILI9341_due_gText::putChar(uint8_t c)
 
 	if( isFixedWidthFont(_font) {
 		thielefont = 0;
-		charWidth = pgm_read_byte(_font+FONT_FIXED_WIDTH); 
-		index = c*charHeightInBytes*charWidth+FONT_WIDTH_TABLE;
+		charWidth = pgm_read_byte(_font+GTEXT_FONT_FIXED_WIDTH); 
+		index = c*charHeightInBytes*charWidth+GTEXT_FONT_WIDTH_TABLE;
 	}
 	else{
 		// variable width font, read width data, to get the index
@@ -740,7 +740,7 @@ int ILI9341_due_gText::putChar(uint8_t c)
 		* need to locate.
 		*/
 		for(uint8_t i=0; i<c; i++) {  
-			index += pgm_read_byte(_font+FONT_WIDTH_TABLE+i);
+			index += pgm_read_byte(_font+GTEXT_FONT_WIDTH_TABLE+i);
 		}
 		/*
 		* Calculate the offset of where the font data
@@ -755,12 +755,12 @@ int ILI9341_due_gText::putChar(uint8_t c)
 		* and the font header information.
 		*/
 
-		index = index*charHeightInBytes+charCount+FONT_WIDTH_TABLE;
+		index = index*charHeightInBytes+charCount+GTEXT_FONT_WIDTH_TABLE;
 
 		/*
 		* Finally, fetch the width of our character
 		*/
-		charWidth = pgm_read_byte(_font+FONT_WIDTH_TABLE+c);
+		charWidth = pgm_read_byte(_font+GTEXT_FONT_WIDTH_TABLE+c);
 	}
 
 #ifndef GLCD_NODEFER_SCROLL
@@ -800,9 +800,9 @@ int ILI9341_due_gText::putChar(uint8_t c)
 #endif
 	}
 
-	if(_fontMode == FONT_MODE_SOLID)
+	if(_fontMode == GTEXT_FONT_MODE_SOLID)
 		drawSolidChar(c, index, charWidth, charHeight);
-	else if(_fontMode == FONT_MODE_TRANSPARENT)
+	else if(_fontMode == GTEXT_FONT_MODE_TRANSPARENT)
 		drawTransparentChar(c, index, charWidth, charHeight);
 
 	// last but not least, draw the character
@@ -826,7 +826,7 @@ int ILI9341_due_gText::putChar(uint8_t c)
 
 void ILI9341_due_gText::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight)
 {
-	
+
 
 	uint8_t bitId=0;
 	int16_t cx = _x;
@@ -911,11 +911,12 @@ void ILI9341_due_gText::drawSolidChar(char c, uint16_t index, uint16_t charWidth
 
 	_x += charWidth;
 
-	if(_letterSpacing > 0)
+	if(_letterSpacing > 0 && !_lastChar)
 	{
 		_ili->fillRect(_x, _y, _letterSpacing, charHeight, _fontBgColor);
 		_x+=_letterSpacing;
 	}
+	//Serial.println(_x);
 }
 
 void ILI9341_due_gText::drawTransparentChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight)
@@ -936,7 +937,7 @@ void ILI9341_due_gText::drawTransparentChar(char c, uint16_t index, uint16_t cha
 	uint16_t lineId=0;
 	uint8_t numRenderBits = 8;
 	const uint8_t numRemainingBits = charHeight % 8;
-	
+
 	_ili->enableCS();
 
 	for(uint8_t j=0; j<charWidth; j++) /* each column */
@@ -985,7 +986,7 @@ void ILI9341_due_gText::drawTransparentChar(char c, uint16_t index, uint16_t cha
 					else 
 					{
 						_ili->setAddrAndRW_cont(cx, cy+lineStart, cx, cy+lineEnd);
-						
+
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 						_ili->setDCForData();
 						for(int p=0; p<lineEnd-lineStart+1; p++)
@@ -1026,8 +1027,12 @@ void ILI9341_due_gText::drawTransparentChar(char c, uint16_t index, uint16_t cha
 	}
 	_ili->disableCS();	// to put CS line back up
 
-	_x += charWidth + _letterSpacing;
+	_x += charWidth;
 
+	if(_letterSpacing > 0 && !_lastChar)
+	{
+		_x+=_letterSpacing;
+	}
 }
 
 /**
@@ -1050,9 +1055,12 @@ void ILI9341_due_gText::puts(char *str)
 {
 	while(*str)
 	{
+		if(*(str+1) == 0)
+			_lastChar = true;
 		putChar((uint8_t)*str);
 		str++;
 	}
+	_lastChar = false;
 }
 
 /**
@@ -1132,6 +1140,135 @@ void ILI9341_due_gText::drawString(char *str, int16_t x, int16_t y)
 {
 	cursorToXY(x,y);
 	puts(str);
+}
+
+void ILI9341_due_gText::drawString(char *str, gTextAlign align)
+{
+	drawString(str, align, 0, 0, 0);
+	
+}
+
+void ILI9341_due_gText::drawString(char *str, gTextAlign align, uint16_t clearBeforeAfterWidth)
+{
+	drawString(str, align, 0, 0, clearBeforeAfterWidth);
+	
+}
+
+void ILI9341_due_gText::drawString(char *str, gTextAlign align, const uint16_t offsetX, const uint16_t offsetY)
+{
+	drawString(str, align, offsetX, offsetY, 0);
+}
+
+void ILI9341_due_gText::drawString(char *str, gTextAlign align, const uint16_t offsetX, const uint16_t offsetY, uint16_t clearBeforeAfterWidth)
+{
+	uint16_t charHeight = 0;
+	bool clearBefore = false, clearAfter = false;
+
+	switch(align)
+	{
+	case gTextAlignTopLeft:
+		{
+			_x = _area.x1;
+			_y = _area.y1;
+			if(clearBeforeAfterWidth != 0)
+				clearAfter = true;
+			break;
+		}
+	case gTextAlignTopCenter:
+		{
+			uint16_t strWidth = stringWidth(str);
+			_x = (_area.x2 - _area.x1 - strWidth)/2 + _area.x1;
+			_y = _area.y1;
+			if(clearBeforeAfterWidth != 0)
+				clearBefore = clearAfter = true;
+			break;
+		}
+	case gTextAlignTopRight:
+		{
+			uint16_t strWidth = stringWidth(str);
+			_x = _area.x2 - strWidth;
+			_y = _area.y1;
+			if(clearBeforeAfterWidth != 0)
+				clearBefore = true;
+			break;
+		}
+	case gTextAlignMiddleLeft:
+		{
+			charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
+			_x = _area.x1;
+			_y = (_area.y2-_area.y1-charHeight)/2 + _area.y1;
+			if(clearBeforeAfterWidth != 0)
+				clearAfter = true;
+			break;
+		}
+	case gTextAlignMiddleCenter:
+		{
+			charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
+			uint16_t strWidth = stringWidth(str);
+			_x = (_area.x2 - _area.x1 - strWidth)/2 + _area.x1;
+			_y = (_area.y2 - _area.y1-charHeight)/2 + _area.y1;
+			if(clearBeforeAfterWidth != 0)
+				clearBefore = clearAfter = true;
+			break;
+		}
+	case gTextAlignMiddleRight:
+		{
+			charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
+			uint16_t strWidth = stringWidth(str);
+			_x = _area.x2 - strWidth;
+			_y = (_area.y2-_area.y1-charHeight)/2 + _area.y1;
+			if(clearBeforeAfterWidth)
+				clearBefore = true;
+			break;
+		}
+	case gTextAlignBottomLeft:
+		{
+			charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
+			_x = _area.x1;
+			_y = _area.y2-charHeight;
+			if(clearBeforeAfterWidth != 0)
+				clearAfter = true;
+			break;
+		}
+	case gTextAlignBottomCenter:
+		{
+			charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
+			uint16_t strWidth = stringWidth(str);
+			_x = (_area.x2 - _area.x1 - strWidth)/2 + _area.x1;
+			_y = _area.y2-charHeight;
+			if(clearBeforeAfterWidth != 0)
+				clearBefore = clearAfter = true;
+			break;
+		}
+	case gTextAlignBottomRight:
+		{
+			charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
+			uint16_t strWidth = stringWidth(str);
+			_x = _area.x2 - strWidth;
+			_y = _area.y2 - charHeight;
+			if(clearBeforeAfterWidth != 0)
+				clearBefore = true;
+			break;
+		}
+	}
+	_x+=offsetX;
+	_y+=offsetY;
+
+	if(clearBefore)
+	{
+		if(charHeight == 0)
+			charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
+		_ili->fillRect(_x-clearBeforeAfterWidth, _y, clearBeforeAfterWidth, charHeight, _fontBgColor); 
+	}
+
+	puts(str);
+
+	if(clearAfter)
+	{
+		if(charHeight == 0)
+			charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
+		_ili->fillRect(_x, _y, clearBeforeAfterWidth, charHeight, _fontBgColor); 
+	}
 }
 
 /**
@@ -1219,8 +1356,8 @@ void ILI9341_due_gText::cursorTo( uint8_t column, uint8_t row)
 	* Text position is relative to current text area
 	*/
 
-	_x = column * (pgm_read_byte(_font+FONT_FIXED_WIDTH)+1) + _area.x1;
-	_y = row * (pgm_read_byte(_font+FONT_HEIGHT)+1) + _area.y1;
+	_x = column * (pgm_read_byte(_font+GTEXT_FONT_FIXED_WIDTH)+1) + _area.x1;
+	_y = row * (pgm_read_byte(_font+GTEXT_FONT_HEIGHT)+1) + _area.y1;
 
 #ifndef GLCD_NODEFER_SCROLL
 	/*
@@ -1266,9 +1403,9 @@ void ILI9341_due_gText::cursorTo(int8_t column)
 	* negative value moves the cursor backwards
 	*/
 	if(column >= 0) 
-		_x = column * (pgm_read_byte(_font+FONT_FIXED_WIDTH)+1) + _area.x1;
+		_x = column * (pgm_read_byte(_font+GTEXT_FONT_FIXED_WIDTH)+1) + _area.x1;
 	else
-		_x -= column * (pgm_read_byte(_font+FONT_FIXED_WIDTH)+1);   	
+		_x -= column * (pgm_read_byte(_font+GTEXT_FONT_FIXED_WIDTH)+1);   	
 
 #ifndef GLCD_NODEFER_SCROLL
 	/*
@@ -1335,7 +1472,7 @@ void ILI9341_due_gText::eraseTextLine(uint16_t color, eraseLine_t type)
 
 	int16_t x = _x;
 	int16_t y = _y;
-	int16_t height = pgm_read_byte(_font+FONT_HEIGHT);
+	int16_t height = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
 	//uint8_t color = (_fontColor == BLACK) ? WHITE : BLACK;
 
 	switch(type)
@@ -1460,7 +1597,7 @@ void ILI9341_due_gText::setFontLetterSpacing(uint8_t letterSpacing)
 
 void ILI9341_due_gText::setFontMode(uint8_t fontMode)
 {
-	if(fontMode == FONT_MODE_SOLID || fontMode == FONT_MODE_TRANSPARENT)
+	if(fontMode == GTEXT_FONT_MODE_SOLID || fontMode == GTEXT_FONT_MODE_TRANSPARENT)
 		_fontMode = fontMode;
 }
 
@@ -1509,17 +1646,17 @@ uint16_t ILI9341_due_gText::charWidth(uint8_t c)
 	int16_t width = 0;
 
 	if(isFixedWidthFont(_font){
-		width = pgm_read_byte(_font+FONT_FIXED_WIDTH);
+		width = pgm_read_byte(_font+GTEXT_FONT_FIXED_WIDTH);
 	} 
 	else{ 
 		// variable width font 
-		uint8_t firstChar = pgm_read_byte(_font+FONT_FIRST_CHAR);
-		uint8_t charCount = pgm_read_byte(_font+FONT_CHAR_COUNT);
+		uint8_t firstChar = pgm_read_byte(_font+GTEXT_FONT_FIRST_CHAR);
+		uint8_t charCount = pgm_read_byte(_font+GTEXT_FONT_CHAR_COUNT);
 
 		// read width data
 		if(c >= firstChar && c < (firstChar+charCount)) {
 			c -= firstChar;
-			width = pgm_read_byte(_font+FONT_WIDTH_TABLE+c)+1;
+			width = pgm_read_byte(_font+GTEXT_FONT_WIDTH_TABLE+c);
 		}
 	}	
 	return width;
