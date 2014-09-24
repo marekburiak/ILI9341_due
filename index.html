@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 
-  <head>
+<head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <meta name="description" content="ILI9341_due : Arduino Due library for interfacing with ILI9341 SPI TFTs">
@@ -9,76 +9,118 @@
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
     <title>ILI9341_due</title>
-  </head>
+</head>
 
-  <body>
+<body>
 
     <!-- HEADER -->
     <div id="header_wrap" class="outer">
         <header class="inner">
-          <a id="forkme_banner" href="https://github.com/marekburiak/ILI9341_due">View on GitHub</a>
+            <a id="forkme_banner" href="https://github.com/marekburiak/ILI9341_due">View on GitHub</a>
 
-          <h1 id="project_title">ILI9341_due</h1>
-          <h2 id="project_tagline">Arduino Due library for interfacing with ILI9341 SPI TFTs</h2>
+            <h1 id="project_title">ILI9341_due</h1>
+            <h2 id="project_tagline">Arduino Due library for interfacing with ILI9341 SPI TFTs</h2>
 
             <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/marekburiak/ILI9341_due/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/marekburiak/ILI9341_due/tarball/master">Download this project as a tar.gz file</a>
+                <a class="zip_download_link" href="https://github.com/marekburiak/ILI9341_due/zipball/master">Download this project as a .zip file</a>
+                <a class="tar_download_link" href="https://github.com/marekburiak/ILI9341_due/tarball/master">Download this project as a tar.gz file</a>
             </section>
         </header>
     </div>
 
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1>
-<a name="ili9341_due" class="anchor" href="#ili9341_due"><span class="octicon octicon-link"></span></a>ILI9341_due</h1>
+        <section id="main_content" class="inner">
+            <h1>
+                <a name="ili9341_due" class="anchor" href="#ili9341_due"><span class="octicon octicon-link"></span></a>ILI9341_due</h1>
 
-<p>Arduino Due library for interfacing with ILI9341-based TFT's in SPI, Extended SPI and DMA SPI mode.</p>
+            <p>Arduino Due library for interfacing with ILI9341-based TFT's in SPI, Extended SPI and DMA SPI mode.</p>
 
-<p>This library is based on 3 libraries:</p>
+            <p>This library is based on 3 libraries:</p>
 
-<p><b>ili9341_t3</b> from Paul Stoffregen - <a href="https://github.com/PaulStoffregen/ILI9341_t3">https://github.com/PaulStoffregen/ILI9341_t3</a><br><b>SdFat</b> from Bill Greiman - <a href="https://github.com/greiman/SdFat">https://github.com/greiman/SdFat</a><br><b>GLCD</b> from Michael Margolis and Bill Perry - <a href="https://code.google.com/p/glcd-arduino">https://code.google.com/p/glcd-arduino</a><br></p>
+            <p>
+                <b>ili9341_t3</b> from Paul Stoffregen - <a href="https://github.com/PaulStoffregen/ILI9341_t3">https://github.com/PaulStoffregen/ILI9341_t3</a><br>
+                <b>SdFat</b> from Bill Greiman - <a href="https://github.com/greiman/SdFat">https://github.com/greiman/SdFat</a><br>
+                <b>GLCD</b> from Michael Margolis and Bill Perry - <a href="https://code.google.com/p/glcd-arduino">https://code.google.com/p/glcd-arduino</a><br>
+            </p>
 
-<p>ili9341_t3 library where various optimizations for Adafruit's ili9341 and GFX libraries were implemented was used as a base for ili9341_due.<br>
-One class from SdFat library is used for utilizing Due's DMA in SPI transfers which provides the main speed boost.<br>
-gText class from GLCD library was used as a base for rendering custom fonts. The maximum height of the font is 255px. Custom font .h files can be generated with GLCDFontCreator2 tool (requires Java). It is included in the tools folder or you can dowload it from:<br><a href="https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&amp;can=2&amp;q=">https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&amp;can=2&amp;q=</a><br>
-Here is a video of rendering a 255px-high font: 
-  <iframe width="560" height="315" src="http://www.youtube.com/embed/OcTz_YBDXmo?rel=0&color=white" frameborder="0"></iframe>
-</p>
+            <p>
+                ili9341_t3 library where various optimizations for Adafruit's ili9341 and GFX libraries were implemented was used as a base for ili9341_due.<br>
+                One class from SdFat library is used for utilizing Due's DMA in SPI transfers which provides the main speed boost.<br>
+                gText class from GLCD library was used as a base for rendering custom fonts.
+            </p>
 
-<p>As for the wiring, use Due's HW SPI pins (e.g. described here: <a href="http://21stdigitalhome.blogspot.com/2013/02/arduino-due-hardware-spi.html">http://21stdigitalhome.blogspot.com/2013/02/arduino-due-hardware-spi.html</a>). A pin for CS depends on the SPI mode you choose.
-If you look into ILI9341_due.h, you should find this:</p>
+            <p>
+                As for the wiring, use Due's HW SPI pins (e.g. described here: <a href="http://21stdigitalhome.blogspot.com/2013/02/arduino-due-hardware-spi.html">http://21stdigitalhome.blogspot.com/2013/02/arduino-due-hardware-spi.html</a>). A pin for CS depends on the SPI mode you choose.
+If you look into ILI9341_due.h, you should find this:
+            </p>
 
-<pre lang="Arduino"><code>// comment out the SPI mode you want to use
+            <pre lang="Arduino"><code>// comment out the SPI mode you want to use
 //#define ILI9341_SPI_MODE_NORMAL
 //#define ILI9341_SPI_MODE_EXTENDED // make sure you use pin 4, 10 or 52 for CS
 #define ILI9341_SPI_MODE_DMA
 </code></pre>
 
-<p>Uncomment the line depending on the SPI mode you want to use. As you can see, DMA mode is the default.</p>
+            <p>Uncomment the line depending on the SPI mode you want to use. As you can see, DMA mode is the default.</p>
 
-<p><b>SPI_MODE_NORMAL</b> is the standard SPI mode where you can use any digital pin for CS but you/library has to drive it manually.<br><b>SPI_MODE_EXTENDED</b> is the extended SPI mode available in Due where CS pin is handled by the chip (which is faster than handling it manually). You are restricted to these pins for CS though - 4, 10 and 52 (as described here: <a href="http://arduino.cc/en/Reference/DueExtendedSPI">http://arduino.cc/en/Reference/DueExtendedSPI</a>).<br><b>SPI_MODE_DMA</b> is utilizing DMA to do SPI transfers. You should be able to use any digital pin for CS.</p>
+            <p>
+                <b>SPI_MODE_NORMAL</b> is the standard SPI mode where you can use any digital pin for CS but you/library has to drive it manually.<br>
+                <b>SPI_MODE_EXTENDED</b> is the extended SPI mode available in Due where CS pin is handled by the chip (which is faster than handling it manually). You are restricted to these pins for CS though - 4, 10 and 52 (as described here: <a href="http://arduino.cc/en/Reference/DueExtendedSPI">http://arduino.cc/en/Reference/DueExtendedSPI</a>).<br>
+                <b>SPI_MODE_DMA</b> is utilizing DMA to do SPI transfers. You should be able to use any digital pin for CS.
+            </p>
 
-<p>Here is a video where you can see the speed difference: 
-<iframe width="560" height="315" src="http://www.youtube.com/embed/vnEwzN14BsU?rel=0&color=white" frameborder="0"></iframe>
+            <p>
+                Here is a video where you can see the speed difference: 
+                <iframe width="560" height="315" src="http://www.youtube.com/embed/vnEwzN14BsU?rel=0&color=white" frameborder="0"></iframe>
 
-<pre lang="Arduino"><code>#define ILI9341_SPI_CLKDIVIDER 2
+                <pre lang="Arduino"><code>#define ILI9341_SPI_CLKDIVIDER 2
 </code></pre>
 
-<p>This is used to set the SPI clock frequency, which at 2 means 84/2=42MHz (the max). If you are getting glitches on the screen or it just does not work try to use a higher divider to bring the frequency down (e.g. 11 to run it at 8-ish MHz). I was using 20cm dupont cables to connect TFT with Due and haven't had any issues running it with the divider set to 2.</p>
+                <p>This is used to set the SPI clock frequency, which at 2 means 84/2=42MHz (the max). If you are getting glitches on the screen or it just does not work try to use a higher divider to bring the frequency down (e.g. 11 to run it at 8-ish MHz). I was using 20cm dupont cables to connect TFT with Due and haven't had any issues running it with the divider set to 2.</p>
 
-<p>This is the SdFatTftBitmap example sketch demonstrating loading images from an SD card. The images were converted to RGB565 format using BMP24toILI565 tool (see the Tools folder). One image loads and displays in around 190ms (using half speed for SD card SPI as the full speed did not work for me, probably because the SD card pins were connected to Due via a breadboard).</p>
-<iframe width="560" height="315" src="http://www.youtube.com/embed/4adTpVc_Qog?rel=0&color=white" frameborder="0"></iframe>
+            <h3>Rendering custom fonts wigh ILI9341_due_gText</h3>
 
-<p>Known bugs/issues/missing functionality:</p>
+            <p>
+                You have two options for rendering fonts. Either use text functions from ILI9341_due library where you have one font available (same as in Adafruit's GFX library) or use ILI9341_due_gText class to render your custom fonts.
+                The maximum height of the font is 255px. Custom font .h files can be generated with GLCDFontCreator2 tool (requires Java). It is included in the tools folder or you can dowload it from:<br>
+                <a href="https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&amp;can=2&amp;q=">https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&amp;can=2&amp;q=</a><br>
+                Here is a video of rendering a 255px-high font:
+            </p>
 
-<ul>
-<li>I am sure there are bugs, feel free to fix them</li>
-<li>New line is not handled when rendering with gText</li>
-</ul><p>I plan to add some more features (like handling the new line and scrolling in gText) but I am not sure when will that happen as I have very little time to work on it (if I want to get at least 5 hours of sleep). So feel free to enhance the lib.</p>
+            <iframe width="560" height="315" src="http://www.youtube.com/embed/OcTz_YBDXmo?rel=0&color=white" frameborder="0"></iframe>
 
-<pre><code>------------------------------------------
+            <h3>Loading images from an SD card</h3>
+
+            <p>This is the SdFatTftBitmap example sketch demonstrating loading images from an SD card. The images were converted to RGB565 format using BMP24toILI565 tool (see the Tools folder). One image loads and displays in around 190ms (using half speed for SD card SPI as the full speed did not work for me, probably because the SD card pins were connected to Due via a breadboard).</p>
+            <iframe width="560" height="315" src="http://www.youtube.com/embed/4adTpVc_Qog?rel=0&color=white" frameborder="0"></iframe>
+
+            <h3>Drawing Arcs</h3>
+            <p>For drawing arcs (with thickness), you can use the drawArc function. Depending on the thickness and angles you might also draw pies and circles with thickness.</p>
+            <p>ILI9341_due.h has two defines which you can customize:</p>
+
+            <pre lang="Arduino"><code>#define ARC_ANGLE_MAX 360
+</code></pre>
+            <p>This number represents the maximum equal to 360 degrees (full circle). The default is 360 so if you pass in start=25 and end=75 you'll get an arc going from 25 degrees to 75 degrees.
+            If you set ARC_ANGLE_MAX 100 and you pass in start=0 and end=50 then you get a half circle (that can represent percentages). If you set ARC_ANGLE_MAX 2*PI, you can pass in
+            angles in radians etc...</p>
+            
+            <pre lang="Arduino"><code>ARC_ANGLE_OFFSET -90
+</code></pre>
+            <p>This number is an offset in degrees from the default position where the arc starts (representing value of 0). If you imagine a compass, then the default starting position is at the East. Setting the value to -90 will move the starting point 90 degress counter-clockwise (so to the South point).</p>
+            
+            <p>This is the Arcs demo from the examples folder:</p>
+            <iframe width="560" height="315" src="http://www.youtube.com/embed/99todZeKaeI?rel=0&color=white" frameborder="0"></iframe>
+
+
+            <h5>Known bugs/issues/missing functionality</h5>
+
+            <ul>
+                <li>I am sure there are bugs, feel free to fix them</li>
+                <li>New line is not handled when rendering with gText</li>
+            </ul>
+            <p>I plan to add some more features (like handling the new line and scrolling in gText) but I am not sure when will that happen as I have very little time to work on it (if I want to get at least 5 hours of sleep). So feel free to enhance the lib.</p>
+
+            <pre><code>------------------------------------------
 
 This is a library for the Adafruit ILI9341 display products
 
@@ -96,18 +138,18 @@ products from Adafruit!
 Written by Limor Fried/Ladyada for Adafruit Industries.
 MIT license, all text above must be included in any redistribution
 </code></pre>
-      </section>
+        </section>
     </div>
 
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">ILI9341_due maintained by <a href="https://github.com/marekburiak">marekburiak</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
+        <footer class="inner">
+            <p class="copyright">ILI9341_due maintained by <a href="https://github.com/marekburiak">Marek Buriak</a></p>
+            <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+        </footer>
     </div>
 
-    
 
-  </body>
+
+</body>
 </html>
