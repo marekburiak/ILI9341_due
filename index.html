@@ -134,6 +134,22 @@ EC6060600011000000001B7C7E7C000E000000000C60606
             Open ILIScreenshotViewer (from the tools folder) and click "Load Image from Clipboard" button. You should then see an image
             of what was on the screen when you called <i>screenshotToConsole</i> method.
             </p>
+            <img src="images\ILIScreenshotViewer.png" />
+            <p>You can then click "Save As..." button to save the image in bmp, gif, png or jpg format.</p>
+            <p>A couple of tips:
+                <ul>
+                    <li>
+                        Use some higher Serial speed. Depending on the image, the "screenshot" string might get long (in kB) so I guess transferring it at 115200b/s is better than at 9600b/s.
+                    </li>
+                    <li>
+                        If your get an error after you click the Load Image from Clipboard button or your image has artifacts, try lowering the SPI clock before you call screenshotToConsole method.
+                        Something like this:
+                         <pre lang="Arduino"><code>tft.setSPIClockDivider(24);  // lower the frequency
+tft.screenshotToConsole();   // take a "screenshot"
+tft.setSPIClockDivider(ILI9341_SPI_CLKDIVIDER); // restore the frequency</code></pre>
+                    </li>
+                </ul>
+            </p>
 
             <h5>Known bugs/issues/missing functionality</h5>
 
