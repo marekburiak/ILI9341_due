@@ -31,16 +31,25 @@ namespace BMP24toILI565
 
             if (args.Length == 0)
             {
-                Console.WriteLine("Usage: %s <filename.bmp>", exeFilename);
-                return;
+                var bmpFiles = Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*.bmp").ToList();
+                if (bmpFiles.Count == 0)
+                    Console.WriteLine("\nNo .bmp files found.");
+                else
+                    bmpFiles.ForEach(i => ConvertImage(i));
             }
+            else
+            {
+                ConvertImage(args[0]);
+            }
+        }
 
-            string imageFilename = args[0];
-
+        static void ConvertImage(string imageFilename)
+        {
             if (File.Exists(imageFilename))
             {
                 try
                 {
+                    Console.WriteLine("\nConverting {0}...", imageFilename);
                     rgb24file = new FileStream(imageFilename, FileMode.Open);
                     if (rgb24file == null)
                     {
@@ -63,8 +72,8 @@ namespace BMP24toILI565
                     Console.WriteLine("Image Offset: {0}", bmpImageoffset);
                     // Read DIB header
                     Console.WriteLine("Header size: {0}", read32(rgb24file));
-                    bmpWidth = (UInt16) read32(rgb24file);
-                    bmpHeight = (UInt16) read32(rgb24file);
+                    bmpWidth = (UInt16)read32(rgb24file);
+                    bmpHeight = (UInt16)read32(rgb24file);
                     if (read16(rgb24file) != 1) // # planes -- must be '1'
                     {
                         Console.WriteLine("Number of planes must be 1");
@@ -90,7 +99,7 @@ namespace BMP24toILI565
 
                     string outFilename = Path.ChangeExtension(imageFilename, "565");
 
-                    Console.WriteLine("Creating {0}...", outFilename);
+                    Console.WriteLine("{0} created", outFilename);
 
                     rgb16file = new FileStream(outFilename, FileMode.Create);
 
@@ -110,7 +119,7 @@ namespace BMP24toILI565
                     rgb16file.Write(header, 0, 54);
 
                     // BMP rows are padded (if needed) to 4-byte boundary
-                    rowSize = (bmpWidth*3 + 3) & ~3;
+                    rowSize = (bmpWidth * 3 + 3) & ~3;
 
                     // If bmpHeight is negative, image is in top-down order.
                     // This is not canon but has been observed in the wild.
@@ -128,19 +137,19 @@ namespace BMP24toILI565
                         // For each scanline...
 
                         if (flip) // Bitmap is stored bottom-to-top order (normal BMP)
-                            pos = bmpImageoffset + (bmpHeight - 1 - row)*rowSize;
+                            pos = bmpImageoffset + (bmpHeight - 1 - row) * rowSize;
                         else // Bitmap is stored top-to-bottom
-                            pos = bmpImageoffset + row*rowSize;
+                            pos = bmpImageoffset + row * rowSize;
 
                         rgb24file.Seek(pos, SeekOrigin.Begin);
 
-                        for (var c = 0; c < 3*bmpWidth; c += 3)
+                        for (var c = 0; c < 3 * bmpWidth; c += 3)
                         {
                             rgb24file.Read(inRGB, 0, 3);
 
                             UInt16 iliColor = to565(inRGB[2], inRGB[1], inRGB[0]);
-                            outRGB[0] = (byte) (iliColor >> 8);
-                            outRGB[1] = (byte) (iliColor & 0xFF);
+                            outRGB[0] = (byte)(iliColor >> 8);
+                            outRGB[1] = (byte)(iliColor & 0xFF);
                             rgb16file.Write(outRGB, 0, 2);
                         }
                     }
@@ -191,7 +200,7 @@ namespace BMP24toILI565
             var bytes = new byte[4];
 
             file.Read(bytes, 0, 4);
-            var dword = (UInt16)(bytes[3] << 24 | bytes[2] << 16 | bytes[1] << 8 | bytes[0]);
+            var dword = (UInt32)(bytes[3] << 24 | bytes[2] << 16 | bytes[1] << 8 | bytes[0]);
 
             return dword;
         }
