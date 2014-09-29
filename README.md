@@ -6,7 +6,10 @@ Please see http://marekburiak.github.io/ILI9341_due
 
 Version History:
 ```
-v0.92.000 - Added drawArc method for drawing arcs and circles with thickness and pies
+v0.92.001 - Added fontHeight function in gText
+          - fixes for NORMAL and EXTENDED mode
+
+v0.92.000 - Added drawArc function for drawing arcs and circles with thickness and pies
           - Added screenshotToConsole method and ILIScreenShotViewer app for taking 
             screenshots from the display
           - Added alignment options for drawString in ILI9341_due_gText

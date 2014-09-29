@@ -276,6 +276,8 @@ public:
 	void cursorTo( int8_t column); // move cursor on the current row
 	void cursorToXY( int16_t x, int16_t y); // coordinates relative to active text area
 
+	uint8_t fontHeight();
+	uint8_t fontHeight(Font_t font);
 	uint16_t charWidth(uint8_t c);
 	uint16_t stringWidth(const char* str);
 	uint16_t stringWidth_P(PGM_P str);

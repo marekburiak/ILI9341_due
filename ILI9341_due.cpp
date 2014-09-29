@@ -205,6 +205,7 @@ void ILI9341_due::setSPIClockDivider(uint8_t divider)
 
 void ILI9341_due::pushColor(uint16_t color)
 {
+	enableCS();
 	writedata16_last(color);
 }
 
@@ -214,7 +215,7 @@ void ILI9341_due::pushColors(uint16_t *colors, uint16_t offset, uint16_t len) {
 	colors = colors + offset*2;
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 	for (uint16_t i = 0; i < len; i++) {
-		write16(colors[i]);
+		write16_cont(colors[i]);
 	}
 #elif SPI_MODE_DMA
 	for (uint16_t i = 0; i < (len << 1); i+=2) {
@@ -239,7 +240,7 @@ void ILI9341_due::pushColors565(uint8_t *colors, uint16_t offset, uint16_t len) 
 
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 	for (uint16_t i = 0; i < len; i++) {
-		write16(colors[i]);
+		write8_cont(colors[i]);
 	}
 #elif SPI_MODE_DMA
 	write_cont(colors, len);
@@ -270,7 +271,7 @@ void ILI9341_due::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color)
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 	setDCForData();
 	while (h-- > 1) {
-		write16(color);
+		write16_cont(color);
 	}
 	write16_last(color);
 #elif SPI_MODE_DMA
@@ -289,7 +290,7 @@ void ILI9341_due::drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uin
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 	setDCForData();
 	while (h-- > 0) {
-		write16(color);
+		write16_cont(color);
 	}
 #elif SPI_MODE_DMA
 	writeScanline_cont(h);
@@ -306,7 +307,7 @@ void ILI9341_due::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color)
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 	setDCForData();
 	while (w-- > 1) {
-		write16(color);
+		write16_cont(color);
 	}
 	writedata16_last(color);
 #elif SPI_MODE_DMA
@@ -365,7 +366,7 @@ void ILI9341_due::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t 
 	setDCForData();
 	for(y=h; y>0; y--) {
 		for(x=w; x>0; x--) {
-			write16(color);
+			write16_cont(color);
 		}
 	}
 	disableCS();
@@ -1377,7 +1378,7 @@ void ILI9341_due::drawChar(int16_t x, int16_t y, unsigned char c,
 					}
 					for (xr=0; xr < size; xr++) {
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-						write16(color);
+						write16_cont(color);
 #elif SPI_MODE_DMA
 						_scanlineBuffer[scanlineId++] = highByte(color);
 						_scanlineBuffer[scanlineId++] = lowByte(color);
@@ -1387,7 +1388,7 @@ void ILI9341_due::drawChar(int16_t x, int16_t y, unsigned char c,
 				// draw a gap between chars (1px for size of 1)
 				for (xr=0; xr < size; xr++) {
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-					write16(bgcolor);
+					write16_cont(bgcolor);
 #elif SPI_MODE_DMA
 					_scanlineBuffer[scanlineId++] = highByte(bgcolor);
 					_scanlineBuffer[scanlineId++] = lowByte(bgcolor);
@@ -1403,7 +1404,7 @@ void ILI9341_due::drawChar(int16_t x, int16_t y, unsigned char c,
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 		uint32_t n = 6 * size * size;
 		do {
-			write16(bgcolor);
+			write16_cont(bgcolor);
 			n--;
 		} while (n > 0);
 #elif SPI_MODE_DMA

@@ -991,7 +991,7 @@ void ILI9341_due_gText::drawTransparentChar(char c, uint16_t index, uint16_t cha
 						_ili->setDCForData();
 						for(int p=0; p<lineEnd-lineStart+1; p++)
 						{
-							_ili->write16(_fontColor);
+							_ili->write16_cont(_fontColor);
 						}
 #elif SPI_MODE_DMA
 						_ili->writeScanline_cont(lineEnd-lineStart+1);
@@ -1014,7 +1014,7 @@ void ILI9341_due_gText::drawTransparentChar(char c, uint16_t index, uint16_t cha
 				_ili->setDCForData();
 				for(int p=0; p<lineEnd-lineStart+1; p++)
 				{
-					_ili->write16(_fontColor);
+					_ili->write16_cont(_fontColor);
 				}
 #elif SPI_MODE_DMA
 				_ili->writeScanline_cont(lineEnd-lineStart+1);
@@ -1626,6 +1626,18 @@ void ILI9341_due_gText::SetTextMode(textMode mode)
 	_area.mode = mode; 
 } 
 #endif
+
+
+uint8_t ILI9341_due_gText::fontHeight()
+{
+	return pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
+}
+
+uint8_t ILI9341_due_gText::fontHeight(Font_t font)
+{
+	return pgm_read_byte(font+GTEXT_FONT_HEIGHT);
+}
+
 /**
 * Returns the pixel width of a character
 *
