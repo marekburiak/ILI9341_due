@@ -92,6 +92,8 @@ ILI9341_due::ILI9341_due(uint8_t cs, uint8_t dc, uint8_t rst)
 	textsize  = 1;
 	textcolor = textbgcolor = 0xFFFF;
 	wrap      = true;
+	myArcAngleMax = ARC_ANGLE_MAX;
+	myArcAngleOffset = ARC_ANGLE_OFFSET;
 }
 
 
@@ -500,8 +502,8 @@ void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 	float startAngle, endAngle;
 
 	//Serial << "start: " << start << " end: " << end << endl;
-	startAngle = (start / (float)ARC_ANGLE_MAX) * 360;	// 252
-	endAngle = (end / (float)ARC_ANGLE_MAX) * 360;		// 807
+	startAngle = (start / myArcAngleMax) * 360;	// 252
+	endAngle = (end / myArcAngleMax) * 360;		// 807
 	//Serial << "startAngle: " << startAngle << " endAngle: " << endAngle << endl;
 
 	while (startAngle < 0) startAngle += 360;
@@ -512,8 +514,8 @@ void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 	//if (endAngle == 0) endAngle = 360;
 
 	if (startAngle > endAngle) {
-		drawArcOffsetted(cx, cy, radius, thickness, ((startAngle)/(float)360) * ARC_ANGLE_MAX, ARC_ANGLE_MAX, color);
-		drawArcOffsetted(cx, cy, radius, thickness, 0, ((endAngle)/(float)360) * ARC_ANGLE_MAX, color);
+		drawArcOffsetted(cx, cy, radius, thickness, ((startAngle)/(float)360) * myArcAngleMax, myArcAngleMax, color);
+		drawArcOffsetted(cx, cy, radius, thickness, 0, ((endAngle)/(float)360) * myArcAngleMax, color);
 	} else {
 		// Calculate bounding box for the arc to be drawn
 		cosStart = cos_lookup2(startAngle);
@@ -588,7 +590,7 @@ void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 #endif
 		for (int x = xmin; x <= xmax; x++) {
 			bool y1StartFound = false, y2StartFound = false;
-			bool y1EndFound = false, y2EndFound = false, y2EndSearching = false;
+			bool y1EndFound = false, y2EndSearching = false;
 			int y1s=0, y1e=0, y2s=0, y2e=0;
 			for (int y = ymin; y <= ymax; y++)
 			{
@@ -618,6 +620,7 @@ void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 					{
 						//Serial << "Found y2 start x: " << x << " y:" << y << endl;
 						y2StartFound = true;
+						//drawPixel_cont(cx+x, cy+y, ILI9341_BLUE);
 						y2s = y;
 						y += y1e - y1s - 1;	// calculate the most probable end of the lower line (in most cases the length of lower line is equal to length of upper line), in the next loop we will validate if the end of line is really there
 						if(y > ymax - 1) // the most probable end of line 2 is beyond ymax so line 2 must be shorter, thus continue with pixel by pixel search
@@ -625,7 +628,7 @@ void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 							y = y2s;	// reset y and continue with pixel by pixel search
 							y2EndSearching = true;
 						}
-
+						
 						//Serial << "Upper line length: " << (y1e - y1s) << " Setting y to " << y << endl;
 					}
 					else if(y2StartFound && !y2EndSearching)
@@ -633,8 +636,6 @@ void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 						// we validated that the probable end of the lower line has a pixel, continue with pixel by pixel search, in most cases next loop with confirm the end of lower line as it will not find a valid pixel
 						y2EndSearching = true;
 					}
-
-
 					//Serial << "x:" << x << " y:" << y << endl;
 					//drawPixel_cont(cx+x, cy+y, ILI9341_BLUE);
 				}
@@ -661,6 +662,7 @@ void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 							//Serial << "Found final end at y: " << y << endl;
 							// we found the end of the lower line after pixel by pixel search
 							drawFastVLine_cont_noFill(cx+x, cy+y2s, y - y2s, color);
+							y2EndSearching = false;
 							break;
 						}
 						else
@@ -671,8 +673,8 @@ void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 							y2EndSearching = true;
 						}
 					}
-					/*else
-					drawPixel_cont(cx+x, cy+y, ILI9341_RED);*/
+					//else
+					//drawPixel_cont(cx+x, cy+y, ILI9341_RED);
 				}
 				//
 
@@ -684,13 +686,10 @@ void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 				//Serial << "line: " << y1s << " - " << y1e << endl;
 				drawFastVLine_cont_noFill(cx+x, cy+y1s, y1e - y1s + 1, color);
 			}
-			//else if(y2StartFound && !y2EndFound)
-			//{
-			//	y2e = ymax;
-			//	//Serial << "line: " << y1s << " - " << y1e << endl;
-			//	drawFastVLine_cont_noFill(cx+x, cy+y2s, y2e - y2s + 1, color);
-			//}
-
+			else if(y2StartFound && y2EndSearching)	// we found start of lower line but we are still searching for the end
+			{										// which we haven't found in the loop so the last pixel in a column must be the end
+				drawFastVLine_cont_noFill(cx+x, cy+y2s, ymax - y2s + 1, color);
+			}
 		}
 		disableCS();
 	}
@@ -1482,6 +1481,12 @@ void ILI9341_due::setPowerLevel(pwrLevel p)
 		if(_isIdle) { idle(false); _isIdle = false;}
 		break;
 	}
+}
+
+void ILI9341_due::setArcParams(float arcAngleMax, int arcAngleOffset)
+{
+	myArcAngleMax = arcAngleMax;
+	myArcAngleOffset = arcAngleOffset;
 }
 
 //uint8_t ILI9341_due::spiread(void) {

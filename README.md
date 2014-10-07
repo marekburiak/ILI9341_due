@@ -6,6 +6,9 @@ Please see http://marekburiak.github.io/ILI9341_due
 
 Version History:
 ```
+v0.92.002 - Fixed drawArc
+		  - Added setArcParams function to change maxArcAngle and arcAngleOffset at runtime
+
 v0.92.001 - Added fontHeight function in gText
           - fixes for NORMAL and EXTENDED mode
 
