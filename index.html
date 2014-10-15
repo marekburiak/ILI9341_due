@@ -70,9 +70,11 @@
             </p>
 
             <p>
-                Here is a video where you can see the speed difference:
+                Here is a video where you can see the speed difference between the modes:
             </p>
-            <iframe width="560" height="315" src="http://www.youtube.com/embed/vnEwzN14BsU?rel=0&color=white" frameborder="0"></iframe>
+            <div style="text-align: center">
+                <iframe width="560" height="315" src="http://www.youtube.com/embed/vnEwzN14BsU?rel=0&color=white" frameborder="0"></iframe>
+            </div>
 
             <pre lang="Arduino"><code>#define ILI9341_SPI_CLKDIVIDER 2</code></pre>
 
@@ -88,14 +90,15 @@
                 <a href="https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&amp;can=2&amp;q=">here</a>.<br>
                 Here is a video of rendering a 255px-high font:
             </p>
-
-            <iframe width="560" height="315" src="http://www.youtube.com/embed/OcTz_YBDXmo?rel=0&color=white" frameborder="0"></iframe>
-
+            <div style="text-align: center">
+                <iframe width="560" height="315" src="http://www.youtube.com/embed/OcTz_YBDXmo?rel=0&color=white" frameborder="0"></iframe>
+            </div>
             <h3>Loading images from an SD card</h3>
 
             <p>This is the SdFatTftBitmap example sketch demonstrating loading images from an SD card. The images were converted to RGB565 format using BMP24toILI565 tool (see the Tools folder). One image loads and displays in around 190ms (using half speed for SD card SPI as the full speed did not work for me, probably because the SD card pins were connected to Due via a breadboard).</p>
-            <iframe width="560" height="315" src="http://www.youtube.com/embed/4adTpVc_Qog?rel=0&color=white" frameborder="0"></iframe>
-
+            <div style="text-align: center">
+                <iframe width="560" height="315" src="http://www.youtube.com/embed/4adTpVc_Qog?rel=0&color=white" frameborder="0"></iframe>
+            </div>
             <h3>Drawing Arcs</h3>
             <p>You can use the <i>drawArc</i> method to draw arcs (with thickness) and depending on the thickness and angles you provide as parameters you might also draw pies and circles with thickness.</p>
             <p>ILI9341_due.h has two defines which you can customize:</p>
@@ -113,8 +116,9 @@
             <p>This number is an offset in degrees from the default position where the arc starts (representing value of 0). If you imagine a compass, then the default starting position is at the East point. Setting the value to -90 will move the starting point 90 degress counter-clockwise (so to the South point).</p>
 
             <p>This is the Arcs demo from the examples folder:</p>
-            <iframe width="560" height="315" src="http://www.youtube.com/embed/99todZeKaeI?rel=0&color=white" frameborder="0"></iframe>
-
+            <div style="text-align: center">
+                <iframe width="560" height="315" src="http://www.youtube.com/embed/99todZeKaeI?rel=0&color=white" frameborder="0"></iframe>
+            </div>
             <h3>Taking screenshots</h3>
 
             <p>
@@ -136,7 +140,9 @@ EC6060600011000000001B7C7E7C000E000000000C60606
                 Open ILIScreenshotViewer (from the tools folder) and click "Load Image from Clipboard" button. You should then see an image
                 of what was on the screen when you called <i>screenshotToConsole</i> method.
             </p>
-            <img src="images\ILIScreenshotViewer.png" />
+            <div style="text-align: center">
+                <img src="images\ILIScreenshotViewer.png" />
+            </div>
             <p>You can then click "Save As..." button to save the image in bmp, gif, png or jpg format.</p>
             <p>
                 A couple of tips:
@@ -158,8 +164,9 @@ tft.setSPIClockDivider(ILI9341_SPI_CLKDIVIDER); // restore the frequency</code><
 
             <p>All the credits (and blame :) goes to TFTLCDCyg who ported the UTFT demo to ILI9341_due library. Both demos were run on Due at the max speed.</p>
             <p>Here is a video of the demo powered by the UTFT library:</p>
-            <iframe width="560" height="315" align="middle" src="http://www.youtube.com/embed/ZYW9f8Q_b-Q?rel=0&color=white" frameborder="0"></iframe>
-
+            <div style="text-align: center">
+                <iframe width="560" height="315" src="http://www.youtube.com/embed/ZYW9f8Q_b-Q?rel=0&color=white" frameborder="0"></iframe>
+            </div>
             <p>And here is the demo powered by the ILI9341_due library:</p>
             <div style="text-align: center">
                 <iframe width="560" height="315" src="http://www.youtube.com/embed/xkPDAK0VJq0?rel=0&color=white" frameborder="0"></iframe>
