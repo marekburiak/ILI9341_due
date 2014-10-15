@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 
 <head>
@@ -32,7 +32,8 @@
     <div id="main_content_wrap" class="outer">
         <section id="main_content" class="inner">
             <h1>
-                <a name="ili9341_due" class="anchor" href="#ili9341_due"><span class="octicon octicon-link"></span></a>ILI9341_due</h1>
+                <a name="ili9341_due" class="anchor" href="#ili9341_due"><span class="octicon octicon-link"></span></a>ILI9341_due
+            </h1>
 
             <p>Arduino Due library for interfacing with ILI9341-based TFT's in SPI, Extended SPI and DMA SPI mode.</p>
 
@@ -52,14 +53,13 @@
 
             <p>
                 As for the wiring, use Due's HW SPI pins (e.g. described <a href="http://21stdigitalhome.blogspot.com/2013/02/arduino-due-hardware-spi.html">here</a>). A pin for CS depends on the SPI mode you choose.
-If you look into ILI9341_due.h, you should find this:
+                If you look into ILI9341_due.h, you should find this:
             </p>
 
             <pre lang="Arduino"><code>// comment out the SPI mode you want to use
 //#define ILI9341_SPI_MODE_NORMAL
 //#define ILI9341_SPI_MODE_EXTENDED // make sure you use pin 4, 10 or 52 for CS
-#define ILI9341_SPI_MODE_DMA
-</code></pre>
+#define ILI9341_SPI_MODE_DMA</code></pre>
 
             <p>Uncomment the line depending on the SPI mode you want to use. As you can see, DMA mode is the default.</p>
 
@@ -70,13 +70,13 @@ If you look into ILI9341_due.h, you should find this:
             </p>
 
             <p>
-                Here is a video where you can see the speed difference: 
-                <iframe width="560" height="315" src="http://www.youtube.com/embed/vnEwzN14BsU?rel=0&color=white" frameborder="0"></iframe>
+                Here is a video where you can see the speed difference:
+            </p>
+            <iframe width="560" height="315" src="http://www.youtube.com/embed/vnEwzN14BsU?rel=0&color=white" frameborder="0"></iframe>
 
-                <pre lang="Arduino"><code>#define ILI9341_SPI_CLKDIVIDER 2
-</code></pre>
+            <pre lang="Arduino"><code>#define ILI9341_SPI_CLKDIVIDER 2</code></pre>
 
-                <p>This is used to set the SPI clock frequency, which at 2 means 84/2=42MHz (the max). If you are getting glitches on the screen or it just does not work try to use a higher divider to bring the frequency down (e.g. 11 to run it at 8-ish MHz). I was using 20cm dupont cables to connect TFT with Due and haven't had any issues running it with the divider set to 2.</p>
+            <p>This is used to set the SPI clock frequency, which at 2 means 84/2=42MHz (the max). If you are getting glitches on the screen or it just does not work try to use a higher divider to bring the frequency down (e.g. 11 to run it at 8-ish MHz). I was using 20cm dupont cables to connect TFT with Due and haven't had any issues running it with the divider set to 2.</p>
 
             <p>If you want to ask me a question or just contact me, feel free to do so in the <a href="http://forum.arduino.cc/index.php?topic=265806.0">Arduino Forum</a>.</p>
 
@@ -104,8 +104,8 @@ If you look into ILI9341_due.h, you should find this:
 </code></pre>
             <p>
                 This number represents the maximum equal to 360 degrees (full circle). The default is 360 so if you pass in start=25 and end=75 you'll get an arc going from 25 degrees to 75 degrees.
-            If you set ARC_ANGLE_MAX 100 and you pass in start=0 and end=50 then you get a half circle (that can represent percentages). If you set ARC_ANGLE_MAX 2*PI, you can pass in
-            angles in radians etc...
+                If you set ARC_ANGLE_MAX 100 and you pass in start=0 and end=50 then you get a half circle (that can represent percentages). If you set ARC_ANGLE_MAX 2*PI, you can pass in
+                angles in radians etc...
             </p>
 
             <pre lang="Arduino"><code>#define ARC_ANGLE_OFFSET -90
@@ -118,9 +118,10 @@ If you look into ILI9341_due.h, you should find this:
             <h3>Taking screenshots</h3>
 
             <p>
-                The library has a method called <i>screenshotToConsole</i>. When you call that method, you should get a string like this one in the console window:</p>
-               
- <pre lang="Arduino"><code>==== PIXEL DATA START ====
+                The library has a method called <i>screenshotToConsole</i>. When you call that method, you should get a string like this one in the console window:
+            </p>
+
+            <pre lang="Arduino"><code>==== PIXEL DATA START ====
 0000000090606060001F000000011B606060002B0000000
 11060606000350000000107606060003D00000000FF6060
 60004500000000F86060600016000000001F60606000160
@@ -130,13 +131,15 @@ EC6060600011000000001B7C7E7C000E000000000C60606
 06060002B000000011B606060001F00000001D1000050F0
 ==== PIXEL DATA END ====</code></pre>
 
-            <p>Now, copy all between PIXEL DATA START and END (so starting with 0000... and ending with ...50F0) into the clipboard.<br />
-            Open ILIScreenshotViewer (from the tools folder) and click "Load Image from Clipboard" button. You should then see an image
-            of what was on the screen when you called <i>screenshotToConsole</i> method.
+            <p>
+                Now, copy all between PIXEL DATA START and END (so starting with 0000... and ending with ...50F0) into the clipboard.<br />
+                Open ILIScreenshotViewer (from the tools folder) and click "Load Image from Clipboard" button. You should then see an image
+                of what was on the screen when you called <i>screenshotToConsole</i> method.
             </p>
             <img src="images\ILIScreenshotViewer.png" />
             <p>You can then click "Save As..." button to save the image in bmp, gif, png or jpg format.</p>
-            <p>A couple of tips:
+            <p>
+                A couple of tips:
                 <ul>
                     <li>
                         Use some higher Serial speed. Depending on the image, the "screenshot" string might get long (in kB) so I guess transferring it at 115200b/s is better than at 9600b/s.
@@ -144,12 +147,23 @@ EC6060600011000000001B7C7E7C000E000000000C60606
                     <li>
                         If your get an error after you click the Load Image from Clipboard button or your image has artifacts, try lowering the SPI clock before you call screenshotToConsole method.
                         Something like this:
-                         <pre lang="Arduino"><code>tft.setSPIClockDivider(24);  // lower the frequency
+                        <pre lang="Arduino"><code>tft.setSPIClockDivider(24);  // lower the frequency
 tft.screenshotToConsole();   // take a "screenshot"
 tft.setSPIClockDivider(ILI9341_SPI_CLKDIVIDER); // restore the frequency</code></pre>
                     </li>
                 </ul>
             </p>
+
+            <h3>UTFT demo speed comparison</h3>
+
+            <p>All the credits (and blame :) goes to TFTLCDCyg who ported the UTFT demo to ILI9341_due library. Both demos were run on Due on max speed.</p>
+            <p>Here is a video of the demo powered by the UTFT library:</p>
+            <iframe width="560" height="315" src="http://www.youtube.com/embed/ZYW9f8Q_b-Q?rel=0&color=white" frameborder="0"></iframe>
+
+            <p>And here is the demo powered by the ILI9341_due library:</p>
+            <iframe width="560" height="315" src="http://www.youtube.com/embed/xkPDAK0VJq0?rel=0&color=white" frameborder="0"></iframe>
+
+            <p>The source code for the ILI9341_due-fied demo can be found in the library's examples folder.</p>
 
             <h5>Known bugs/issues/missing functionality</h5>
 
@@ -160,20 +174,15 @@ tft.setSPIClockDivider(ILI9341_SPI_CLKDIVIDER); // restore the frequency</code><
             <p>I plan to add some more features (like handling the new line and scrolling in gText) but I am not sure when will that happen as I have very little time to work on it (if I want to get at least 5 hours of sleep). So feel free to enhance the lib.</p>
 
             <pre><code>------------------------------------------
-
 This is a library for the Adafruit ILI9341 display products
-
 This library works with the Adafruit 2.8" Touch Shield V2 (SPI)
   ----&gt; http://www.adafruit.com/products/1651
-
 Check out the links above for our tutorials and wiring diagrams.
 These displays use SPI to communicate, 4 or 5 pins are required
 to interface (RST is optional).
-
 Adafruit invests time and resources providing this open source code,
 please support Adafruit and open-source hardware by purchasing
 products from Adafruit!
-
 Written by Limor Fried/Ladyada for Adafruit Industries.
 MIT license, all text above must be included in any redistribution
 </code></pre>
