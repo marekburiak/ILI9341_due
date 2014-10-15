@@ -75,7 +75,7 @@
             <div style="text-align: center">
                 <iframe width="560" height="315" src="http://www.youtube.com/embed/vnEwzN14BsU?rel=0&color=white" frameborder="0"></iframe>
             </div>
-
+            <br />
             <pre lang="Arduino"><code>#define ILI9341_SPI_CLKDIVIDER 2</code></pre>
 
             <p>This is used to set the SPI clock frequency, which at 2 means 84/2=42MHz (the max). If you are getting glitches on the screen or it just does not work try to use a higher divider to bring the frequency down (e.g. 11 to run it at 8-ish MHz). I was using 20cm dupont cables to connect TFT with Due and haven't had any issues running it with the divider set to 2.</p>
@@ -103,17 +103,17 @@
             <p>You can use the <i>drawArc</i> method to draw arcs (with thickness) and depending on the thickness and angles you provide as parameters you might also draw pies and circles with thickness.</p>
             <p>ILI9341_due.h has two defines which you can customize:</p>
 
-            <pre lang="Arduino"><code>#define ARC_ANGLE_MAX 360
-</code></pre>
+            <pre lang="Arduino"><code>#define ARC_ANGLE_MAX 360</code></pre>
             <p>
                 This number represents the maximum equal to 360 degrees (full circle). The default is 360 so if you pass in start=25 and end=75 you'll get an arc going from 25 degrees to 75 degrees.
                 If you set ARC_ANGLE_MAX 100 and you pass in start=0 and end=50 then you get a half circle (that can represent percentages). If you set ARC_ANGLE_MAX 2*PI, you can pass in
                 angles in radians etc...
             </p>
 
-            <pre lang="Arduino"><code>#define ARC_ANGLE_OFFSET -90
-</code></pre>
+            <pre lang="Arduino"><code>#define ARC_ANGLE_OFFSET -90</code></pre>
+
             <p>This number is an offset in degrees from the default position where the arc starts (representing value of 0). If you imagine a compass, then the default starting position is at the East point. Setting the value to -90 will move the starting point 90 degress counter-clockwise (so to the South point).</p>
+            <p>You can change these defaults at runtime by calling setArcParams function.</p>
 
             <p>This is the Arcs demo from the examples folder:</p>
             <div style="text-align: center">
