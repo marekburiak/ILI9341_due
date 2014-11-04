@@ -4,7 +4,7 @@
 #include <ILI9341_due_gText.h>
 #include <ILI9341_due.h>
 
-#include "ILI9341_due\fonts\allFonts.h"
+#include "fonts\Arial_bold_14.h"
 
 #define TFT_CS 10
 #define TFT_DC 9
@@ -21,13 +21,14 @@ void setup()
 	Serial.println(result ? "YES" : "NO");
 
 	myTFT.fillScreen(ILI9341_BLUE);
+	myTFT.setRotation(iliRotation270);
 
 	ILI9341_due_gText t1(&myTFT);
-	t1.defineArea(60, 150, 200, 150);
-	t1.selectFont(Arial_bold_14, ILI9341_WHITE);
+	t1.defineArea(100, 110, 220, 130);
+	t1.selectFont(Arial_bold_14);
 	t1.setFontLetterSpacing(5);
-	t1.setFontMode(FONT_MODE_TRANSPARENT);
-	t1.drawString("Hello World", 0, 0);	// these coordinates are relative to the defined area
+	t1.setFontColor(ILI9341_WHITE, ILI9341_BLUE);
+	t1.drawString("Hello World", gTextAlignMiddleCenter);
 }
 
 void loop()

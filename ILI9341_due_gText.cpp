@@ -43,9 +43,11 @@ ILI9341_due_gText::ILI9341_due_gText(ILI9341_due *ili)
 {
 	// device = (glcd_Device*)&GLCD; 
 	_ili = ili;
-	_fontMode = GTEXT_FONT_MODE_SOLID;
+	_fontMode = gTextFontMode_Solid;
 	_fontBgColor = ILI9341_BLACK;
 	_fontColor = ILI9341_WHITE;
+	_letterSpacing = 2;
+	_isLastChar = false;
 	defineArea(0,0, _ili->width() -1, _ili->height() -1, DEFAULT_SCROLLDIR); // this should never fail
 
 }
@@ -71,7 +73,7 @@ ILI9341_due_gText::ILI9341_due_gText(ILI9341_due *ili, predefinedArea selection)
 }
 #endif
 
-ILI9341_due_gText::ILI9341_due_gText(ILI9341_due *ili, int16_t x1, int16_t y1, int16_t columns, int16_t rows, Font_t font) //, textMode mode)
+ILI9341_due_gText::ILI9341_due_gText(ILI9341_due *ili, int16_t x1, int16_t y1, int16_t columns, int16_t rows, gTextFont font) //, textMode mode)
 {
 	//device = (glcd_Device*)&GLCD; 
 	_ili = ili;
@@ -93,6 +95,7 @@ void ILI9341_due_gText::clearArea(uint16_t color)
 	/*
 	* fill the area with font background color
 	*/
+	//Serial << "clearing area from " << _area.x1 << " to " << _area.x2 << endl;
 	_ili->fillRect(_area.x1, _area.y1, _area.x2 - _area.x1+1, _area.y2-_area.y1+1, color);
 
 	/*glcd_Device::SetPixels(_area.x1, _area.y1, 
@@ -138,7 +141,7 @@ void ILI9341_due_gText::clearArea(uint16_t color)
 * @see ClearArea()
 */
 
-bool ILI9341_due_gText::defineArea(int16_t x, int16_t y, int16_t columns, int16_t rows, Font_t font) //, textMode mode)
+bool ILI9341_due_gText::defineArea(int16_t x, int16_t y, int16_t columns, int16_t rows, gTextFont font) //, textMode mode)
 {
 	textMode mode = DEFAULT_SCROLLDIR;
 	uint16_t x2,y2;
@@ -146,7 +149,7 @@ bool ILI9341_due_gText::defineArea(int16_t x, int16_t y, int16_t columns, int16_
 	selectFont(font);
 
 	x2 = x + columns * (pgm_read_byte(_font+GTEXT_FONT_FIXED_WIDTH)+1) -1;
-	y2 = y + rows * (pgm_read_byte(_font+GTEXT_FONT_HEIGHT)+1) -1;
+	y2 = y + rows * (fontHeight()+1) -1;
 
 	return defineArea(x, y, x2, y2); //, mode);
 }
@@ -527,7 +530,7 @@ void ILI9341_due_gText::specialChar(uint8_t c)
 
 	if(c == '\n')
 	{
-		uint8_t height = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
+		uint8_t height = fontHeight();
 
 		/*
 		* Erase all pixels remaining to edge of text area.on all wraps
@@ -711,7 +714,7 @@ int ILI9341_due_gText::putChar(uint8_t c)
 		return 1;
 	}
 	uint16_t charWidth = 0;
-	uint16_t charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
+	uint16_t charHeight = fontHeight();
 	uint8_t charHeightInBytes = (charHeight+7)/8; /* calculates height in rounded up bytes */
 
 	uint8_t firstChar = pgm_read_byte(_font+GTEXT_FONT_FIRST_CHAR);
@@ -800,9 +803,9 @@ int ILI9341_due_gText::putChar(uint8_t c)
 #endif
 	}
 
-	if(_fontMode == GTEXT_FONT_MODE_SOLID)
+	if(_fontMode == gTextFontMode_Solid)
 		drawSolidChar(c, index, charWidth, charHeight);
-	else if(_fontMode == GTEXT_FONT_MODE_TRANSPARENT)
+	else if(_fontMode == gTextFontMode_Transparent)
 		drawTransparentChar(c, index, charWidth, charHeight);
 
 	// last but not least, draw the character
@@ -826,8 +829,6 @@ int ILI9341_due_gText::putChar(uint8_t c)
 
 void ILI9341_due_gText::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight)
 {
-
-
 	uint8_t bitId=0;
 	int16_t cx = _x;
 	int16_t cy = _y;
@@ -911,12 +912,14 @@ void ILI9341_due_gText::drawSolidChar(char c, uint16_t index, uint16_t charWidth
 
 	_x += charWidth;
 
-	if(_letterSpacing > 0 && !_lastChar)
+	//Serial << " ending at " << _x  << " lastChar " << _lastChar <<endl;
+
+	if(_letterSpacing > 0 && !_isLastChar)
 	{
 		_ili->fillRect(_x, _y, _letterSpacing, charHeight, _fontBgColor);
 		_x+=_letterSpacing;
 	}
-	//Serial.println(_x);
+	//Serial << "letterSpacing " << _letterSpacing <<" x: " << _x <<endl;
 }
 
 void ILI9341_due_gText::drawTransparentChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight)
@@ -1029,7 +1032,7 @@ void ILI9341_due_gText::drawTransparentChar(char c, uint16_t index, uint16_t cha
 
 	_x += charWidth;
 
-	if(_letterSpacing > 0 && !_lastChar)
+	if(_letterSpacing > 0 && !_isLastChar)
 	{
 		_x+=_letterSpacing;
 	}
@@ -1056,11 +1059,11 @@ void ILI9341_due_gText::puts(char *str)
 	while(*str)
 	{
 		if(*(str+1) == 0)
-			_lastChar = true;
+			_isLastChar = true;
 		putChar((uint8_t)*str);
 		str++;
 	}
-	_lastChar = false;
+	_isLastChar = false;
 }
 
 /**
@@ -1110,164 +1113,6 @@ void ILI9341_due_gText::puts_P(PGM_P str)
 	{
 		putChar(c);
 		str++;
-	}
-}
-
-/**
-* output a character string at x,y coordinate
-*
-* @param str String class string
-* @param x specifies the horizontal location
-* @param y specifies the vertical location
-*
-*
-* Outputs all the characters in the string to the text area. 
-* X & Y are zero based pixel coordinates and are relative to 
-* the upper left corner of the text area.
-*
-* See putChar() for a full description of how characters are
-* written to the text area.
-*
-*
-* @see putChar()
-* @see puts()
-* @see puts_P()
-* @see drawString_P()
-* @see write()
-*/
-
-void ILI9341_due_gText::drawString(char *str, int16_t x, int16_t y)
-{
-	cursorToXY(x,y);
-	puts(str);
-}
-
-void ILI9341_due_gText::drawString(char *str, gTextAlign align)
-{
-	drawString(str, align, 0, 0, 0);
-	
-}
-
-void ILI9341_due_gText::drawString(char *str, gTextAlign align, uint16_t clearBeforeAfterWidth)
-{
-	drawString(str, align, 0, 0, clearBeforeAfterWidth);
-	
-}
-
-void ILI9341_due_gText::drawString(char *str, gTextAlign align, const uint16_t offsetX, const uint16_t offsetY)
-{
-	drawString(str, align, offsetX, offsetY, 0);
-}
-
-void ILI9341_due_gText::drawString(char *str, gTextAlign align, const uint16_t offsetX, const uint16_t offsetY, uint16_t clearBeforeAfterWidth)
-{
-	uint16_t charHeight = 0;
-	bool clearBefore = false, clearAfter = false;
-
-	switch(align)
-	{
-	case gTextAlignTopLeft:
-		{
-			_x = _area.x1;
-			_y = _area.y1;
-			if(clearBeforeAfterWidth != 0)
-				clearAfter = true;
-			break;
-		}
-	case gTextAlignTopCenter:
-		{
-			uint16_t strWidth = stringWidth(str);
-			_x = (_area.x2 - _area.x1 - strWidth)/2 + _area.x1;
-			_y = _area.y1;
-			if(clearBeforeAfterWidth != 0)
-				clearBefore = clearAfter = true;
-			break;
-		}
-	case gTextAlignTopRight:
-		{
-			uint16_t strWidth = stringWidth(str);
-			_x = _area.x2 - strWidth;
-			_y = _area.y1;
-			if(clearBeforeAfterWidth != 0)
-				clearBefore = true;
-			break;
-		}
-	case gTextAlignMiddleLeft:
-		{
-			charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
-			_x = _area.x1;
-			_y = (_area.y2-_area.y1-charHeight)/2 + _area.y1;
-			if(clearBeforeAfterWidth != 0)
-				clearAfter = true;
-			break;
-		}
-	case gTextAlignMiddleCenter:
-		{
-			charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
-			uint16_t strWidth = stringWidth(str);
-			_x = (_area.x2 - _area.x1 - strWidth)/2 + _area.x1;
-			_y = (_area.y2 - _area.y1-charHeight)/2 + _area.y1;
-			if(clearBeforeAfterWidth != 0)
-				clearBefore = clearAfter = true;
-			break;
-		}
-	case gTextAlignMiddleRight:
-		{
-			charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
-			uint16_t strWidth = stringWidth(str);
-			_x = _area.x2 - strWidth;
-			_y = (_area.y2-_area.y1-charHeight)/2 + _area.y1;
-			if(clearBeforeAfterWidth)
-				clearBefore = true;
-			break;
-		}
-	case gTextAlignBottomLeft:
-		{
-			charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
-			_x = _area.x1;
-			_y = _area.y2-charHeight;
-			if(clearBeforeAfterWidth != 0)
-				clearAfter = true;
-			break;
-		}
-	case gTextAlignBottomCenter:
-		{
-			charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
-			uint16_t strWidth = stringWidth(str);
-			_x = (_area.x2 - _area.x1 - strWidth)/2 + _area.x1;
-			_y = _area.y2-charHeight;
-			if(clearBeforeAfterWidth != 0)
-				clearBefore = clearAfter = true;
-			break;
-		}
-	case gTextAlignBottomRight:
-		{
-			charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
-			uint16_t strWidth = stringWidth(str);
-			_x = _area.x2 - strWidth;
-			_y = _area.y2 - charHeight;
-			if(clearBeforeAfterWidth != 0)
-				clearBefore = true;
-			break;
-		}
-	}
-	_x+=offsetX;
-	_y+=offsetY;
-
-	if(clearBefore)
-	{
-		if(charHeight == 0)
-			charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
-		_ili->fillRect(_x-clearBeforeAfterWidth, _y, clearBeforeAfterWidth, charHeight, _fontBgColor); 
-	}
-
-	puts(str);
-
-	if(clearAfter)
-	{
-		if(charHeight == 0)
-			charHeight = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
-		_ili->fillRect(_x, _y, clearBeforeAfterWidth, charHeight, _fontBgColor); 
 	}
 }
 
@@ -1329,6 +1174,312 @@ void ILI9341_due_gText::drawString_P(PGM_P str, int16_t x, int16_t y)
 }
 
 /**
+* output a character string at x,y coordinate
+*
+* @param str String class string
+* @param x specifies the horizontal location
+* @param y specifies the vertical location
+*
+*
+* Outputs all the characters in the string to the text area. 
+* X & Y are zero based pixel coordinates and are relative to 
+* the upper left corner of the text area.
+*
+* See putChar() for a full description of how characters are
+* written to the text area.
+*
+*
+* @see putChar()
+* @see puts()
+* @see puts_P()
+* @see drawString_P()
+* @see write()
+*/
+
+void ILI9341_due_gText::drawString(char *str, int16_t x, int16_t y)
+{
+	cursorToXY(x,y);
+	puts(str);
+}
+
+void ILI9341_due_gText::drawString(char *str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+{
+	cursorToXY(x,y);
+
+	// CLEAR PIXELS ON THE LEFT
+	if(pixelsClearedOnLeft > 0)
+		_ili->fillRect(_x-pixelsClearedOnLeft, _y, pixelsClearedOnLeft, fontHeight(), _fontBgColor); 
+
+	puts(str);
+
+	// CLEAR PIXELS ON THE RIGHT
+	if(pixelsClearedOnRight > 0)
+		_ili->fillRect(_x, _y, pixelsClearedOnRight, fontHeight(), _fontBgColor); 
+}
+
+void ILI9341_due_gText::drawString(char *str, int16_t x, int16_t y, gTextEraseLine eraseLine)
+{
+	cursorToXY(x,y);
+
+	// CLEAR PIXELS ON THE LEFT
+	if(eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
+	{
+		uint16_t clearX1 = max(min(_x, _area.x1), _x-65535);		
+		_ili->fillRect(clearX1, _y, _x - clearX1, fontHeight(), _fontBgColor); 
+	}
+
+	puts(str);
+
+	// CLEAR PIXELS ON THE RIGHT
+	if(eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
+	{
+		uint16_t clearX2 = min(max(_x,_area.x2), _x+65535);
+		_ili->fillRect(_x, _y, clearX2 - _x, fontHeight(), _fontBgColor); 
+	}
+}
+
+void ILI9341_due_gText::drawString(char *str, gTextAlign align)
+{
+	drawStringPivotedOffseted(str, align, gTextPivotDefault, 0, 0, 0, 0);
+}
+
+void ILI9341_due_gText::drawString(char *str, gTextAlign align, gTextEraseLine eraseLine)
+{
+	uint16_t pixelsClearedOnLeft = 0;
+	uint16_t pixelsClearedOnRight = 0;
+	if(eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnLeft = 65535;
+	if(eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnRight = 65535;
+	drawStringPivotedOffseted(str, align, gTextPivotDefault, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+void ILI9341_due_gText::drawString(char *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+{
+	drawStringPivotedOffseted(str, align, gTextPivotDefault, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+void ILI9341_due_gText::drawStringOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY)
+{
+	drawStringPivotedOffseted(str, align, gTextPivotDefault,offsetX, offsetY, 0, 0);
+}
+
+void ILI9341_due_gText::drawStringOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine)
+{
+	uint16_t pixelsClearedOnLeft = 0;
+	uint16_t pixelsClearedOnRight = 0;
+	if(eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnLeft = 65535;
+	if(eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnRight = 65535;
+	drawStringPivotedOffseted(str, align, gTextPivotDefault,offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+void ILI9341_due_gText::drawStringOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+{
+	drawStringPivotedOffseted(str, align, gTextPivotDefault,offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+void ILI9341_due_gText::drawStringPivoted(char *str, int16_t x, int16_t y, gTextPivot pivot)
+{
+	cursorToXY(x,y);
+
+	if(pivot != gTextPivotTopLeft && pivot != gTextPivotDefault)
+		applyPivot(str, pivot);
+
+	puts(str);
+}
+
+void ILI9341_due_gText::drawStringPivoted(char *str, gTextAlign align, gTextPivot pivot)
+{
+	drawStringPivotedOffseted(str, align, pivot, 0, 0, 0, 0);
+}
+
+void ILI9341_due_gText::drawStringPivoted(char *str, gTextAlign align, gTextPivot pivot, gTextEraseLine eraseLine)
+{
+	uint16_t pixelsClearedOnLeft = 0;
+	uint16_t pixelsClearedOnRight = 0;
+	if(eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnLeft = 65535;
+	if(eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnRight = 65535;
+	drawStringPivotedOffseted(str, align, pivot, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+void ILI9341_due_gText::drawStringPivoted(char *str, gTextAlign align, gTextPivot pivot, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+{
+	drawStringPivotedOffseted(str, align, pivot, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+void ILI9341_due_gText::drawStringPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY)
+{
+	drawStringPivotedOffseted(str, align, pivot, offsetX, offsetY, 0, 0);
+}
+
+void ILI9341_due_gText::drawStringPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine)
+{
+	uint16_t pixelsClearedOnLeft = 0;
+	uint16_t pixelsClearedOnRight = 0;
+	if(eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnLeft = 65535;
+	if(eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnRight = 65535;
+	drawStringPivotedOffseted(str, align, pivot, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+void ILI9341_due_gText::drawStringPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+{
+	//Serial << pixelsClearedOnLeft << " " << pixelsClearedOnRight << endl;
+	_x = _area.x1;
+	_y = _area.y1;
+
+	//PIVOT
+	if(pivot == gTextPivotDefault)
+	{
+		switch(align)
+		{
+		case gTextAlignTopLeft: { pivot = gTextPivotTopLeft; break;	}
+		case gTextAlignTopCenter: { pivot = gTextPivotTopCenter; break;	}
+		case gTextAlignTopRight: { pivot = gTextPivotTopRight; break; }
+		case gTextAlignMiddleLeft: { pivot = gTextPivotMiddleLeft; break; }
+		case gTextAlignMiddleCenter: { pivot = gTextPivotMiddleCenter; break; }
+		case gTextAlignMiddleRight: { pivot = gTextPivotMiddleRight; break; }
+		case gTextAlignBottomLeft: { pivot = gTextPivotBottomLeft; break; }
+		case gTextAlignBottomCenter: { pivot = gTextPivotBottomCenter; break; }
+		case gTextAlignBottomRight: { pivot = gTextPivotBottomRight; break; }
+		}
+	}
+
+	if(pivot != gTextPivotTopLeft)
+		applyPivot(str, pivot);
+
+	// ALIGN
+	if(align != gTextAlignTopLeft)
+	{
+		switch(align)
+		{
+		case gTextAlignTopCenter:
+			{
+				_x += (_area.x2 - _area.x1)/2;
+				break;
+			}
+		case gTextAlignTopRight:
+			{
+				_x += _area.x2 - _area.x1;
+				break;
+			}
+		case gTextAlignMiddleLeft:
+			{
+				_y += (_area.y2-_area.y1)/2;
+				break;
+			}
+		case gTextAlignMiddleCenter:
+			{
+				_x += (_area.x2 - _area.x1)/2;
+				_y += (_area.y2 - _area.y1)/2;
+				break;
+			}
+		case gTextAlignMiddleRight:
+			{
+				_x += _area.x2 - _area.x1;
+				_y += (_area.y2 - _area.y1)/2;
+				break;
+			}
+		case gTextAlignBottomLeft:
+			{
+				_y += _area.y2 - _area.y1;
+				break;
+			}
+		case gTextAlignBottomCenter:
+			{
+				_x += (_area.x2 - _area.x1)/2;
+				_y += _area.y2 - _area.y1;
+				break;
+			}
+		case gTextAlignBottomRight:
+			{
+				_x += _area.x2 - _area.x1;
+				_y += _area.y2 - _area.y1;
+				break;
+			}
+		}
+	}
+
+	// OFFSET
+	_x+=offsetX;
+	_y+=offsetY;
+
+	// CLEAR PIXELS ON THE LEFT
+	if(pixelsClearedOnLeft > 0)
+	{
+		uint16_t clearX1 = max(min(_x, _area.x1), _x-pixelsClearedOnLeft);		
+		_ili->fillRect(clearX1, _y, _x - clearX1, fontHeight(), _fontBgColor); 
+	}
+
+	puts(str);
+
+	// CLEAR PIXELS ON THE RIGHT
+	if(pixelsClearedOnRight > 0)
+	{
+		uint16_t clearX2 = min(max(_x,_area.x2), _x+pixelsClearedOnRight);
+		//Serial << "area from " << _area.x1 << " to " << _area.x2 << endl;
+		//Serial << "clearing on right from " << _x << " to " << clearX2 << endl;
+		_ili->fillRect(_x, _y, clearX2 - _x, fontHeight(), _fontBgColor); 
+	}
+}
+
+void ILI9341_due_gText::applyPivot(char *str, gTextPivot pivot)
+{
+	switch(pivot)
+	{
+	case gTextPivotTopCenter:
+		{
+			_x -= stringWidth(str)/2;
+			break;
+		}
+	case gTextPivotTopRight:
+		{
+			_x -= stringWidth(str);
+			break;
+		}
+	case gTextPivotMiddleLeft:
+		{
+			_y -= fontHeight()/2;
+			break;
+		}
+	case gTextPivotMiddleCenter:
+		{
+			_x -= stringWidth(str)/2;
+			_y -= fontHeight()/2;			
+			break;
+		}
+	case gTextPivotMiddleRight:
+		{
+			_x -= stringWidth(str);
+			_y -= fontHeight()/2;
+			break;
+		}
+	case gTextPivotBottomLeft:
+		{
+			_y -= fontHeight();
+			break;
+		}
+	case gTextPivotBottomCenter:
+		{
+			_x -= stringWidth(str)/2;
+			_y -= fontHeight();
+			break;
+		}
+	case gTextPivotBottomRight:
+		{
+			_x -= stringWidth(str);
+			_y -= fontHeight();
+			break;
+		}
+	}
+}
+
+/**
 * Positions cursor to a character based column and row.
 *
 * @param column specifies the horizontal position 
@@ -1357,7 +1508,7 @@ void ILI9341_due_gText::cursorTo( uint8_t column, uint8_t row)
 	*/
 
 	_x = column * (pgm_read_byte(_font+GTEXT_FONT_FIXED_WIDTH)+1) + _area.x1;
-	_y = row * (pgm_read_byte(_font+GTEXT_FONT_HEIGHT)+1) + _area.y1;
+	_y = row * (fontHeight()+1) + _area.y1;
 
 #ifndef GLCD_NODEFER_SCROLL
 	/*
@@ -1467,25 +1618,24 @@ void ILI9341_due_gText::cursorToXY( int16_t x, int16_t y)
 * @see eraseLine_t
 */
 
-void ILI9341_due_gText::eraseTextLine(uint16_t color, eraseLine_t type) 
+void ILI9341_due_gText::eraseTextLine(uint16_t color, gTextEraseLine type) 
 {
-
 	int16_t x = _x;
 	int16_t y = _y;
-	int16_t height = pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
+	int16_t height = fontHeight();
 	//uint8_t color = (_fontColor == BLACK) ? WHITE : BLACK;
 
 	switch(type)
 	{
-	case eraseTO_EOL:
+	case gTextEraseToEOL:
 		_ili->fillRect(x, y, _area.x2-x, height, color);
 		//glcd_Device::SetPixels(x, y, _area.x2, y+height, color);
 		break;
-	case eraseFROM_BOL:
+	case gTextEraseFromBOL:
 		_ili->fillRect(_area.x1, y, x - _area.x1, height, color);
 		//glcd_Device::SetPixels(_area.x1, y, x, y+height, color);
 		break;
-	case eraseFULL_LINE:
+	case gTextEraseFullLine:
 		_ili->fillRect(_area.x1, y, _area.x2 - _area.x1, height, color);
 		//glcd_Device::SetPixels(_area.x1, y, _area.x2, y+height, color);
 		break;
@@ -1512,7 +1662,7 @@ void ILI9341_due_gText::eraseTextLine(uint16_t color, eraseLine_t type)
 void ILI9341_due_gText::eraseTextLine(uint16_t color, uint8_t row)
 {
 	cursorTo(0, row);
-	eraseTextLine(color, eraseTO_EOL);	
+	eraseTextLine(color, gTextEraseToEOL);	
 }
 
 
@@ -1545,15 +1695,22 @@ void ILI9341_due_gText::eraseTextLine(uint16_t color, uint8_t row)
 * @see SetTextMode()
 */
 
-void ILI9341_due_gText::selectFont(Font_t font)
+void ILI9341_due_gText::selectFont(gTextFont font)
 {
 	_font = font;
 }
 
-void ILI9341_due_gText::selectFont(Font_t font, uint16_t fontColor)
+void ILI9341_due_gText::selectFont(gTextFont font, uint16_t fontColor)
 {
 	_font = font;
 	_fontColor = fontColor;
+}
+
+void ILI9341_due_gText::selectFont(gTextFont font, uint16_t fontColor, uint16_t backgroundColor)
+{
+	_font = font;
+	_fontColor = fontColor;
+	_fontBgColor = backgroundColor;
 }
 
 /**
@@ -1595,9 +1752,9 @@ void ILI9341_due_gText::setFontLetterSpacing(uint8_t letterSpacing)
 }
 
 
-void ILI9341_due_gText::setFontMode(uint8_t fontMode)
+void ILI9341_due_gText::setFontMode(gTextFontMode fontMode)
 {
-	if(fontMode == GTEXT_FONT_MODE_SOLID || fontMode == GTEXT_FONT_MODE_TRANSPARENT)
+	if(fontMode == gTextFontMode_Solid || fontMode == gTextFontMode_Transparent)
 		_fontMode = fontMode;
 }
 
@@ -1628,15 +1785,7 @@ void ILI9341_due_gText::SetTextMode(textMode mode)
 #endif
 
 
-uint8_t ILI9341_due_gText::fontHeight()
-{
-	return pgm_read_byte(_font+GTEXT_FONT_HEIGHT);
-}
 
-uint8_t ILI9341_due_gText::fontHeight(Font_t font)
-{
-	return pgm_read_byte(font+GTEXT_FONT_HEIGHT);
-}
 
 /**
 * Returns the pixel width of a character
@@ -1669,6 +1818,7 @@ uint16_t ILI9341_due_gText::charWidth(uint8_t c)
 		if(c >= firstChar && c < (firstChar+charCount)) {
 			c -= firstChar;
 			width = pgm_read_byte(_font+GTEXT_FONT_WIDTH_TABLE+c);
+			//Serial << "strWidth of " << c << " : " << width << endl;
 		}
 	}	
 	return width;
@@ -1693,7 +1843,8 @@ uint16_t ILI9341_due_gText::stringWidth(const char* str)
 	while(*str != 0) {
 		width += charWidth(*str++) + _letterSpacing;
 	}
-	width -= _letterSpacing;
+	if(width > 0)
+		width -= _letterSpacing;
 	return width;
 }
 

@@ -14,14 +14,14 @@ MIT license, all text above must be included in any redistribution
 ****************************************************/
 
 
-#include <SPI.h>
+//#include <SPI.h>
 #include <ILI_SdSpi.h>
 #include <ILI_SdFatConfig.h>
 #include <ILI9341_due_gText.h>
 #include <ILI9341_due.h>
 #include "fonts\Arial_bold_14.h"
 
-// For the Adafruit shield, these are the default.
+
 #define TFT_DC 9
 #define TFT_CS 10
 
@@ -50,7 +50,7 @@ void setup() {
 	Serial.println("ILI9341 Test!"); 
 
 	tft.begin();
-	tft.setRotation(3);
+	tft.setRotation(iliRotation270);
 	tft.fillScreen(ILI9341_BLUE);
 	t1.defineArea(30, 30, 26, 12, Arial_bold_14);
 	t1.selectFont(Arial_bold_14);
@@ -68,7 +68,7 @@ void setup() {
 	t1.drawString(mode, tft.width()/2 - t1.stringWidth(mode) / 2 - 30, 80);
 
 	delay(3000);
-	tft.setRotation(0);
+	tft.setRotation(iliRotation0);
 	// read diagnostics (optional but can help debug problems)
 	uint8_t x = tft.readcommand8(ILI9341_RDMODE);
 	Serial.print("Display Power Mode: 0x"); Serial.println(x, HEX);
@@ -135,7 +135,7 @@ void setup() {
 	Serial.println(F("Done!"));
 
 	tft.fillScreen(ILI9341_BLUE);
-	tft.setRotation(3);
+	tft.setRotation(iliRotation270);
 	t1.cursorToXY(45, 80);
 	t1.print("Total time: ");
 	t1.print((micros() - start)/1000);
@@ -148,7 +148,7 @@ void setup() {
 
 void printStats()
 {
-	tft.setRotation(3);
+	tft.setRotation(iliRotation270);
 	tft.fillScreen(ILI9341_BLUE);
 	t1.cursorTo(0, 0);
 	t1.print("Screen fill              "); t1.cursorTo(18); t1.print(Screenfill);

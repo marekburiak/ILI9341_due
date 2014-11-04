@@ -1,5 +1,5 @@
 /*
-v0.92.002
+v0.93.000
 
 ILI9341_due_.h - Arduino Due library for interfacing with ILI9341-based TFTs
 
@@ -157,6 +157,12 @@ MIT license, all text above must be included in any redistribution
 #define ILI9341_WHITE   0xFFFF
 
 typedef uint8_t pwrLevel;
+typedef enum {
+	iliRotation0 = 0,
+	iliRotation90 = 1,
+	iliRotation180 = 2,
+	iliRotation270 = 3
+} iliRotation;
 
 // Normal Mode On (full display), Idle Mode Off, Sleep Out. 
 // In this mode, the display is able to show maximum 262,144 colors. 
@@ -195,7 +201,7 @@ public:
 	void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
 	void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 	void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
-	void setRotation(uint8_t r);
+	void setRotation(iliRotation r);
 	void invertDisplay(boolean i);
 	void display(boolean d);
 	void normalModeOn();
@@ -246,24 +252,24 @@ public:
 	inline __attribute__((always_inline))
 		void drawArc(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float start, float end, uint16_t color)
 	{
-		if(start == 0  && end == myArcAngleMax)
-			drawArcOffsetted(cx,cy,radius,thickness,0, myArcAngleMax, color);
+		if(start == 0  && end == _arcAngleMax)
+			drawArcOffsetted(cx,cy,radius,thickness,0, _arcAngleMax, color);
 		else
-			drawArcOffsetted(cx,cy,radius,thickness,start+(myArcAngleOffset/(float)360)*myArcAngleMax, end+(myArcAngleOffset/(float)360)*myArcAngleMax, color);
+			drawArcOffsetted(cx,cy,radius,thickness,start+(_arcAngleOffset/(float)360)*_arcAngleMax, end+(_arcAngleOffset/(float)360)*_arcAngleMax, color);
 	}
 
 	int32_t cos_lookup(int32_t angle)
 	{
-		float radians = (float)angle/myArcAngleMax * 2 * PI;
+		float radians = (float)angle/_arcAngleMax * 2 * PI;
 		//Serial << "COS_LOOKUP angle:" << (float)angle << " radians:" << radians << " cos:" << cos(radians) << " return: " << cos(radians) * (double)65535 << endl;
-		return (cos(radians) * myArcAngleMax);
+		return (cos(radians) * _arcAngleMax);
 	}
 
 	int32_t sin_lookup(int32_t angle)
 	{
-		float radians = (float)angle/myArcAngleMax * 2 * PI;
+		float radians = (float)angle/_arcAngleMax * 2 * PI;
 		//Serial << "SIN_LOOKUP angle:" << (float)angle << " radians:" << radians << " sin:" << sin(radians) << " return: " << sin(radians) * (double)65535 << endl;
-		return (sin(radians) * myArcAngleMax);
+		return (sin(radians) * _arcAngleMax);
 	}
 
 
@@ -994,16 +1000,15 @@ public:
 protected:
 	int16_t
 		_width, _height, // Display w/h as modified by current rotation
-		cursor_x, cursor_y;
+		_cursorX, _cursorY;
 	uint16_t
-		textcolor, textbgcolor;
-	uint8_t
-		textsize,
-		rotation;
+		_textcolor, _textbgcolor;
+	uint8_t	_textsize;
+	iliRotation	_rotation;
 	boolean
-		wrap; // If set, 'wrap' text at right edge of display
-	float myArcAngleMax;
-	int myArcAngleOffset;
+		_wrap; // If set, 'wrap' text at right edge of display
+	float _arcAngleMax;
+	int _arcAngleOffset;
 
 	void drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uint16_t color);
 	void drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float startAngle, float endAngle, uint16_t color);

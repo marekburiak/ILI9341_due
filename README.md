@@ -6,6 +6,15 @@ Please see http://marekburiak.github.io/ILI9341_due
 
 Version History:
 ```
+v0.93.000 - Breaking changes:
+                - setRotation now needs iliRotation enum as a parameter (instead of an int)
+                - some of gText drawString functions have parameters of different meaning 
+                  (event though the parameter type is the same)
+          - new additions:
+                - gText drawString with new parameters
+                - new gText drawStringOffseted, drawStringPivoted, drawStringPivotedOffseted 
+                  functions
+
 v0.92.002 - Fixed drawArc
 		  - Added setArcParams function to change maxArcAngle and arcAngleOffset at runtime
 

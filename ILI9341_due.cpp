@@ -87,13 +87,13 @@ ILI9341_due::ILI9341_due(uint8_t cs, uint8_t dc, uint8_t rst)
 	_rst  = rst;
 	_width    = ILI9341_TFTWIDTH;
 	_height   = ILI9341_TFTHEIGHT;
-	rotation  = 0;
-	cursor_y  = cursor_x    = 0;
-	textsize  = 1;
-	textcolor = textbgcolor = 0xFFFF;
-	wrap      = true;
-	myArcAngleMax = ARC_ANGLE_MAX;
-	myArcAngleOffset = ARC_ANGLE_OFFSET;
+	_rotation  = iliRotation0;
+	_cursorY  = _cursorX    = 0;
+	_textsize  = 1;
+	_textcolor = _textbgcolor = 0xFFFF;
+	_wrap      = true;
+	_arcAngleMax = ARC_ANGLE_MAX;
+	_arcAngleOffset = ARC_ANGLE_OFFSET;
 }
 
 
@@ -384,27 +384,27 @@ void ILI9341_due::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t 
 #define MADCTL_BGR 0x08
 #define MADCTL_MH  0x04
 
-void ILI9341_due::setRotation(uint8_t m)
+void ILI9341_due::setRotation(iliRotation r)
 {
 	writecommand_cont(ILI9341_MADCTL);
-	rotation = m % 4; // can't be higher than 3
-	switch (rotation) {
-	case 0:
+	_rotation = r;
+	switch (r) {
+	case iliRotation0:
 		writedata8_last(MADCTL_MX | MADCTL_BGR);
 		_width  = ILI9341_TFTWIDTH;
 		_height = ILI9341_TFTHEIGHT;
 		break;
-	case 1:
+	case iliRotation90:
 		writedata8_last(MADCTL_MV | MADCTL_BGR);
 		_width  = ILI9341_TFTHEIGHT;
 		_height = ILI9341_TFTWIDTH;
 		break;
-	case 2:
+	case iliRotation180:
 		writedata8_last(MADCTL_MY | MADCTL_BGR);
 		_width  = ILI9341_TFTWIDTH;
 		_height = ILI9341_TFTHEIGHT;
 		break;
-	case 3:
+	case iliRotation270:
 		writedata8_last(MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR);
 		_width  = ILI9341_TFTHEIGHT;
 		_height = ILI9341_TFTWIDTH;
@@ -502,8 +502,8 @@ void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 	float startAngle, endAngle;
 
 	//Serial << "start: " << start << " end: " << end << endl;
-	startAngle = (start / myArcAngleMax) * 360;	// 252
-	endAngle = (end / myArcAngleMax) * 360;		// 807
+	startAngle = (start / _arcAngleMax) * 360;	// 252
+	endAngle = (end / _arcAngleMax) * 360;		// 807
 	//Serial << "startAngle: " << startAngle << " endAngle: " << endAngle << endl;
 
 	while (startAngle < 0) startAngle += 360;
@@ -514,8 +514,8 @@ void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 	//if (endAngle == 0) endAngle = 360;
 
 	if (startAngle > endAngle) {
-		drawArcOffsetted(cx, cy, radius, thickness, ((startAngle)/(float)360) * myArcAngleMax, myArcAngleMax, color);
-		drawArcOffsetted(cx, cy, radius, thickness, 0, ((endAngle)/(float)360) * myArcAngleMax, color);
+		drawArcOffsetted(cx, cy, radius, thickness, ((startAngle)/(float)360) * _arcAngleMax, _arcAngleMax, color);
+		drawArcOffsetted(cx, cy, radius, thickness, 0, ((endAngle)/(float)360) * _arcAngleMax, color);
 	} else {
 		// Calculate bounding box for the arc to be drawn
 		cosStart = cos_lookup2(startAngle);
@@ -628,7 +628,7 @@ void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 							y = y2s;	// reset y and continue with pixel by pixel search
 							y2EndSearching = true;
 						}
-						
+
 						//Serial << "Upper line length: " << (y1e - y1s) << " Setting y to " << y << endl;
 					}
 					else if(y2StartFound && !y2EndSearching)
@@ -1239,16 +1239,16 @@ void ILI9341_due::drawBitmap(int16_t x, int16_t y,
 
 size_t ILI9341_due::write(uint8_t c) {
 	if (c == '\n') {
-		cursor_y += textsize*8;
-		cursor_x  = 0;
+		_cursorY += _textsize*8;
+		_cursorX  = 0;
 	} else if (c == '\r') {
 		// skip em
 	} else {
-		drawChar(cursor_x, cursor_y, c, textcolor, textbgcolor, textsize);
-		cursor_x += textsize*6;
-		if (wrap && (cursor_x > (_width - textsize*6))) {
-			cursor_y += textsize*8;
-			cursor_x = 0;
+		drawChar(_cursorX, _cursorY, c, _textcolor, _textbgcolor, _textsize);
+		_cursorX += _textsize*6;
+		if (_wrap && (_cursorX > (_width - _textsize*6))) {
+			_cursorY += _textsize*8;
+			_cursorX = 0;
 		}
 	}
 	return 1;
@@ -1418,31 +1418,31 @@ void ILI9341_due::drawChar(int16_t x, int16_t y, unsigned char c,
 }
 
 void ILI9341_due::setCursor(int16_t x, int16_t y) {
-	cursor_x = x;
-	cursor_y = y;
+	_cursorX = x;
+	_cursorY = y;
 }
 
 void ILI9341_due::setTextSize(uint8_t s) {
-	textsize = (s > 0) ? s : 1;
+	_textsize = (s > 0) ? s : 1;
 }
 
 void ILI9341_due::setTextColor(uint16_t c) {
 	// For 'transparent' background, we'll set the bg 
 	// to the same as fg instead of using a flag
-	textcolor = textbgcolor = c;
+	_textcolor = _textbgcolor = c;
 }
 
 void ILI9341_due::setTextColor(uint16_t c, uint16_t b) {
-	textcolor   = c;
-	textbgcolor = b; 
+	_textcolor   = c;
+	_textbgcolor = b; 
 }
 
 void ILI9341_due::setTextWrap(boolean w) {
-	wrap = w;
+	_wrap = w;
 }
 
 uint8_t ILI9341_due::getRotation(void) {
-	return rotation;
+	return _rotation;
 }
 
 // if true, tft will be blank (white), 
@@ -1485,8 +1485,8 @@ void ILI9341_due::setPowerLevel(pwrLevel p)
 
 void ILI9341_due::setArcParams(float arcAngleMax, int arcAngleOffset)
 {
-	myArcAngleMax = arcAngleMax;
-	myArcAngleOffset = arcAngleOffset;
+	_arcAngleMax = arcAngleMax;
+	_arcAngleOffset = arcAngleOffset;
 }
 
 //uint8_t ILI9341_due::spiread(void) {

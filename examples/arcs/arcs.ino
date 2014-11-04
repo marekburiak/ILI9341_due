@@ -1,5 +1,5 @@
 
-#include <SPI.h>
+//#include <SPI.h>
 #include <ILI_SdSpi.h>
 #include <ILI_SdFatConfig.h>
 #include <ILI9341_due_gText.h>
@@ -24,11 +24,11 @@ uint16_t colorDarkGray = tft.color565(64,64,64);
 
 void setup()
 {
-	Serial.begin(115200);
+	Serial.begin(9600);
 	while (!Serial) ; // wait for Arduino Serial Monitor
 
 	tft.begin();
-	tft.setRotation(3);
+	tft.setRotation(iliRotation270);
 
 	screenIntro();
 	delay(2000);
@@ -85,6 +85,7 @@ void screenClock()
 	tft.drawArc(x,y,102,11,0,225, colorLightGray);	// 15 hours
 	tft.drawArc(x,y,113,8,0,36, colorGray);	// 6 minutes
 	tft.drawArc(x,y,120,5,0,360, colorDarkGray);	// seconds
+
 	for(uint16_t d=324; d<372; d++)
 	{
 		tft.drawArc(x,y,120,5,d-1,d+1, ILI9341_RED);
@@ -113,7 +114,7 @@ void screenPie()
 
 	t1.defineArea(0,0,220,180);
 	t1.selectFont(roboto16);
-	t1.setFontMode(GTEXT_FONT_MODE_TRANSPARENT);
+	t1.setFontMode(gTextFontMode_Transparent);
 	t1.setFontColor(ILI9341_BLACK);
 	t1.drawString("16%",175,70);
 	t1.drawString("78%",140,150);
@@ -139,11 +140,11 @@ void screenSensors()
 
 	tft.fillScreen(ILI9341_BLACK);
 
-	t1.setFontMode(GTEXT_FONT_MODE_SOLID);
+	t1.setFontMode(gTextFontMode_Solid);
 	t1.setFontLetterSpacing(3);
-	t2.setFontMode(GTEXT_FONT_MODE_SOLID);
+	t2.setFontMode(gTextFontMode_Solid);
 	t2.setFontLetterSpacing(3);
-	t3.setFontMode(GTEXT_FONT_MODE_SOLID);
+	t3.setFontMode(gTextFontMode_Solid);
 	t3.setFontLetterSpacing(3);
 
 	t1.defineArea(s1x,s1y,s1x+2*radius,s1y+2*radius);	
@@ -153,7 +154,7 @@ void screenSensors()
 	t1.setFontColor(ILI9341_WHITE);
 	tft.drawArc(s1x+radius,s1y+radius,radius,10,-3,3, tft.color565(127,0,27));
 	t1.selectFont(roboto16);
-	t1.drawString("C", gTextAlignMiddleCenter, 0, 25);
+	t1.drawStringOffseted("C", gTextAlignMiddleCenter, 0, 25);
 	t1.selectFont(roboto32);
 	sprintf(textBuff, "%4.1f", temp);
 	t1.drawString(textBuff, gTextAlignMiddleCenter);
@@ -168,7 +169,7 @@ void screenSensors()
 	t2.setFontColor(ILI9341_WHITE);
 	tft.drawArc(s2x+radius,s2y+radius,radius,10,-3,3, tft.color565(0,43,127));
 	t2.selectFont(roboto16);	
-	t2.drawString("%", gTextAlignMiddleCenter, 0, 25);
+	t2.drawStringOffseted("%", gTextAlignMiddleCenter, 0, 25);
 	t2.selectFont(roboto32);
 	sprintf(textBuff, "%d", hum);
 	t2.drawString(textBuff, gTextAlignMiddleCenter);
@@ -182,7 +183,7 @@ void screenSensors()
 	t3.setFontColor(ILI9341_WHITE);
 	tft.drawArc(s3x+radius,s3y+radius,radius,10,-3,3, tft.color565(127,103,6));
 	t3.selectFont(roboto16);
-	t3.drawString("lux", gTextAlignMiddleCenter, 0, 25);
+	t3.drawStringOffseted("lux", gTextAlignMiddleCenter, 0, 25);
 	t3.selectFont(roboto32);
 	sprintf(textBuff, "%d", lux);
 	t3.drawString(textBuff, gTextAlignMiddleCenter);
@@ -199,9 +200,9 @@ void screenSensors()
 		if(d<220 )
 		{
 			lux+=21;
-		
+
 			sprintf(textBuff, "%d", lux);
-			t3.drawString(textBuff, gTextAlignMiddleCenter, 3);
+			t3.drawString(textBuff, gTextAlignMiddleCenter, 3, 3);
 			tft.drawArc(s3x+radius,s3y+radius,radius,10, ((float)lux/(float)10000)*360,((float)lux/(float)10000)*360+3, tft.color565(127,103,6));
 			tft.drawArc(s3x+radius,s3y+radius,radius-3,4,((float)lux/(float)10000)*360-4,((float)lux/(float)10000)*360, tft.color565(255,206,13));
 		}
@@ -213,7 +214,7 @@ void screenSensors()
 		{
 			temp+=0.1;
 			sprintf(textBuff, "%4.1f", temp);
-			t1.drawString(textBuff, gTextAlignMiddleCenter, 3);
+			t1.drawString(textBuff, gTextAlignMiddleCenter, 3, 3);
 			tft.drawArc(s1x+radius,s1y+radius,radius,10,temp*10,temp*10+3, tft.color565(127,0,27));
 			tft.drawArc(s1x+radius,s1y+radius,radius-3,4,temp*10-2,temp*10, tft.color565(255,0,54));
 			delay(random(350, 700));
@@ -222,7 +223,7 @@ void screenSensors()
 		{
 			hum+=1;
 			sprintf(textBuff, "%d", hum);
-			t2.drawString(textBuff, gTextAlignMiddleCenter, 3);
+			t2.drawString(textBuff, gTextAlignMiddleCenter, 3, 3);
 			tft.drawArc(s2x+radius,s2y+radius,radius,10,(float)hum*3.6-4,(float)hum*3.6+3, tft.color565(0,43,127));
 			tft.drawArc(s2x+radius,s2y+radius,radius-3,4,(float)hum*3.6-5,(float)hum*3.6, tft.color565(0,86,255));
 		}

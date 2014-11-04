@@ -14,7 +14,7 @@
  ****************************************************/
 
 
-#include "SPI.h"
+//#include <SPI.h>
 #include <ILI_SdSpi.h>
 #include <ILI_SdFatConfig.h>
 #include <ILI9341_due_gText.h>
@@ -102,7 +102,7 @@ void setup() {
 
 void loop(void) {
   for(uint8_t rotation=0; rotation<4; rotation++) {
-    tft.setRotation(rotation);
+    tft.setRotation((iliRotation)rotation);
     testText();
     delay(1000);
   }

@@ -11,7 +11,7 @@
 #include "fonts\Arial14.h"
 //#include "Streaming.h"
 // For the Adafruit shield, these are the default.
-#define TFT_DC 42
+#define TFT_DC 9
 #define TFT_CS 10
 // Use hardware SPI (on Uno, #13, #12, #11) and the above for CS/DC
 ILI9341_due tft = ILI9341_due(TFT_CS, TFT_DC);
@@ -43,11 +43,10 @@ void setup()
    // TFT 2.2" SPI 
   Serial.begin(9600);
   tft.begin();
-  tft.setRotation(3);  
+  tft.setRotation(iliRotation270);  
   tft.fillScreen(colorFONDO);
   t1.defineArea(0, 0, 320, 240);
   t1.selectFont(Arial14);
-  t1.setFontLetterSpacing(2);
 }
 
 void ILI9341duenodelay() 
@@ -65,7 +64,7 @@ void ILI9341duenodelay()
 //ILI9341due NEW
   tft.fillRect(0, 0, 320, 15,RED);
   t1.setFontColor(WHITE, RED);
-  t1.drawString("* ILI9341due UTFT 240x320 Demo *", 47,0);  
+  t1.drawString("* ILI9341_due UTFT 240x320 Demo *", 47,0);  
   tft.fillRect(0, 226, 320, 240,tft.color565(64, 64, 64));
   t1.setFontColor(YELLOW, tft.color565(64, 64, 64));
   t1.drawString("<http://electronics.henningkarlsen.com>", gTextAlignBottomCenter,227);  
