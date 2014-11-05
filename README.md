@@ -14,6 +14,7 @@ v0.93.000 - Breaking changes:
                 - gText drawString with new parameters
                 - new gText drawStringOffseted, drawStringPivoted, drawStringPivotedOffseted 
                   functions
+          - gText fontLetterSpacing default value is now 2 (previously 0)
           - examples updated
 
 v0.92.002 - Fixed drawArc
