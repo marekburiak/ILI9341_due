@@ -6,7 +6,9 @@ Please see http://marekburiak.github.io/ILI9341_due
 
 Version History:
 ```
-v0.94.000 - Added AVR compatibility, the library can now be also used on Uno, Mega and alike
+v0.94.000 - Added AVR compatibility, the library can now be also used on Uno, Mega and alike.
+			Please check the github.io page for more information (especially if you want to
+			use gText)
 v0.93.000 - Breaking changes:
                 - setRotation now needs iliRotation enum as a parameter (instead of an int)
                 - the meaning of some gText drawString parameters have changed 
