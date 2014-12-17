@@ -179,6 +179,7 @@ tft.setSPIClockDivider(ILI9341_SPI_CLKDIVIDER); // restore the frequency</code><
             <div style="text-align: center">
                 <img src="images\avr.jpg" />
             </div>
+            <p>The only mode available for AVR is SPI_MODE_NORMAL so you need to include SPI.h in your sketch. The library is faster than the original Adafruit one but do not expect DMA-like speed increase. It is comparable to some other tweaked Adafruit libraries out there and you get things like gText and arcs.</p>
             <p>
                 In order to decrease ROM/RAM requirements, you can comment out 2 features in ILI9341_due.h:
                 <pre lang="Arduino"><code>// commenting out/disabling the ARC feature will exclude the drawArc function. It is going to save a few ROM bytes.
@@ -191,17 +192,17 @@ tft.setSPIClockDivider(ILI9341_SPI_CLKDIVIDER); // restore the frequency</code><
             <p>
                 <h4>Using gText on AVR</h4>
                 If you are using your custom fonts (generated with GLCDFontCreator2) you need to manually modify the generated .c file in order to make it succesfully compile for AVR. After you generate the .c file the array definition will look something like this:
-
-                <pre lang="Arduino"><code>static uint8_t Arial_14[] PROGMEM = {</code></pre>
+            </p>
+            <pre lang="Arduino"><code>static uint8_t Arial_14[] PROGMEM = {</code></pre>
 
             <p>
                 If you do not change anything the compiler will complain with:
             </p>
-                error: variable 'Arial_14' must be const in order to be put into read-only section by means of '__attribute__((progmem))'<br /><br />
-                In order to fix it you need to add "const" so it will look like this:
-                
-                <pre lang="Arduino"><code>static const uint8_t Arial_14[] PROGMEM = {</code></pre>
-            </p>
+            error: variable 'Arial_14' must be const in order to be put into read-only section by means of '__attribute__((progmem))'<br /><br />
+            In order to fix it you need to add "const" so it will look like this:
+
+            <pre lang="Arduino"><code>static const uint8_t Arial_14[] PROGMEM = {</code></pre>
+
             <br />
             <h3>Known bugs/issues/missing functionality</h3>
 
