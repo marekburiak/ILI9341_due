@@ -180,7 +180,7 @@ tft.setSPIClockDivider(ILI9341_SPI_CLKDIVIDER); // restore the frequency</code><
                 <img src="images\avr.jpg" />
             </div>
             <p>The only mode available for AVR is SPI_MODE_NORMAL so you need to include SPI.h in your sketch. The library is faster than the original Adafruit one but do not expect DMA-like speed increase. It is comparable to some other tweaked Adafruit libraries out there and you get things like gText and arcs.
-            Not all library examples will work. It is because of smaller RAM/ROM space available on AVRs.</p>
+            Not all library examples will work. It is because of smaller ROM/RAM space available on AVRs.</p>
             <p>
                 In order to decrease ROM/RAM requirements, you can comment out 2 features in ILI9341_due.h:
                 <pre lang="Arduino"><code>// commenting out/disabling the ARC feature will exclude the drawArc function. It is going to save a few ROM bytes.
