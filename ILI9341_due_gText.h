@@ -31,7 +31,7 @@ along with ILI9341_due.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef	ILI9341_GTEXT_H
 #define ILI9341_GTEXT_H
 
-#include "WString.h"
+//#include "WString.h"
 //#include "../Streaming/Streaming.h" 
 #include "ILI9341_due.h"
 

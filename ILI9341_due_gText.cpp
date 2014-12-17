@@ -690,17 +690,13 @@ void ILI9341_due_gText::specialChar(uint8_t c)
 * wrapping, the entire text area will be scrolled to make room for a new
 * line of text. The scroll direction will be up or down
 * depending on the scroll direction for the text area.
-* 
-* @see puts()
-* @see puts_P()
-* @see write()
 */
 
 int ILI9341_due_gText::putChar(uint8_t c)
 {
 	if(_font == 0)
 	{
-		Serial.println("No font selected");
+		Serial.println(F("No font selected"));
 		return 0; // no font selected
 	}
 
@@ -1046,12 +1042,6 @@ void ILI9341_due_gText::drawTransparentChar(char c, uint16_t index, uint16_t cha
 * Outputs all the characters in the string to the text area. 
 * See putChar() for a full description of how characters are
 * written to the text area.
-*
-* @see putChar()
-* @see puts_P()
-* @see drawString()
-* @see drawString_P()
-* @see write()
 */
 
 void ILI9341_due_gText::puts(char *str)
@@ -1075,11 +1065,6 @@ void ILI9341_due_gText::puts(char *str)
 * See putChar() for a full description of how characters are
 * written to the text area.
 *
-* @see putChar()
-* @see puts_P()
-* @see drawString()
-* @see drawString_P()
-* @see write()
 */
 void ILI9341_due_gText::puts(const String &str)
 {
@@ -1130,13 +1115,6 @@ void ILI9341_due_gText::puts_P(PGM_P str)
 *
 * See putChar() for a full description of how characters are
 * written to the text area.
-*
-*
-* @see putChar()
-* @see puts()
-* @see puts_P()
-* @see drawString_P()
-* @see write()
 */
 void ILI9341_due_gText::drawString(String &str, int16_t x, int16_t y)
 {
@@ -1158,13 +1136,6 @@ void ILI9341_due_gText::drawString(String &str, int16_t x, int16_t y)
 *
 * See putChar() for a full description of how characters are
 * written to the text area.
-*
-*
-* @see putChar()
-* @see puts()
-* @see puts_P()
-* @see drawString()
-* @see write()
 */
 
 void ILI9341_due_gText::drawString_P(PGM_P str, int16_t x, int16_t y)
@@ -1187,13 +1158,6 @@ void ILI9341_due_gText::drawString_P(PGM_P str, int16_t x, int16_t y)
 *
 * See putChar() for a full description of how characters are
 * written to the text area.
-*
-*
-* @see putChar()
-* @see puts()
-* @see puts_P()
-* @see drawString_P()
-* @see write()
 */
 
 void ILI9341_due_gText::drawString(char *str, int16_t x, int16_t y)
@@ -1224,7 +1188,7 @@ void ILI9341_due_gText::drawString(char *str, int16_t x, int16_t y, gTextEraseLi
 	// CLEAR PIXELS ON THE LEFT
 	if(eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
 	{
-		uint16_t clearX1 = max(min(_x, _area.x1), _x-65535);		
+		uint16_t clearX1 = max(min(_x, _area.x1), _x-1024);		
 		_ili->fillRect(clearX1, _y, _x - clearX1, fontHeight(), _fontBgColor); 
 	}
 
@@ -1233,7 +1197,7 @@ void ILI9341_due_gText::drawString(char *str, int16_t x, int16_t y, gTextEraseLi
 	// CLEAR PIXELS ON THE RIGHT
 	if(eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
 	{
-		uint16_t clearX2 = min(max(_x,_area.x2), _x+65535);
+		uint16_t clearX2 = min(max(_x,_area.x2), _x+1024);
 		_ili->fillRect(_x, _y, clearX2 - _x, fontHeight(), _fontBgColor); 
 	}
 }
@@ -1248,9 +1212,9 @@ void ILI9341_due_gText::drawString(char *str, gTextAlign align, gTextEraseLine e
 	uint16_t pixelsClearedOnLeft = 0;
 	uint16_t pixelsClearedOnRight = 0;
 	if(eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
-		pixelsClearedOnLeft = 65535;
+		pixelsClearedOnLeft = 1024;
 	if(eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
-		pixelsClearedOnRight = 65535;
+		pixelsClearedOnRight = 1024;
 	drawStringPivotedOffseted(str, align, gTextPivotDefault, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
@@ -1269,9 +1233,9 @@ void ILI9341_due_gText::drawStringOffseted(char *str, gTextAlign align, uint16_t
 	uint16_t pixelsClearedOnLeft = 0;
 	uint16_t pixelsClearedOnRight = 0;
 	if(eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
-		pixelsClearedOnLeft = 65535;
+		pixelsClearedOnLeft = 1024;
 	if(eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
-		pixelsClearedOnRight = 65535;
+		pixelsClearedOnRight = 1024;
 	drawStringPivotedOffseted(str, align, gTextPivotDefault,offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
@@ -1300,9 +1264,9 @@ void ILI9341_due_gText::drawStringPivoted(char *str, gTextAlign align, gTextPivo
 	uint16_t pixelsClearedOnLeft = 0;
 	uint16_t pixelsClearedOnRight = 0;
 	if(eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
-		pixelsClearedOnLeft = 65535;
+		pixelsClearedOnLeft = 1024;
 	if(eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
-		pixelsClearedOnRight = 65535;
+		pixelsClearedOnRight = 1024;
 	drawStringPivotedOffseted(str, align, pivot, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
@@ -1321,9 +1285,9 @@ void ILI9341_due_gText::drawStringPivotedOffseted(char *str, gTextAlign align, g
 	uint16_t pixelsClearedOnLeft = 0;
 	uint16_t pixelsClearedOnRight = 0;
 	if(eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
-		pixelsClearedOnLeft = 65535;
+		pixelsClearedOnLeft = 1024;
 	if(eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
-		pixelsClearedOnRight = 65535;
+		pixelsClearedOnRight = 1024;
 	drawStringPivotedOffseted(str, align, pivot, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
@@ -1412,7 +1376,8 @@ void ILI9341_due_gText::drawStringPivotedOffseted(char *str, gTextAlign align, g
 	// CLEAR PIXELS ON THE LEFT
 	if(pixelsClearedOnLeft > 0)
 	{
-		uint16_t clearX1 = max(min(_x, _area.x1), _x-pixelsClearedOnLeft);		
+		int16_t clearX1 = max(min(_x, (int16_t)_area.x1), _x-(int16_t)pixelsClearedOnLeft);		
+		//Serial.println(clearX1);
 		_ili->fillRect(clearX1, _y, _x - clearX1, fontHeight(), _fontBgColor); 
 	}
 
@@ -1421,7 +1386,7 @@ void ILI9341_due_gText::drawStringPivotedOffseted(char *str, gTextAlign align, g
 	// CLEAR PIXELS ON THE RIGHT
 	if(pixelsClearedOnRight > 0)
 	{
-		uint16_t clearX2 = min(max(_x,_area.x2), _x+pixelsClearedOnRight);
+		int16_t clearX2 = min(max(_x, _area.x2), _x+pixelsClearedOnRight);
 		//Serial << "area from " << _area.x1 << " to " << _area.x2 << endl;
 		//Serial << "clearing on right from " << _x << " to " << clearX2 << endl;
 		_ili->fillRect(_x, _y, clearX2 - _x, fontHeight(), _fontBgColor); 
@@ -1588,7 +1553,7 @@ void ILI9341_due_gText::cursorToXY( int16_t x, int16_t y)
 
 	_x = _area.x1 + x;
 	_y = _area.y1 + y;
-	//Serial << "cursorToXY x:" << x << " y:" << y << endl;
+	//Serial << F("cursorToXY x:") << x << F(" y:") << y << endl;
 
 #ifndef GLCD_NODEFER_SCROLL
 	/*
