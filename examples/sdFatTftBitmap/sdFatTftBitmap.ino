@@ -46,7 +46,7 @@ void setup()
 	Serial.begin(9600);
 
 	tft.begin();
-	tft.setRotation(3);	// landscape
+	tft.setRotation(iliRotation270);	// landscape
 	progmemPrint(PSTR("Initializing SD card..."));
 
 	if(!sd.begin(SD_CS, SD_SPI_SPEED)){
@@ -57,7 +57,7 @@ void setup()
 }
 
 void loop()
-{
+{	
 	bmpDraw("giraffe.565", 0, 0);
 	delay(2000);
 	bmpDraw("SOLDHO~1.565", 0, 0);
@@ -155,14 +155,13 @@ void bmpDraw(char* filename, int x, int y) {
 					bmpFile.seekSet(54);	//skip header
 					uint32_t totalPixels = bmpWidth*bmpHeight;
 
-					for (uint32_t p=0; p<totalPixels; p+=BUFFPIXEL) { 
-
+					for (uint32_t p=0; p<totalPixels-BUFFPIXEL; p+=BUFFPIXEL) {
 						// read pixels into the buffer
 						bmpFile.read(buffer, 2*BUFFPIXEL);
 						// push them to the diplay
 						tft.pushColors565(buffer, 0, 2*BUFFPIXEL);
 					}
-
+					
 					// render any remaining pixels that did not fully fit the buffer
 					uint32_t remainingPixels = totalPixels % BUFFPIXEL;
 					if(remainingPixels > 0)
@@ -170,13 +169,14 @@ void bmpDraw(char* filename, int x, int y) {
 						bmpFile.read(buffer, 2*remainingPixels);
 						tft.pushColors565(buffer, 0, 2*remainingPixels);
 					}
+					
 				}
 				else if(bmpDepth == 24)	// standard 24bit bmp
 				{ 
 					goodBmp = true; // Supported BMP format -- proceed!
-
-					uint8_t  sdbuffer[3*BUFFPIXEL]; // pixel in buffer (R+G+B per pixel)
-					uint16_t lcdbuffer[BUFFPIXEL];  // pixel out buffer (16-bit per pixel)
+					uint16_t bufferSize = Min(w, BUFFPIXEL);
+					uint8_t  sdbuffer[3*bufferSize]; // pixel in buffer (R+G+B per pixel)
+					uint16_t lcdbuffer[bufferSize];  // pixel out buffer (16-bit per pixel)
 
 					// BMP rows are padded (if needed) to 4-byte boundary
 					rowSize = (bmpWidth * 3 + 3) & ~3;
@@ -197,13 +197,13 @@ void bmpDraw(char* filename, int x, int y) {
 							bmpFile.seekSet(pos);
 						}
 
-						for (col=0; col<w; col+=BUFFPIXEL) 
+						for (col=0; col<w; col+=bufferSize) 
 						{
 							// read pixels into the buffer
-							bmpFile.read(sdbuffer, 3*BUFFPIXEL);
+							bmpFile.read(sdbuffer, 3*bufferSize);
 
 							// convert color
-							for(int p=0; p < BUFFPIXEL; p++)
+							for(int p=0; p < bufferSize; p++)
 							{
 								b = sdbuffer[3*p];
 								g = sdbuffer[3*p+1];
@@ -211,11 +211,11 @@ void bmpDraw(char* filename, int x, int y) {
 								lcdbuffer[p] = tft.color565(r,g,b);
 							}
 							// push buffer to TFT
-							tft.pushColors(lcdbuffer, 0, BUFFPIXEL);
+							tft.pushColors(lcdbuffer, 0, bufferSize);
 						}
 
 						// render any remaining pixels that did not fully fit the buffer
-						uint16_t remainingPixels = w % BUFFPIXEL;
+						uint16_t remainingPixels = w % bufferSize;
 						if(remainingPixels > 0)
 						{
 							bmpFile.read(sdbuffer, 3*remainingPixels);
