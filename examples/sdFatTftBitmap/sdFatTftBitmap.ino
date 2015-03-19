@@ -1,6 +1,6 @@
 /*
 This sketch is demonstrating loading images from an SD card.
-To run this sketch, copy images from the images folder into the root of an SD card 
+To run this sketch, copy images from the images folder into the root of an SD card
 (either those with .bmp extension or those with .565 extension (those will load faster)).
 Modify the extension of the files in loop() depending on which files you copied onto SD.
 
@@ -29,7 +29,7 @@ https://github.com/marekburiak/ILI9341_due/tree/master/tools
 
 #define SD_CS 7		// Chip Select for SD card
 
-#define BUFFPIXEL 320	// size of the buffer in pixels
+#define BUFFPIXELCOUNT 320	// size of the buffer in pixels
 #define SD_SPI_SPEED SPI_HALF_SPEED	// SD card SPI speed, try SPI_FULL_SPEED
 
 SdFat sd; // set filesystem
@@ -49,7 +49,7 @@ void setup()
 	tft.setRotation(iliRotation270);	// landscape
 	progmemPrint(PSTR("Initializing SD card..."));
 
-	if(!sd.begin(SD_CS, SD_SPI_SPEED)){
+	if (!sd.begin(SD_CS, SD_SPI_SPEED)){
 		progmemPrintln(PSTR("failed!"));
 		return;
 	}
@@ -57,19 +57,29 @@ void setup()
 }
 
 void loop()
-{	
-	bmpDraw("giraffe.565", 0, 0);
-	delay(2000);
-	bmpDraw("SOLDHO~1.565", 0, 0);
-	delay(2000);
-	bmpDraw("GLOOMY~1.565", 0, 0);
-	delay(2000);
-	bmpDraw("MOTIVA~1.565", 0, 0);
-	delay(2000);
-	bmpDraw("BLACKLAB.565", 0, 0);
-	delay(2000);
-	bmpDraw("LAMBO.565", 0, 0);
-	delay(2000);
+{
+	if (tft.getRotation() == iliRotation90 || tft.getRotation() == iliRotation270){
+		bmpDraw("giraffe.565", 0, 0);
+		delay(2000);
+		bmpDraw("SOLDHO~1.565", 0, 0);
+		delay(2000);
+		bmpDraw("GLOOMY~1.565", 0, 0);
+		delay(2000);
+	    bmpDraw("MOTIVA~1.565", 0, 0);
+	    delay(2000);
+	}
+	else
+	{
+		bmpDraw("smokeP.565", 0, 0);
+		delay(2000);
+		bmpDraw("origP.565", 0, 0);
+		delay(2000);
+		bmpDraw("radioP.565", 0, 0);
+		delay(2000);
+		bmpDraw("stopP.565", 0, 0);
+		delay(2000);
+	}
+
 }
 
 // This function opens a Windows Bitmap (BMP) file and
@@ -89,12 +99,12 @@ void bmpDraw(char* filename, int x, int y) {
 	uint32_t rowSize;     // Not always = bmpWidth; may have padding
 	uint32_t fileSize;
 	boolean  goodBmp = false;       // Set to true on valid header parse
-	boolean  flip    = true;        // BMP is stored bottom-to-top
+	boolean  flip = true;        // BMP is stored bottom-to-top
 	uint16_t w, h, row, col;
 	uint8_t  r, g, b;
 	uint32_t pos = 0, startTime;
 
-	if((x >= tft.width()) || (y >= tft.height())) return;
+	if ((x >= tft.width()) || (y >= tft.height())) return;
 
 	progmemPrint(PSTR("Loading image '"));
 	Serial.print(filename);
@@ -104,12 +114,13 @@ void bmpDraw(char* filename, int x, int y) {
 	if (!bmpFile.open(filename, O_READ)) {
 		Serial.println("File open failed.");
 		return;
-	} else {
+	}
+	else {
 		//Serial.println("File opened.");
 	}
 
 	// Parse BMP header
-	if(read16(bmpFile) == 0x4D42) { // BMP signature
+	if (read16(bmpFile) == 0x4D42) { // BMP signature
 		fileSize = read32(bmpFile);
 		//progmemPrint(PSTR("File size: ")); Serial.println(fileSize);
 		(void)read32(bmpFile); // Read & ignore creator bytes
@@ -118,12 +129,12 @@ void bmpDraw(char* filename, int x, int y) {
 		// Read DIB header
 		headerSize = read32(bmpFile);
 		//progmemPrint(PSTR("Header size: ")); Serial.println(headerSize);
-		bmpWidth  = read32(bmpFile);
+		bmpWidth = read32(bmpFile);
 		bmpHeight = read32(bmpFile);
-		if(read16(bmpFile) == 1) { // # planes -- must be '1'
+		if (read16(bmpFile) == 1) { // # planes -- must be '1'
 			bmpDepth = read16(bmpFile); // bits per pixel
 			//progmemPrint(PSTR("Bit Depth: ")); Serial.println(bmpDepth);
-			if(read32(bmpFile) == 0) // 0 = uncompressed
+			if (read32(bmpFile) == 0) // 0 = uncompressed
 			{
 				//progmemPrint(PSTR("Image size: "));
 				//Serial.print(bmpWidth);
@@ -132,56 +143,56 @@ void bmpDraw(char* filename, int x, int y) {
 
 				// If bmpHeight is negative, image is in top-down order.
 				// This is not canon but has been observed in the wild.
-				if(bmpHeight < 0) {
+				if (bmpHeight < 0) {
 					bmpHeight = -bmpHeight;
-					flip      = false;
+					flip = false;
 				}
 
 				// Crop area to be loaded
 				w = bmpWidth;
 				h = bmpHeight;
-				if((x+w-1) >= tft.width())  w = tft.width()  - x;
-				if((y+h-1) >= tft.height()) h = tft.height() - y;
+				if ((x + w - 1) >= tft.width())  w = tft.width() - x;
+				if ((y + h - 1) >= tft.height()) h = tft.height() - y;
 
 				// Set TFT address window to clipped image bounds
-				tft.setAddrWindow(x, y, x+w-1, y+h-1);
+				tft.setAddrWindow(x, y, x + w - 1, y + h - 1);
 
-				if(bmpDepth == 16)	//565 format
-				{ 
+				if (bmpDepth == 16)	//565 format
+				{
 					goodBmp = true; // Supported BMP format -- proceed!
 
-					uint8_t buffer[2*BUFFPIXEL]; // pixel buffer (contains already formatted data for ILI9341 display)
-					
+					uint8_t buffer[2 * BUFFPIXELCOUNT]; // pixel buffer (contains already formatted data for ILI9341 display)
+
 					bmpFile.seekSet(54);	//skip header
 					uint32_t totalPixels = bmpWidth*bmpHeight;
-
-					for (uint32_t p=0; p<totalPixels-BUFFPIXEL; p+=BUFFPIXEL) {
+					uint16_t numFullBufferRuns = totalPixels / BUFFPIXELCOUNT;
+					for (uint32_t p = 0; p < numFullBufferRuns; p++) {
 						// read pixels into the buffer
-						bmpFile.read(buffer, 2*BUFFPIXEL);
+						bmpFile.read(buffer, 2 * BUFFPIXELCOUNT);
 						// push them to the diplay
-						tft.pushColors565(buffer, 0, 2*BUFFPIXEL);
+						tft.pushColors565(buffer, 0, 2 * BUFFPIXELCOUNT);
 					}
-					
+
 					// render any remaining pixels that did not fully fit the buffer
-					uint32_t remainingPixels = totalPixels % BUFFPIXEL;
-					if(remainingPixels > 0)
+					uint32_t remainingPixels = totalPixels % BUFFPIXELCOUNT;
+					if (remainingPixels > 0)
 					{
-						bmpFile.read(buffer, 2*remainingPixels);
-						tft.pushColors565(buffer, 0, 2*remainingPixels);
+						bmpFile.read(buffer, 2 * remainingPixels);
+						tft.pushColors565(buffer, 0, 2 * remainingPixels);
 					}
-					
+
 				}
-				else if(bmpDepth == 24)	// standard 24bit bmp
-				{ 
+				else if (bmpDepth == 24)	// standard 24bit bmp
+				{
 					goodBmp = true; // Supported BMP format -- proceed!
-					uint16_t bufferSize = Min(w, BUFFPIXEL);
-					uint8_t  sdbuffer[3*bufferSize]; // pixel in buffer (R+G+B per pixel)
+					uint16_t bufferSize = min(w, BUFFPIXELCOUNT);
+					uint8_t  sdbuffer[3 * bufferSize]; // pixel in buffer (R+G+B per pixel)
 					uint16_t lcdbuffer[bufferSize];  // pixel out buffer (16-bit per pixel)
 
 					// BMP rows are padded (if needed) to 4-byte boundary
 					rowSize = (bmpWidth * 3 + 3) & ~3;
 
-					for (row=0; row<h; row++) { // For each scanline...
+					for (row = 0; row < h; row++) { // For each scanline...
 						// Seek to start of scan line.  It might seem labor-
 						// intensive to be doing this on every line, but this
 						// method covers a lot of gritty details like cropping
@@ -189,26 +200,26 @@ void bmpDraw(char* filename, int x, int y) {
 						// place if the file position actually needs to change
 						// (avoids a lot of cluster math in SD library).
 
-						if(flip) // Bitmap is stored bottom-to-top order (normal BMP)
+						if (flip) // Bitmap is stored bottom-to-top order (normal BMP)
 							pos = bmpImageoffset + (bmpHeight - 1 - row) * rowSize;
 						else     // Bitmap is stored top-to-bottom
 							pos = bmpImageoffset + row * rowSize;
-						if(bmpFile.curPosition() != pos) { // Need seek?
+						if (bmpFile.curPosition() != pos) { // Need seek?
 							bmpFile.seekSet(pos);
 						}
 
-						for (col=0; col<w; col+=bufferSize) 
+						for (col = 0; col < w; col += bufferSize)
 						{
 							// read pixels into the buffer
-							bmpFile.read(sdbuffer, 3*bufferSize);
+							bmpFile.read(sdbuffer, 3 * bufferSize);
 
 							// convert color
-							for(int p=0; p < bufferSize; p++)
+							for (int p = 0; p < bufferSize; p++)
 							{
-								b = sdbuffer[3*p];
-								g = sdbuffer[3*p+1];
-								r = sdbuffer[3*p+2];
-								lcdbuffer[p] = tft.color565(r,g,b);
+								b = sdbuffer[3 * p];
+								g = sdbuffer[3 * p + 1];
+								r = sdbuffer[3 * p + 2];
+								lcdbuffer[p] = tft.color565(r, g, b);
 							}
 							// push buffer to TFT
 							tft.pushColors(lcdbuffer, 0, bufferSize);
@@ -216,16 +227,16 @@ void bmpDraw(char* filename, int x, int y) {
 
 						// render any remaining pixels that did not fully fit the buffer
 						uint16_t remainingPixels = w % bufferSize;
-						if(remainingPixels > 0)
+						if (remainingPixels > 0)
 						{
-							bmpFile.read(sdbuffer, 3*remainingPixels);
+							bmpFile.read(sdbuffer, 3 * remainingPixels);
 
-							for(int p=0; p < remainingPixels; p++)
+							for (int p = 0; p < remainingPixels; p++)
 							{
-								b = sdbuffer[3*p];
-								g = sdbuffer[3*p+1];
-								r = sdbuffer[3*p+2];
-								lcdbuffer[p] = tft.color565(r,g,b);
+								b = sdbuffer[3 * p];
+								g = sdbuffer[3 * p + 1];
+								r = sdbuffer[3 * p + 2];
+								lcdbuffer[p] = tft.color565(r, g, b);
 							}
 
 							tft.pushColors(lcdbuffer, 0, remainingPixels);
@@ -237,7 +248,7 @@ void bmpDraw(char* filename, int x, int y) {
 					progmemPrint(PSTR("Unsupported Bit Depth."));
 				}
 
-				if(goodBmp)
+				if (goodBmp)
 				{
 					progmemPrint(PSTR("Loaded in "));
 					Serial.print(millis() - startTime);
@@ -248,7 +259,7 @@ void bmpDraw(char* filename, int x, int y) {
 	}
 
 	bmpFile.close();
-	if(!goodBmp) progmemPrintln(PSTR("BMP format not recognized."));
+	if (!goodBmp) progmemPrintln(PSTR("BMP format not recognized."));
 }
 
 
@@ -276,7 +287,7 @@ uint32_t read32(SdFile& f) {
 // Source string MUST be inside a PSTR() declaration!
 void progmemPrint(const char *str) {
 	char c;
-	while(c = pgm_read_byte(str++)) Serial.print(c);
+	while (c = pgm_read_byte(str++)) Serial.print(c);
 }
 
 // Same as above, with trailing newline
