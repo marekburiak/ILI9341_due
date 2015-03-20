@@ -48,30 +48,34 @@ MIT license, all text above must be included in any redistribution
 
 #ifndef _ILI9341_dueH_
 #define _ILI9341_dueH_
-
 //#include "../Streaming/Streaming.h"
 
 // USER CONFIG SECTION START
 
 // comment out the SPI mode you want to use (does not matter for AVR)
 //#define ILI9341_SPI_MODE_NORMAL	// uses SPI library
-//#define ILI9341_SPI_MODE_EXTENDED	// uses Extended SPI in Due, make sure you use pin 4, 10 or 52 for CS
-#define ILI9341_SPI_MODE_DMA		// uses DMA in Due
+#define ILI9341_SPI_MODE_EXTENDED	// uses Extended SPI in Due, make sure you use pin 4, 10 or 52 for CS
+//#define ILI9341_SPI_MODE_DMA		// uses DMA in Due
 
 // set the clock divider
-#ifdef __SAM3X8E__
-#define ILI9341_SPI_CLKDIVIDER 2	// for Due
-#else
-#define ILI9341_SPI_CLKDIVIDER SPI_CLOCK_DIV2	// for Uno, Mega,...
+#if defined __SAM3X8E__
+#define ILI9341_SPI_CLKDIVIDER 4	// for Due
+#elif defined __AVR__
+#define ILI9341_SPI_CLKDIVIDER SPI_CLOCK_DIV32	// for Uno, Mega,...
 #endif
+
+//#define ILI_USE_SPI_TRANSACTION
+
 
 // comment out the features you do not need to save flash memory and RAM (especially on AVR)
 
+#define FEATURE_GTEXT_ENABLED
 // commenting out/disabling the ARC feature will exclude the drawArc function. It is going to save a few ROM bytes.
 #define FEATURE_ARC_ENABLED
 // commenting out/disabling the PRINT feature will exclude the drawChars and print functions, it saves around 3.6kB ROM and 1.3kB RAM(!)
 // I recommend using gText for drawing the text.
-#define FEATURE_PRINT_ENABLED
+//#define FEATURE_PRINT_ENABLED
+#define FEATURE_GTEXT_PRINT_ENABLED
 
 // number representing the maximum angle (e.g. if 100, then if you pass in start=0 and end=50, you get a half circle)
 // this can be changed with setArcParams function at runtime
@@ -107,10 +111,11 @@ MIT license, all text above must be included in any redistribution
 #endif
 
 #include "Arduino.h"
-#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED | defined(ILI_USE_SPI_TRANSACTION)
 #include <SPI.h>
-#elif SPI_MODE_DMA
-#include "ILI_SdSpi.h"
+#endif
+#if SPI_MODE_DMA
+#include <stdint.h>
 #endif
 
 #ifdef __AVR__
@@ -180,16 +185,208 @@ MIT license, all text above must be included in any redistribution
 */
 
 // Color definitions
-#define	ILI9341_BLACK   0x0000
-#define	ILI9341_BLUE    0x001F
-#define	ILI9341_RED     0xF800
-#define	ILI9341_GREEN   0x07E0
-#define ILI9341_CYAN    0x07FF
-#define ILI9341_MAGENTA 0xF81F
-#define ILI9341_YELLOW  0xFFE0
-#define ILI9341_WHITE   0xFFFF
+#define ILI9341_ALICEBLUE 0xF7DF 
+#define ILI9341_ANTIQUEWHITE 0xFF5A 
+#define ILI9341_AQUA 0x07FF 
+#define ILI9341_AQUAMARINE 0x7FFA 
+#define ILI9341_AZURE 0xF7FF 
+#define ILI9341_BEIGE 0xF7BB 
+#define ILI9341_BISQUE 0xFF38 
+#define ILI9341_BLACK 0x0000 
+#define ILI9341_BLANCHEDALMOND 0xFF59 
+#define ILI9341_BLUE 0x001F 
+#define ILI9341_BLUEVIOLET 0x895C 
+#define ILI9341_BROWN 0xA145 
+#define ILI9341_BURLYWOOD 0xDDD0 
+#define ILI9341_CADETBLUE 0x5CF4 
+#define ILI9341_CHARTREUSE 0x7FE0 
+#define ILI9341_CHOCOLATE 0xD343 
+#define ILI9341_CORAL 0xFBEA 
+#define ILI9341_CORNFLOWERBLUE 0x64BD 
+#define ILI9341_CORNSILK 0xFFDB 
+#define ILI9341_CRIMSON 0xD8A7 
+#define ILI9341_CYAN 0x07FF 
+#define ILI9341_DARKBLUE 0x0011 
+#define ILI9341_DARKCYAN 0x0451 
+#define ILI9341_DARKGOLDENROD 0xBC21 
+#define ILI9341_DARKGRAY 0xAD55 
+#define ILI9341_DARKGREEN 0x0320 
+#define ILI9341_DARKKHAKI 0xBDAD 
+#define ILI9341_DARKMAGENTA 0x8811 
+#define ILI9341_DARKOLIVEGREEN 0x5345 
+#define ILI9341_DARKORANGE 0xFC60 
+#define ILI9341_DARKORCHID 0x9999 
+#define ILI9341_DARKRED 0x8800 
+#define ILI9341_DARKSALMON 0xECAF 
+#define ILI9341_DARKSEAGREEN 0x8DF1 
+#define ILI9341_DARKSLATEBLUE 0x49F1 
+#define ILI9341_DARKSLATEGRAY 0x2A69 
+#define ILI9341_DARKTURQUOISE 0x067A 
+#define ILI9341_DARKVIOLET 0x901A 
+#define ILI9341_DEEPPINK 0xF8B2 
+#define ILI9341_DEEPSKYBLUE 0x05FF 
+#define ILI9341_DIMGRAY 0x6B4D 
+#define ILI9341_DODGERBLUE 0x1C9F 
+#define ILI9341_FIREBRICK 0xB104 
+#define ILI9341_FLORALWHITE 0xFFDE 
+#define ILI9341_FORESTGREEN 0x2444 
+#define ILI9341_FUCHSIA 0xF81F 
+#define ILI9341_GAINSBORO 0xDEFB 
+#define ILI9341_GHOSTWHITE 0xFFDF 
+#define ILI9341_GOLD 0xFEA0 
+#define ILI9341_GOLDENROD 0xDD24 
+#define ILI9341_GRAY 0x8410 
+#define ILI9341_GREEN 0x0400 
+#define ILI9341_GREENYELLOW 0xAFE5 
+#define ILI9341_HONEYDEW 0xF7FE 
+#define ILI9341_HOTPINK 0xFB56 
+#define ILI9341_INDIANRED 0xCAEB 
+#define ILI9341_INDIGO 0x4810 
+#define ILI9341_IVORY 0xFFFE 
+#define ILI9341_KHAKI 0xF731 
+#define ILI9341_LAVENDER 0xE73F 
+#define ILI9341_LAVENDERBLUSH 0xFF9E 
+#define ILI9341_LAWNGREEN 0x7FE0 
+#define ILI9341_LEMONCHIFFON 0xFFD9 
+#define ILI9341_LIGHTBLUE 0xAEDC 
+#define ILI9341_LIGHTCORAL 0xF410 
+#define ILI9341_LIGHTCYAN 0xE7FF 
+#define ILI9341_LIGHTGOLDENRODYELLOW 0xFFDA 
+#define ILI9341_LIGHTGREEN 0x9772 
+#define ILI9341_LIGHTGREY 0xD69A 
+#define ILI9341_LIGHTPINK 0xFDB8 
+#define ILI9341_LIGHTSALMON 0xFD0F 
+#define ILI9341_LIGHTSEAGREEN 0x2595 
+#define ILI9341_LIGHTSKYBLUE 0x867F 
+#define ILI9341_LIGHTSLATEGRAY 0x7453 
+#define ILI9341_LIGHTSTEELBLUE 0xB63B 
+#define ILI9341_LIGHTYELLOW 0xFFFC 
+#define ILI9341_LIME 0x07E0 
+#define ILI9341_LIMEGREEN 0x3666 
+#define ILI9341_LINEN 0xFF9C 
+#define ILI9341_MAGENTA 0xF81F 
+#define ILI9341_MAROON 0x8000 
+#define ILI9341_MEDIUMAQUAMARINE 0x6675 
+#define ILI9341_MEDIUMBLUE 0x0019 
+#define ILI9341_MEDIUMORCHID 0xBABA 
+#define ILI9341_MEDIUMPURPLE 0x939B 
+#define ILI9341_MEDIUMSEAGREEN 0x3D8E 
+#define ILI9341_MEDIUMSLATEBLUE 0x7B5D 
+#define ILI9341_MEDIUMSPRINGGREEN 0x07D3 
+#define ILI9341_MEDIUMTURQUOISE 0x4E99 
+#define ILI9341_MEDIUMVIOLETRED 0xC0B0 
+#define ILI9341_MIDNIGHTBLUE 0x18CE 
+#define ILI9341_MINTCREAM 0xF7FF 
+#define ILI9341_MISTYROSE 0xFF3C 
+#define ILI9341_MOCCASIN 0xFF36 
+#define ILI9341_NAVAJOWHITE 0xFEF5 
+#define ILI9341_NAVY 0x0010 
+#define ILI9341_OLDLACE 0xFFBC 
+#define ILI9341_OLIVE 0x8400 
+#define ILI9341_OLIVEDRAB 0x6C64 
+#define ILI9341_ORANGE 0xFD20 
+#define ILI9341_ORANGERED 0xFA20 
+#define ILI9341_ORCHID 0xDB9A 
+#define ILI9341_PALEGOLDENROD 0xEF55 
+#define ILI9341_PALEGREEN 0x9FD3 
+#define ILI9341_PALETURQUOISE 0xAF7D 
+#define ILI9341_PALEVIOLETRED 0xDB92 
+#define ILI9341_PAPAYAWHIP 0xFF7A 
+#define ILI9341_PEACHPUFF 0xFED7 
+#define ILI9341_PERU 0xCC27 
+#define ILI9341_PINK 0xFE19 
+#define ILI9341_PLUM 0xDD1B 
+#define ILI9341_POWDERBLUE 0xB71C 
+#define ILI9341_PURPLE 0x8010 
+#define ILI9341_RED 0xF800 
+#define ILI9341_ROSYBROWN 0xBC71 
+#define ILI9341_ROYALBLUE 0x435C 
+#define ILI9341_SADDLEBROWN 0x8A22 
+#define ILI9341_SALMON 0xFC0E 
+#define ILI9341_SANDYBROWN 0xF52C 
+#define ILI9341_SEAGREEN 0x2C4A 
+#define ILI9341_SEASHELL 0xFFBD 
+#define ILI9341_SIENNA 0xA285 
+#define ILI9341_SILVER 0xC618 
+#define ILI9341_SKYBLUE 0x867D 
+#define ILI9341_SLATEBLUE 0x6AD9 
+#define ILI9341_SLATEGRAY 0x7412 
+#define ILI9341_SNOW 0xFFDF 
+#define ILI9341_SPRINGGREEN 0x07EF 
+#define ILI9341_STEELBLUE 0x4416 
+#define ILI9341_TAN 0xD5B1 
+#define ILI9341_TEAL 0x0410 
+#define ILI9341_THISTLE 0xDDFB 
+#define ILI9341_TOMATO 0xFB08 
+#define ILI9341_TURQUOISE 0x471A 
+#define ILI9341_VIOLET 0xEC1D 
+#define ILI9341_WHEAT 0xF6F6 
+#define ILI9341_WHITE 0xFFFF 
+#define ILI9341_WHITESMOKE 0xF7BE 
+#define ILI9341_YELLOW 0xFFE0 
+#define ILI9341_YELLOWGREEN 0x9E66
 
-typedef uint8_t pwrLevel;
+#ifdef FEATURE_GTEXT_ENABLED
+// Font Indices
+#define GTEXT_FONT_LENGTH			0
+#define GTEXT_FONT_FIXED_WIDTH	2
+#define GTEXT_FONT_HEIGHT			3
+#define GTEXT_FONT_FIRST_CHAR		4
+#define GTEXT_FONT_CHAR_COUNT		5
+#define GTEXT_FONT_WIDTH_TABLE	6
+
+typedef enum  {
+	gTextFontModeSolid = 0,
+	gTextFontModeTransparent = 1
+} gTextFontMode;
+
+// the following returns true if the given font is fixed width
+// zero length is flag indicating fixed width font (array does not contain width data entries)
+#define isFixedWidthFont(font)  (pgm_read_byte(font+GTEXT_FONT_LENGTH) == 0 && pgm_read_byte(font+GTEXT_FONT_LENGTH+1) == 0))
+
+typedef enum  {
+	gTextAlignTopLeft,
+	gTextAlignTopCenter,
+	gTextAlignTopRight,
+	gTextAlignMiddleLeft,
+	gTextAlignMiddleCenter,
+	gTextAlignMiddleRight,
+	gTextAlignBottomLeft,
+	gTextAlignBottomCenter,
+	gTextAlignBottomRight
+} gTextAlign;
+
+typedef enum {
+	gTextPivotDefault,
+	gTextPivotTopLeft,
+	gTextPivotTopCenter,
+	gTextPivotTopRight,
+	gTextPivotMiddleLeft,
+	gTextPivotMiddleCenter,
+	gTextPivotMiddleRight,
+	gTextPivotBottomLeft,
+	gTextPivotBottomCenter,
+	gTextPivotBottomRight
+} gTextPivot;
+
+typedef enum {
+	gTextEraseToEOL = 0x01, 	/**< Erase From cursor to end of Line */
+	gTextEraseFromBOL = 0x02,	/**< Erase From Begining of Line to Cursor*/
+	gTextEraseFullLine = 0x03	/**< Erase Entire line */
+} gTextEraseLine;
+
+typedef struct
+{
+	uint16_t x1;
+	uint16_t y1;
+	uint16_t x2;
+	uint16_t y2;
+} gTextArea;
+
+typedef const uint8_t* gTextFont;
+
+#endif
+
 typedef enum {
 	iliRotation0 = 0,
 	iliRotation90 = 1,
@@ -197,34 +394,33 @@ typedef enum {
 	iliRotation270 = 3
 } iliRotation;
 
-// Normal Mode On (full display), Idle Mode Off, Sleep Out. 
-// In this mode, the display is able to show maximum 262,144 colors. 
-#define PWRLEVEL_NORMAL 1
+typedef enum {
+	// Normal Mode On (full display)
+	// In this mode, the display is able to show maximum 262,144 colors. 
+	pwrLevelNormal = 1,
+	// Idle Mode On
+	// In this mode, the full display area is used but with 8 colors. 
+	pwrLevelIdle = 2,
+	// In this mode, the DC : DC converter, Internal oscillator and panel driver circuit are stopped. Only the MCU 
+	// interface and memory works with VDDI power supply. Contents of the memory are safe. 
+	pwrLevelSleep = 3
+} pwrLevel;
 
-// Normal Mode On (full display), Idle Mode On, Sleep Out. 
-// In this mode, the full display area is used but with 8 colors. 
-#define PWRLEVEL_IDLE 2
-
-//In this mode, the DC : DC converter, Internal oscillator and panel driver circuit are stopped. Only the MCU 
-// interface and memory works with VDDI power supply. Contents of the memory are safe. 
-#define PWRLEVEL_SLEEP 3
+#ifndef swap
+#define swap(a, b) { typeof(a) t = a; a = b; b = t; }
+#endif
 
 #define SCANLINE_BUFFER_SIZE 640 // 320 2-byte pixels
+//#define SCANLINE_BUFFER_SIZE 320 // 320 2-byte pixels DMA16
 
 class ILI9341_due
-#ifdef FEATURE_PRINT_ENABLED
+#if defined(FEATURE_PRINT_ENABLED) | defined(FEATURE_GTEXT_PRINT_ENABLED)
 	: public Print
 #endif
 {
 public:
 	ILI9341_due(uint8_t cs, uint8_t dc, uint8_t rst = 255);
-#if SPI_MODE_DMA
-	ILI_SdSpi _dmaSpi;
-	uint8_t _scanlineBuffer[SCANLINE_BUFFER_SIZE];
-	uint8_t _hiByte, _loByte;
 
-#endif
-	bool _isIdle, _isInSleep;
 
 	bool begin(void);
 	void pushColor(uint16_t color);
@@ -232,11 +428,11 @@ public:
 	void pushColors565(uint8_t *colors, uint16_t offset, uint16_t len);
 	void fillScreen(uint16_t color);
 	void drawPixel(int16_t x, int16_t y, uint16_t color);
-	void drawPixel_cont(int16_t x, int16_t y, uint16_t color);
 	void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
 	void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
 	void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 	void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+	void fillRect_noTrans(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 	void setRotation(iliRotation r);
 	void invertDisplay(boolean i);
 	void display(boolean d);
@@ -258,10 +454,7 @@ public:
 	//uint8_t readdata(void);
 	uint8_t readcommand8(uint8_t reg, uint8_t index = 0);
 
-	// KJE Added functions to read pixel data...
 	uint16_t readPixel(int16_t x, int16_t y);
-
-
 	// from Adafruit_GFX.h
 	void drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
 	void drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, uint16_t color);
@@ -280,25 +473,143 @@ public:
 	void setTextColor(uint16_t c, uint16_t bg);
 	void setTextSize(uint8_t s);
 	void setTextWrap(boolean w);
+#ifndef FEATURE_GTEXT_PRINT_ENABLED
 	virtual size_t write(uint8_t);
 #endif
-	int16_t width(void)  { return _width; }
-	int16_t height(void) { return _height; }
+#endif
 	uint8_t getRotation(void);
 	void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
 	void screenshotToConsole();
 	void printHex8(uint8_t *data, uint8_t length);
 	void printHex16(uint16_t *data, uint8_t length);
 	void printHex32(uint32_t *data, uint8_t length);
+#ifdef FEATURE_GTEXT_ENABLED
+	bool setArea(gTextArea area);
+	bool setArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2); //, textMode mode=DEFAULT_SCROLLDIR);
+	bool setArea(int16_t x1, int16_t y1, int16_t columns, int16_t rows, gTextFont font); //, textMode mode=DEFAULT_SCROLLDIR);
+	void clearArea();
+	void clearArea(uint16_t color);
+
+	// Font Functions
+	void selectFont(gTextFont font);
+	void selectFont(gTextFont font, uint16_t color);
+	void selectFont(gTextFont font, uint16_t color, uint16_t backgroundColor);
+	void setTextColor(uint16_t color);
+	void setTextColor(uint8_t R, uint8_t G, uint8_t B);
+	void setTextColor(uint16_t color, uint16_t backgroundColor);
+	void setTextColor(uint8_t R, uint8_t G, uint8_t B, uint8_t bgR, uint8_t bgG, uint8_t bgB);
+	void setFontLetterSpacing(uint8_t letterSpacing);
+	uint8_t getFontLetterSpacing()	{
+		return _letterSpacing;
+	};
+	void setFontMode(gTextFontMode fontMode);
+
+	int putChar(uint8_t c);
+	void puts(char *str);
+	void puts(const String &str); // for Arduino String Class
+	void puts_P(PGM_P str);
+
+
+	void drawString(String &str, int16_t x, int16_t y); // for Arduino String class
+	void drawString_P(PGM_P str, int16_t x, int16_t y);
+
+	void drawString(char *str, int16_t x, int16_t y);
+	void drawString(char *str, int16_t x, int16_t y, gTextEraseLine eraseLine);
+	void drawString(char *str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void drawString(char *str, gTextAlign align);
+	void drawString(char *str, gTextAlign align, gTextEraseLine eraseLine);
+	void drawString(char *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+
+	void drawStringOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY);
+	void drawStringOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
+	void drawStringOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+
+	void drawStringPivoted(char *str, int16_t x, int16_t y, gTextPivot pivot);
+	void drawStringPivoted(char *str, gTextAlign align, gTextPivot pivot);
+	void drawStringPivoted(char *str, gTextAlign align, gTextPivot pivot, gTextEraseLine eraseLine);
+	void drawStringPivoted(char *str, gTextAlign align, gTextPivot pivot, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+
+	void drawStringPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
+	void drawStringPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
+	void drawStringPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+
+	void cursorTo(uint8_t column, uint8_t row); // 0 based coordinates for character columns and rows
+	void cursorTo(int8_t column); // move cursor on the current row
+	void cursorToXY(int16_t x, int16_t y); // coordinates relative to active text area
+
+	inline __attribute__((always_inline))
+		uint8_t fontHeight()	{
+		return pgm_read_byte(_font + GTEXT_FONT_HEIGHT);
+	};
+
+	inline __attribute__((always_inline))
+		uint8_t fontHeight(gTextFont font) {
+		return pgm_read_byte(font + GTEXT_FONT_HEIGHT);
+	};
+
+	uint16_t charWidth(uint8_t c);
+	uint16_t stringWidth(const char* str);
+	uint16_t stringWidth_P(PGM_P str);
+	uint16_t stringWidth_P(String &str);
+
+	void eraseTextLine(uint16_t color, gTextEraseLine type = gTextEraseToEOL); //ansi like line erase function 
+	void eraseTextLine(uint16_t color, uint8_t row); // erase the entire text line in the given row and move cursor to left position
+
+	void printNumber(long n);
+
+	static uint16_t charWidth(uint8_t c, gTextFont font)
+	{
+		int16_t width = 0;
+
+		if (isFixedWidthFont(font){
+			width = pgm_read_byte(font + GTEXT_FONT_FIXED_WIDTH);
+		}
+		else{
+			// variable width font 
+			uint8_t firstChar = pgm_read_byte(font + GTEXT_FONT_FIRST_CHAR);
+			uint8_t charCount = pgm_read_byte(font + GTEXT_FONT_CHAR_COUNT);
+
+			// read width data
+			if (c >= firstChar && c < (firstChar + charCount)) {
+				c -= firstChar;
+				width = pgm_read_byte(font + GTEXT_FONT_WIDTH_TABLE + c);
+			}
+		}
+		return width;
+	};
+
+	static uint16_t stringWidth(const char* str, gTextFont font, uint8_t letterSpacing)
+	{
+		uint16_t width = 0;
+
+		while (*str != 0) {
+			width += charWidth(*str++, font) + letterSpacing;
+		}
+		if (width > 0)
+			width -= letterSpacing;
+
+		return width;
+	};
+
+#ifdef FEATURE_GTEXT_PRINT_ENABLED
+	virtual size_t write(uint8_t);
+#endif
+#endif
 
 #ifdef FEATURE_ARC_ENABLED
 	inline __attribute__((always_inline))
 		void drawArc(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float start, float end, uint16_t color)
 	{
+#ifdef ILI_USE_SPI_TRANSACTION
+		SPI.beginTransaction(_spiSettings);
+#endif
 		if (start == 0 && end == _arcAngleMax)
 			drawArcOffsetted(cx, cy, radius, thickness, 0, _arcAngleMax, color);
 		else
 			drawArcOffsetted(cx, cy, radius, thickness, start + (_arcAngleOffset / (float)360)*_arcAngleMax, end + (_arcAngleOffset / (float)360)*_arcAngleMax, color);
+#ifdef ILI_USE_SPI_TRANSACTION
+		SPI.endTransaction();
+#endif
 	}
 
 	//int32_t cos_lookup(int32_t angle)
@@ -368,7 +679,7 @@ public:
 #elif SPI_MODE_EXTENDED
 		SPI.transfer(_cs, c, SPI_CONTINUE); 
 #elif SPI_MODE_DMA
-		_dmaSpi.send(c);
+		dmaSend(c);
 #endif
 	}
 
@@ -382,7 +693,7 @@ public:
 #elif SPI_MODE_EXTENDED
 		SPI.transfer(_cs, c, SPI_LAST); 
 #elif SPI_MODE_DMA
-		_dmaSpi.send(c);
+		dmaSend(c);
 		disableCS();
 #endif
 	}
@@ -397,8 +708,8 @@ public:
 		SPI.transfer(_cs, highByte(d), SPI_CONTINUE); 
 		SPI.transfer(_cs, lowByte(d), SPI_CONTINUE);
 #elif SPI_MODE_DMA
-		_dmaSpi.send(highByte(d));
-		_dmaSpi.send(lowByte(d));
+		dmaSend(highByte(d));
+		dmaSend(lowByte(d));
 #endif
 	}
 
@@ -411,8 +722,8 @@ public:
 		SPI.transfer(_cs, highByte(d), SPI_CONTINUE); 
 		SPI.transfer(_cs, lowByte(d), SPI_LAST);
 #elif SPI_MODE_DMA
-		_dmaSpi.send(highByte(d));
-		_dmaSpi.send(lowByte(d));
+		dmaSend(highByte(d));
+		dmaSend(lowByte(d));
 		disableCS();
 #endif
 	}
@@ -511,7 +822,7 @@ public:
 	//		SPI.transfer(_cs, c, SPI_CONTINUE); 
 	//#elif SPI_MODE_DMA
 	//		enableCS();
-	//		_dmaSpi.send(c);
+	//		dmaSend(c);
 	//#endif
 	//	}
 
@@ -533,10 +844,7 @@ public:
 #if SPI_MODE_NORMAL | SPI_MODE_DMA
 		enableCS();
 #endif
-		write8_cont(c);
-#if SPI_MODE_NORMAL | SPI_MODE_DMA
-		disableCS();
-#endif
+		write8_last(c);
 	}
 
 	// Enables CS, sets DC to Data, writes 1 byte
@@ -557,10 +865,7 @@ public:
 #if SPI_MODE_NORMAL | SPI_MODE_DMA
 		enableCS();
 #endif
-		write8_cont(c);
-#if SPI_MODE_NORMAL | SPI_MODE_DMA
-		disableCS();
-#endif
+		write8_last(c);
 	}
 
 	// Enables CS, sets DC to Data, writes 2 bytes
@@ -591,7 +896,7 @@ public:
 	void writedata_cont(const uint8_t* buf , size_t n) {
 	enableCS();
 	setDCForData();
-	_dmaSpi.send(buf, n);
+	dmaSend(buf, n);
 	}*/
 
 	// Enables CS, sets DC, writes n-bytes from the buffer via DMA, disables CS
@@ -599,7 +904,7 @@ public:
 	void writedata_last(const uint8_t* buf , size_t n) {
 	setDCForData();
 	enableCS();
-	_dmaSpi.send(buf, n);
+	dmaSend(buf, n);
 	disableCS();
 	}*/
 
@@ -607,19 +912,25 @@ public:
 	// CS and DC have to be set prior to calling this method
 	inline __attribute__((always_inline))
 		void write_cont(const uint8_t* buf, size_t n) {
-		_dmaSpi.send(buf, n);
+		dmaSend(buf, n);
 	}
+
+	// DMA16
+	//__attribute__((always_inline))
+	//	void write_cont(const uint16_t* buf, size_t n) {
+	//	_dmaSpi.send(buf, n);
+	//}
 
 	inline __attribute__((always_inline))
 		void read_cont(uint8_t* buf, size_t n) {
-		_dmaSpi.receive(buf, n);
+		dmaReceive(buf, n);
 	}
 
 	// Writes n-bytes from the buffer via DMA and disables CS
 	// DC has to be set prior to calling this method
 	/*inline __attribute__((always_inline))
 	void write_last(const uint8_t* buf , size_t n) {
-	_dmaSpi.send(buf, n << 1);
+	dmaSend(buf, n << 1);
 	disableCS();
 	}*/
 
@@ -629,14 +940,15 @@ public:
 		void writeScanline_cont(size_t n) {
 		setDCForData();
 		enableCS();
-		_dmaSpi.send(_scanlineBuffer, n << 1);	// each pixel is 2 bytes
+		dmaSend(_scanlineBuffer, n << 1);	// each pixel is 2 bytes
+		//dmaSend(_scanlineBuffer, n); // DMA16
 	}
 
 	// writes n-bytes from the scanline buffer via DMA
 	// Does not enable CS nor sets DS nor disables CS
 	//inline __attribute__((always_inline))
 	//	void writeScanline_cont_noCS_noDC(size_t n) {
-	//		_dmaSpi.send(_scanlineBuffer, n << 1);	// each pixel is 2 bytes
+	//		dmaSend(_scanlineBuffer, n << 1);	// each pixel is 2 bytes
 	//}
 
 	// Enables CS, sets DC, writes n-bytes from the scanline buffer via DMA and disabled CS
@@ -644,7 +956,8 @@ public:
 		void writeScanline_last(size_t n) {
 		setDCForData();
 		enableCS();
-		_dmaSpi.send(_scanlineBuffer, n << 1);	// each pixel is 2 bytes
+		dmaSend(_scanlineBuffer, n << 1);	// each pixel is 2 bytes
+		//dmaSend(_scanlineBuffer, n);	// DMA16
 		disableCS();
 	}
 
@@ -658,7 +971,7 @@ public:
 #elif SPI_MODE_EXTENDED
 		return SPI.transfer(_cs, ILI9341_NOP, SPI_CONTINUE);
 #elif SPI_MODE_DMA
-		return _dmaSpi.receive();
+		return dmaReceive();
 #endif
 	}
 
@@ -671,7 +984,7 @@ public:
 #elif SPI_MODE_EXTENDED
 		return SPI.transfer(_cs, ILI9341_NOP, SPI_LAST);
 #elif SPI_MODE_DMA
-		uint8_t r = _dmaSpi.receive();
+		uint8_t r = dmaReceive();
 		disableCS();
 		return r;
 #endif
@@ -689,9 +1002,9 @@ public:
 		r <<= 8;
 		r |= SPI.transfer(_cs, ILI9341_NOP, SPI_CONTINUE);
 #elif SPI_MODE_DMA
-		uint16_t r = _dmaSpi.receive();
+		uint16_t r = dmaReceive();
 		r <<= 8;
-		r |= _dmaSpi.receive();
+		r |= dmaReceive();
 #endif
 		return r;
 	}
@@ -708,9 +1021,9 @@ public:
 		r <<= 8;
 		r |= SPI.transfer(_cs, ILI9341_NOP, SPI_CONTINUE);
 #elif SPI_MODE_DMA
-		uint16_t r = _dmaSpi.receive();
+		uint16_t r = dmaReceive();
 		r <<= 8;
-		r |= _dmaSpi.receive();
+		r |= dmaReceive();
 #endif
 		return r;
 	}
@@ -761,7 +1074,7 @@ public:
 		//TOTRY
 		/*uint8_t buff[2];	// not tested yet
 		enableCS();
-		_dmaSpi.receive(buff, 2);
+		dmaReceive(buff, 2);
 		disableCS();
 		uint16_t r = makeWord(buff[1], buff[0]);*/
 
@@ -801,6 +1114,13 @@ public:
 			_scanlineBuffer[i] = _hiByte;
 			_scanlineBuffer[i + 1] = _loByte;
 		}
+
+		// DMA16
+		//for (uint16_t i = 0; i < sizeof(_scanline); i++)
+		//{
+		//	_scanline[i] = color;
+		//}
+
 		/*_scanlineBuffer[0]=highByte(color);
 		_scanlineBuffer[1]=lowByte(color);
 		_scanlineBuffer[2]=_scanlineBuffer[0];
@@ -835,6 +1155,12 @@ public:
 			_scanlineBuffer[i] = _hiByte;
 			_scanlineBuffer[i + 1] = _loByte;
 		}
+
+		// DMA16
+		//for (uint16_t i = 0; i < n; i++)
+		//{
+		//	_scanline[i] = color;
+		//}
 
 		/*_scanlineBuffer[0]=highByte(color);
 		_scanlineBuffer[1]=lowByte(color);
@@ -1055,6 +1381,19 @@ public:
 		write16_last(color);
 	}
 
+	void drawPixel_cont(int16_t x, int16_t y, uint16_t color) {
+
+		if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height)) return;
+		writePixel_cont(x, y, color);
+	}
+
+	inline __attribute__((always_inline))
+		void drawPixel_noTrans(int16_t x, int16_t y, uint16_t color) {
+
+		if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height)) return;
+		writePixel_last(x, y, color);
+	}
+
 	// Enables CS
 	inline __attribute__((always_inline))
 		void enableCS(){
@@ -1087,7 +1426,14 @@ public:
 		*_dcport &= ~_dcpinmask;
 	}
 
-protected:
+	int16_t width() {
+		return _width;
+	}
+
+	int16_t height() {
+		return _height;
+	}
+private:
 	int16_t _width, _height; // Display w/h as modified by current rotation
 #ifdef FEATURE_PRINT_ENABLED
 	int16_t	_cursorX, _cursorY;
@@ -1100,23 +1446,34 @@ protected:
 #ifdef FEATURE_ARC_ENABLED
 	float _arcAngleMax;
 	int _arcAngleOffset;
-#endif
 
-	void drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uint16_t color);
-
-#ifdef FEATURE_ARC_ENABLED
 	void drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float startAngle, float endAngle, uint16_t color);
 #endif
 
-private:
+	void drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uint16_t color);
+	void drawFastVLine_noTrans(int16_t x, int16_t y, int16_t h, uint16_t color);
+	void drawFastHLine_noTrans(int16_t x, int16_t y, int16_t w, uint16_t color);
+	void drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
+
 	uint8_t  _rst;
+	uint8_t _hiByte, _loByte;
+	bool _isIdle, _isInSleep;
+#if SPI_MODE_DMA
+	uint8_t _scanlineBuffer[SCANLINE_BUFFER_SIZE];
+	//uint16_t _scanlineBuffer[SCANLINE_BUFFER_SIZE];	 // DMA16
+#endif
+
+#ifdef ILI_USE_SPI_TRANSACTION
+	SPISettings _spiSettings;
+	uint8_t _transactionId;
+#endif
 	//Pio *_dcport;
 #ifdef __SAM3X8E__
 	volatile RwReg *_dcport;
 	uint32_t  _cs, _dc, _dcpinmask;
 #else
 	volatile uint8_t *_dcport, *_csport;
-	uint8_t  _cs, _dc, _cspinmask, _dcpinmask, _SPCR, _backupSPCR;
+	uint8_t  _cs, _dc, _cspinmask, _dcpinmask, _backupSPCR;
 #endif
 
 
@@ -1127,11 +1484,249 @@ private:
 	uint32_t _cspinmask;
 #endif
 #endif
+#ifdef FEATURE_GTEXT_ENABLED
+	uint16_t _fontColor;
+	uint16_t _fontBgColor;
+	gTextFont _font;
+	gTextArea _area;
+	int16_t	_x;
+	int16_t	_y;
+	uint8_t _scale;
+	uint8_t _letterSpacing;
+	bool _isLastChar;
+	uint8_t _fontMode;
+	bool _needScroll;
+
+	void specialChar(uint8_t c);
+	void drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight);
+	void drawTransparentChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight);
+	void applyPivot(char *str, gTextPivot pivot);
+#endif
 	bool pinIsChipSelect(uint8_t cs);
+
+#if SPI_MODE_DMA
+	/** Use SAM3X DMAC if nonzero */
+#define ILI_USE_SAM3X_DMAC 1
+	/** Use extra Bus Matrix arbitration fix if nonzero */
+#define ILI_USE_SAM3X_BUS_MATRIX_FIX 0
+	/** Time in ms for DMA receive timeout */
+#define ILI_SAM3X_DMA_TIMEOUT 100
+	/** chip select register number */
+#define ILI_SPI_CHIP_SEL 3
+	/** DMAC receive channel */
+#define ILI_SPI_DMAC_RX_CH  1
+	/** DMAC transmit channel */
+#define ILI_SPI_DMAC_TX_CH  0
+	/** DMAC Channel HW Interface Number for SPI TX. */
+#define ILI_SPI_TX_IDX  1
+	/** DMAC Channel HW Interface Number for SPI RX. */
+#define ILI_SPI_RX_IDX  2
+	//------------------------------------------------------------------------------
+	/** Disable DMA Controller. */
+	static void dmac_disable() {
+		DMAC->DMAC_EN &= (~DMAC_EN_ENABLE);
+	}
+	/** Enable DMA Controller. */
+	static void dmac_enable() {
+		DMAC->DMAC_EN = DMAC_EN_ENABLE;
+	}
+	/** Disable DMA Channel. */
+	static void dmac_channel_disable(uint32_t ul_num) {
+		DMAC->DMAC_CHDR = DMAC_CHDR_DIS0 << ul_num;
+	}
+	/** Enable DMA Channel. */
+	static void dmac_channel_enable(uint32_t ul_num) {
+		DMAC->DMAC_CHER = DMAC_CHER_ENA0 << ul_num;
+	}
+	/** Poll for transfer complete. */
+	static bool dmac_channel_transfer_done(uint32_t ul_num) {
+		return (DMAC->DMAC_CHSR & (DMAC_CHSR_ENA0 << ul_num)) ? false : true;
+	}
+	//------------------------------------------------------------------------------
+	void dmaBegin() {
+		PIO_Configure(
+			g_APinDescription[PIN_SPI_MOSI].pPort,
+			g_APinDescription[PIN_SPI_MOSI].ulPinType,
+			g_APinDescription[PIN_SPI_MOSI].ulPin,
+			g_APinDescription[PIN_SPI_MOSI].ulPinConfiguration);
+		PIO_Configure(
+			g_APinDescription[PIN_SPI_MISO].pPort,
+			g_APinDescription[PIN_SPI_MISO].ulPinType,
+			g_APinDescription[PIN_SPI_MISO].ulPin,
+			g_APinDescription[PIN_SPI_MISO].ulPinConfiguration);
+		PIO_Configure(
+			g_APinDescription[PIN_SPI_SCK].pPort,
+			g_APinDescription[PIN_SPI_SCK].ulPinType,
+			g_APinDescription[PIN_SPI_SCK].ulPin,
+			g_APinDescription[PIN_SPI_SCK].ulPinConfiguration);
+		pmc_enable_periph_clk(ID_SPI0);
+#if ILI_USE_SAM3X_DMAC
+		pmc_enable_periph_clk(ID_DMAC);
+		dmac_disable();
+		DMAC->DMAC_GCFG = DMAC_GCFG_ARB_CFG_FIXED;
+		dmac_enable();
+#if ILI_USE_SAM3X_BUS_MATRIX_FIX
+		MATRIX->MATRIX_WPMR = 0x4d415400;
+		MATRIX->MATRIX_MCFG[1] = 1;
+		MATRIX->MATRIX_MCFG[2] = 1;
+		MATRIX->MATRIX_SCFG[0] = 0x01000010;
+		MATRIX->MATRIX_SCFG[1] = 0x01000010;
+		MATRIX->MATRIX_SCFG[7] = 0x01000010;
+#endif  // ILI_USE_SAM3X_BUS_MATRIX_FIX
+#endif  // ILI_USE_SAM3X_DMAC
+	}
+	//------------------------------------------------------------------------------
+	//  initialize SPI controller
+	void dmaInit(uint8_t sckDivisor) {
+		uint8_t scbr = sckDivisor;
+		Spi* pSpi = SPI0;
+		//  disable SPI
+		pSpi->SPI_CR = SPI_CR_SPIDIS;
+		// reset SPI
+		pSpi->SPI_CR = SPI_CR_SWRST;
+		// no mode fault detection, set master mode
+		pSpi->SPI_MR = SPI_PCS(ILI_SPI_CHIP_SEL) | SPI_MR_MODFDIS | SPI_MR_MSTR;
+		// mode 0, 8-bit,
+		pSpi->SPI_CSR[ILI_SPI_CHIP_SEL] = SPI_CSR_SCBR(scbr) | SPI_CSR_NCPHA;
+		// enable SPI
+		pSpi->SPI_CR |= SPI_CR_SPIEN;
+	}
+	//------------------------------------------------------------------------------
+	// start RX DMA
+	void spiDmaRX(uint8_t* dst, uint16_t count) {
+		dmac_channel_disable(ILI_SPI_DMAC_RX_CH);
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_RX_CH].DMAC_SADDR = (uint32_t)&SPI0->SPI_RDR;
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_RX_CH].DMAC_DADDR = (uint32_t)dst;
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_RX_CH].DMAC_DSCR = 0;
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_RX_CH].DMAC_CTRLA = count |
+			DMAC_CTRLA_SRC_WIDTH_BYTE | DMAC_CTRLA_DST_WIDTH_BYTE;
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_RX_CH].DMAC_CTRLB = DMAC_CTRLB_SRC_DSCR |
+			DMAC_CTRLB_DST_DSCR | DMAC_CTRLB_FC_PER2MEM_DMA_FC |
+			DMAC_CTRLB_SRC_INCR_FIXED | DMAC_CTRLB_DST_INCR_INCREMENTING;
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_RX_CH].DMAC_CFG = DMAC_CFG_SRC_PER(ILI_SPI_RX_IDX) |
+			DMAC_CFG_SRC_H2SEL | DMAC_CFG_SOD | DMAC_CFG_FIFOCFG_ASAP_CFG;
+		dmac_channel_enable(ILI_SPI_DMAC_RX_CH);
+	}
+	//------------------------------------------------------------------------------
+	// start TX DMA
+	void spiDmaTX(const uint8_t* src, uint16_t count) {
+		static uint8_t ff = 0XFF;
+		uint32_t src_incr = DMAC_CTRLB_SRC_INCR_INCREMENTING;
+		if (!src) {
+			src = &ff;
+			src_incr = DMAC_CTRLB_SRC_INCR_FIXED;
+		}
+		dmac_channel_disable(ILI_SPI_DMAC_TX_CH);
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_TX_CH].DMAC_SADDR = (uint32_t)src;
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_TX_CH].DMAC_DADDR = (uint32_t)&SPI0->SPI_TDR;
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_TX_CH].DMAC_DSCR = 0;
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_TX_CH].DMAC_CTRLA = count |
+			DMAC_CTRLA_SRC_WIDTH_BYTE | DMAC_CTRLA_DST_WIDTH_BYTE;
+
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_TX_CH].DMAC_CTRLB = DMAC_CTRLB_SRC_DSCR |
+			DMAC_CTRLB_DST_DSCR | DMAC_CTRLB_FC_MEM2PER_DMA_FC |
+			src_incr | DMAC_CTRLB_DST_INCR_FIXED;
+
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_TX_CH].DMAC_CFG = DMAC_CFG_DST_PER(ILI_SPI_TX_IDX) |
+			DMAC_CFG_DST_H2SEL | DMAC_CFG_SOD | DMAC_CFG_FIFOCFG_ALAP_CFG;
+
+		dmac_channel_enable(ILI_SPI_DMAC_TX_CH);
+	}
+
+	static void ILI_spiDmaTX16(const uint16_t* src, uint16_t count) {
+		static uint16_t ff = 0XFFFF;
+		uint32_t src_incr = DMAC_CTRLB_SRC_INCR_INCREMENTING;
+		if (!src) {
+			src = &ff;
+			src_incr = DMAC_CTRLB_SRC_INCR_FIXED;
+		}
+		ILI_dmac_channel_disable(ILI_SPI_DMAC_TX_CH);
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_TX_CH].DMAC_SADDR = (uint32_t)src;
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_TX_CH].DMAC_DADDR = (uint32_t)&SPI0->SPI_TDR;
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_TX_CH].DMAC_DSCR = 0;
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_TX_CH].DMAC_CTRLA = count |
+			DMAC_CTRLA_SRC_WIDTH_HALF_WORD | DMAC_CTRLA_DST_WIDTH_HALF_WORD;
+
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_TX_CH].DMAC_CTRLB = DMAC_CTRLB_SRC_DSCR |
+			DMAC_CTRLB_DST_DSCR | DMAC_CTRLB_FC_MEM2PER_DMA_FC |
+			src_incr | DMAC_CTRLB_DST_INCR_FIXED;
+
+		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_TX_CH].DMAC_CFG = DMAC_CFG_DST_PER(ILI_SPI_TX_IDX) |
+			DMAC_CFG_DST_H2SEL | DMAC_CFG_SOD | DMAC_CFG_FIFOCFG_ALAP_CFG;
+
+		ILI_dmac_channel_enable(ILI_SPI_DMAC_TX_CH);
+	}
+	//------------------------------------------------------------------------------
+	inline uint8_t dmaSpiTransfer(uint8_t b) {
+		Spi* pSpi = SPI0;
+
+		pSpi->SPI_TDR = b;
+		while ((pSpi->SPI_SR & SPI_SR_RDRF) == 0) {}
+		b = pSpi->SPI_RDR;
+		return b;
+	}
+	//------------------------------------------------------------------------------
+	/** SPI receive a byte */
+	uint8_t dmaReceive() {
+		return dmaSpiTransfer(0XFF);
+	}
+	//------------------------------------------------------------------------------
+	/** SPI receive multiple bytes */
+	uint8_t dmaReceive(uint8_t* buf, size_t n) {
+		Spi* pSpi = SPI0;
+		int rtn = 0;
+#if ILI_USE_SAM3X_DMAC
+		// clear overrun error
+		uint32_t s = pSpi->SPI_SR;
+
+		spiDmaRX(buf, n);
+		spiDmaTX(0, n);
+
+		uint32_t m = millis();
+		while (!dmac_channel_transfer_done(ILI_SPI_DMAC_RX_CH)) {
+			if ((millis() - m) > ILI_SAM3X_DMA_TIMEOUT)  {
+				dmac_channel_disable(ILI_SPI_DMAC_RX_CH);
+				dmac_channel_disable(ILI_SPI_DMAC_TX_CH);
+				rtn = 2;
+				break;
+			}
+		}
+		if (pSpi->SPI_SR & SPI_SR_OVRES) rtn |= 1;
+#else  // ILI_USE_SAM3X_DMAC
+		for (size_t i = 0; i < n; i++) {
+			pSpi->SPI_TDR = 0XFF;
+			while ((pSpi->SPI_SR & SPI_SR_RDRF) == 0) {}
+			buf[i] = pSpi->SPI_RDR;
+		}
+#endif  // ILI_USE_SAM3X_DMAC
+		return rtn;
+	}
+	//------------------------------------------------------------------------------
+	/** SPI send a byte */
+	void dmaSend(uint8_t b) {
+		dmaSpiTransfer(b);
+	}
+	//------------------------------------------------------------------------------
+	void dmaSend(const uint8_t* buf, size_t n) {
+		Spi* pSpi = SPI0;
+#if ILI_USE_SAM3X_DMAC
+
+		spiDmaTX(buf, n);
+		while (!dmac_channel_transfer_done(ILI_SPI_DMAC_TX_CH)) {}
+#else  // #if ILI_USE_SAM3X_DMAC
+		while ((pSpi->SPI_SR & SPI_SR_TXEMPTY) == 0) {}
+		for (size_t i = 0; i < n; i++) {
+			pSpi->SPI_TDR = buf[i];
+			while ((pSpi->SPI_SR & SPI_SR_TDRE) == 0) {}
+		}
+#endif  // #if ILI_USE_SAM3X_DMAC
+		while ((pSpi->SPI_SR & SPI_SR_TXEMPTY) == 0) {}
+		// leave RDR empty
+		pSpi->SPI_RDR;
+	}
+#endif
 };
 
-#ifndef swap
-#define swap(a, b) { typeof(a) t = a; a = b; b = t; }
-#endif
+
 
 #endif
