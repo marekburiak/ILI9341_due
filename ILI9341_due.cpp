@@ -150,11 +150,15 @@ bool ILI9341_due::begin(void)
 #endif
 
 #ifdef ILI_USE_SPI_TRANSACTION
-#if SPI_MODE_DMA
-		_dmaSpi.begin();
-		_dmaSpi.init(ILI9341_SPI_CLKDIVIDER);
+#if SPI_MODE_NORMAL
+		SPI.begin();
+#elif SPI_MODE_EXTENDED
+		SPI.begin(_cs);
+#elif SPI_MODE_DMA
+		dmaBegin();
+		dmaInit(ILI9341_SPI_CLKDIVIDER);
 #endif
-		SPI.beginTransaction(_spiSettings);
+		beginTransaction();
 #else
 #if SPI_MODE_NORMAL
 		SPI.begin();
@@ -213,9 +217,7 @@ bool ILI9341_due::begin(void)
 		Serial.print(F("\nImage Format: 0x")); Serial.println(x, HEX);
 		x = readcommand8(ILI9341_RDSELFDIAG);
 		Serial.print(F("\nSelf Diagnostic: 0x")); Serial.println(x, HEX);
-#ifdef ILI_USE_SPI_TRANSACTION
-		SPI.endTransaction();
-#endif
+		endTransaction();
 		return true;
 	}
 	else {
@@ -244,20 +246,17 @@ bool ILI9341_due::pinIsChipSelect(uint8_t cs)
 
 void ILI9341_due::setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	setAddrAndRW_cont(x0, y0, x1, y1);
 	disableCS();
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 void ILI9341_due::setSPIClockDivider(uint8_t divider)
 {
 #ifdef ILI_USE_SPI_TRANSACTION
 	_spiSettings = SPISettings(F_CPU / divider, MSBFIRST, SPI_MODE0);
+	SPI.setClockDivider(_cs, divider);
 #else
 #if SPI_MODE_NORMAL
 	SPI.setClockDivider(divider);
@@ -271,20 +270,14 @@ void ILI9341_due::setSPIClockDivider(uint8_t divider)
 
 void ILI9341_due::pushColor(uint16_t color)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	enableCS();
 	writedata16_last(color);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 void ILI9341_due::pushColors(uint16_t *colors, uint16_t offset, uint16_t len) {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	enableCS();
 	setDCForData();
 	colors = colors + offset * 2;
@@ -302,9 +295,7 @@ void ILI9341_due::pushColors(uint16_t *colors, uint16_t offset, uint16_t len) {
 	writeScanline_cont(len);
 #endif
 	disableCS();
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 // pushes pixels stored in the colors array (one color is 2 bytes) 
@@ -312,9 +303,7 @@ void ILI9341_due::pushColors(uint16_t *colors, uint16_t offset, uint16_t len) {
 // len should be the length of the array (so to push 320 pixels,
 // you have to have a 640-byte array and len should be 640)
 void ILI9341_due::pushColors565(uint8_t *colors, uint16_t offset, uint16_t len) {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	enableCS();
 	setDCForData();
 	colors = colors + offset;
@@ -327,31 +316,21 @@ void ILI9341_due::pushColors565(uint8_t *colors, uint16_t offset, uint16_t len) 
 	write_cont(colors, len);
 #endif
 	disableCS();
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 
 void ILI9341_due::drawPixel(int16_t x, int16_t y, uint16_t color) {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	drawPixel_noTrans(x, y, color);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 void ILI9341_due::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	drawFastVLine_noTrans(x, y, h, color);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 void ILI9341_due::drawFastVLine_noTrans(int16_t x, int16_t y, int16_t h, uint16_t color)
@@ -392,13 +371,9 @@ void ILI9341_due::drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uin
 
 void ILI9341_due::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	drawFastHLine_noTrans(x, y, w, color);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 void ILI9341_due::drawFastHLine_noTrans(int16_t x, int16_t y, int16_t w, uint16_t color)
@@ -423,44 +398,32 @@ void ILI9341_due::drawFastHLine_noTrans(int16_t x, int16_t y, int16_t w, uint16_
 void ILI9341_due::fillScreen(uint16_t color)
 {
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	fillRect_noTrans(0, 0, _width, _height, color);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 
 #elif SPI_MODE_DMA
 	fillScanline(color);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	setAddrAndRW_cont(0, 0, _width - 1, _height - 1);
 	setDCForData();
 	const uint16_t bytesToWrite = _width << 1;
-	const uint16_t bytesToWrite = _width;	// DMA16
+	//const uint16_t bytesToWrite = _width;	// DMA16
 	for (uint16_t y = 0; y < _height; y++)
 	{
 		write_cont(_scanlineBuffer, bytesToWrite);
 	}
 	disableCS();
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 #endif
 }
 
 // fill a rectangle
 void ILI9341_due::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	fillRect_noTrans(x, y, w, h, color);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 // fill a rectangle
@@ -514,9 +477,7 @@ void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, int16_t w, int16_t h, u
 
 void ILI9341_due::setRotation(iliRotation r)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	writecommand_cont(ILI9341_MADCTL);
 	_rotation = r;
 	switch (r) {
@@ -541,44 +502,32 @@ void ILI9341_due::setRotation(iliRotation r)
 		_height = ILI9341_TFTWIDTH;
 		break;
 	}
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 
 void ILI9341_due::invertDisplay(boolean i)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	writecommand_last(i ? ILI9341_INVON : ILI9341_INVOFF);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 
 uint8_t ILI9341_due::readcommand8(uint8_t c, uint8_t index) {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	writecommand_cont(0xD9);  // woo sekret command?
 	writedata8_last(0x10 + index);
 	writecommand_cont(c);
 	uint8_t command = readdata8_last();
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 	return command;
 }
 
 // Reads one pixel/color from the TFT's GRAM
 uint16_t ILI9341_due::readPixel(int16_t x, int16_t y)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	setAddr_cont(x, y, x + 1, y + 1);
 	writecommand_cont(ILI9341_RAMRD); // read from RAM
 	readdata8_cont(); // dummy read
@@ -586,9 +535,7 @@ uint16_t ILI9341_due::readPixel(int16_t x, int16_t y)
 	uint8_t green = read8_cont();
 	uint8_t blue = read8_last();
 	uint16_t color = color565(red, green, blue);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 	return color;
 
 }
@@ -863,9 +810,7 @@ void ILI9341_due::screenshotToConsole()
 	Serial.println(F("==== PIXEL DATA START ===="));
 	//uint16_t x=0;
 	//uint16_t y=0;
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	setAddr_cont(0, 0, _width - 1, _height - 1);
 	writecommand_cont(ILI9341_RAMRD); // read from RAM
 	readdata8_cont(); // dummy read, also sets DC high
@@ -920,9 +865,7 @@ void ILI9341_due::screenshotToConsole()
 		}
 	}
 	disableCS();
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 	sameColorPixelCount = _width*_height - sameColorStartIndex;
 	if (sameColorPixelCount > 65535)
 	{
@@ -982,9 +925,7 @@ POSSIBILITY OF SUCH DAMAGE.
 // Draw a circle outline
 void ILI9341_due::drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	int16_t f = 1 - r;
 	int16_t ddF_x = 1;
 	int16_t ddF_y = -2 * r;
@@ -1016,9 +957,7 @@ void ILI9341_due::drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color)
 		drawPixel_cont(x0 - y, y0 - x, color);
 	}
 	disableCS();
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 
@@ -1063,14 +1002,10 @@ void ILI9341_due::drawCircleHelper(int16_t x0, int16_t y0,
 void ILI9341_due::fillCircle(int16_t x0, int16_t y0, int16_t r,
 	uint16_t color)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	drawFastVLine_noTrans(x0, y0 - r, 2 * r + 1, color);
 	fillCircleHelper(x0, y0, r, 3, 0, color);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 // Used to do circles and roundrects
@@ -1112,22 +1047,16 @@ void ILI9341_due::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
 void ILI9341_due::drawLine(int16_t x0, int16_t y0,
 	int16_t x1, int16_t y1, uint16_t color)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	drawLine_noTrans(x0, y0, x1, y1, color);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 // Bresenham's algorithm - thx wikpedia
 void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0,
 	int16_t x1, int16_t y1, uint16_t color)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	if (y0 == y1) {
 		if (x1 > x0) {
 			drawFastHLine_noTrans(x0, y0, x1 - x0 + 1, color);
@@ -1221,9 +1150,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0,
 		}
 	}
 	disableCS();
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 
@@ -1238,9 +1165,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0,
 
 void ILI9341_due::drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 #if SPI_MODE_DMA
 	fillScanline(color, max(w, h));
 #endif
@@ -1250,18 +1175,14 @@ void ILI9341_due::drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t 
 	writeVLine_cont_noCS_noFill(x, y, h, color);
 	writeVLine_cont_noCS_noFill(x + w - 1, y, h, color);
 	disableCS();
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 // Draw a rounded rectangle
 void ILI9341_due::drawRoundRect(int16_t x, int16_t y, int16_t w,
 	int16_t h, int16_t r, uint16_t color)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 #if SPI_MODE_DMA
 	fillScanline(color, max(w, h));
 #endif
@@ -1277,27 +1198,21 @@ void ILI9341_due::drawRoundRect(int16_t x, int16_t y, int16_t w,
 	drawCircleHelper(x + w - r - 1, y + r, r, 2, color);
 	drawCircleHelper(x + w - r - 1, y + h - r - 1, r, 4, color);
 	drawCircleHelper(x + r, y + h - r - 1, r, 8, color);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 // Fill a rounded rectangle
 void ILI9341_due::fillRoundRect(int16_t x, int16_t y, int16_t w,
 	int16_t h, int16_t r, uint16_t color)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	// smarter version
 	fillRect_noTrans(x + r, y, w - 2 * r, h, color);
 
 	// draw four corners
 	fillCircleHelper(x + w - r - 1, y + r, r, 1, h - 2 * r - 1, color);
 	fillCircleHelper(x + r, y + r, r, 2, h - 2 * r - 1, color);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 // Draw a triangle
@@ -1305,15 +1220,11 @@ void ILI9341_due::drawTriangle(int16_t x0, int16_t y0,
 	int16_t x1, int16_t y1,
 	int16_t x2, int16_t y2, uint16_t color)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	drawLine_noTrans(x0, y0, x1, y1, color);
 	drawLine_noTrans(x1, y1, x2, y2, color);
 	drawLine_noTrans(x2, y2, x0, y0, color);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 // Fill a triangle
@@ -1321,9 +1232,7 @@ void ILI9341_due::fillTriangle(int16_t x0, int16_t y0,
 	int16_t x1, int16_t y1,
 	int16_t x2, int16_t y2, uint16_t color)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	int16_t a, b, y, last;
 
 	// Sort coordinates by Y order (y2 >= y1 >= y0)
@@ -1344,9 +1253,7 @@ void ILI9341_due::fillTriangle(int16_t x0, int16_t y0,
 		if (x2 < a)      a = x2;
 		else if (x2 > b) b = x2;
 		drawFastHLine_noTrans(a, y0, b - a + 1, color);
-#ifdef ILI_USE_SPI_TRANSACTION
-		SPI.endTransaction();
-#endif
+		endTransaction();
 		return;
 	}
 
@@ -1403,9 +1310,7 @@ void ILI9341_due::fillTriangle(int16_t x0, int16_t y0,
 		writeHLine_cont_noCS_noFill(a, y, b - a + 1, color);
 	}
 	disableCS();
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 // draws monochrome (single color) bitmaps
@@ -1420,9 +1325,7 @@ void ILI9341_due::drawBitmap(int16_t x, int16_t y,
 	_loByte = lowByte(color);
 	fillScanline(color, w);
 #endif
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	for (j = 0; j < h; j++)
 	{
 		for (i = 0; i < w; i++)
@@ -1442,9 +1345,7 @@ void ILI9341_due::drawBitmap(int16_t x, int16_t y,
 #endif
 	}
 	disableCS();
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 #ifdef FEATURE_PRINT_ENABLED
@@ -1476,9 +1377,7 @@ void ILI9341_due::drawChar(int16_t x, int16_t y, unsigned char c,
 		((x + 6 * size - 1) < 0) || // Clip left  TODO: is this correct?
 		((y + 8 * size - 1) < 0))   // Clip top   TODO: is this correct?
 		return;
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	enableCS();
 
 	if (fgcolor == bgcolor)
@@ -1643,9 +1542,7 @@ void ILI9341_due::drawChar(int16_t x, int16_t y, unsigned char c,
 #endif	
 	}
 	disableCS();
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 void ILI9341_due::setCursor(int16_t x, int16_t y) {
@@ -1681,36 +1578,24 @@ uint8_t ILI9341_due::getRotation(void) {
 // display's frame buffer is unaffected
 // (you can write to it without showing content on the screen)
 void ILI9341_due::display(boolean d){
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	writecommand_last(d ? ILI9341_DISPON : ILI9341_DISPOFF);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 // puts display in/out of sleep mode
 void ILI9341_due::sleep(boolean s)
 {
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	writecommand_last(s ? ILI9341_SLPIN : ILI9341_SLPOUT);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 	delay(120);
 }
 
 void ILI9341_due::idle(boolean i){
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.beginTransaction(_spiSettings);
-#endif
+	beginTransaction();
 	writecommand_last(i ? ILI9341_IDMON : ILI9341_IDMOFF);
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPI.endTransaction();
-#endif
+	endTransaction();
 }
 
 
@@ -1902,7 +1787,7 @@ bool ILI9341_due::setArea(int16_t x, int16_t y, int16_t columns, int16_t rows, g
 	//textMode mode = DEFAULT_SCROLLDIR;
 	uint16_t x2, y2;
 
-	selectFont(font);
+	setFont(font);
 
 	x2 = x + columns * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1) - 1;
 	y2 = y + rows * (fontHeight() + 1) - 1;
@@ -2378,7 +2263,7 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 						setDCForData();
-						for (int p = 0; p<lineEnd - lineStart + 1; p++)
+						for (int p = 0; p < lineEnd - lineStart + 1; p++)
 						{
 							write16_cont(_fontColor);
 						}
@@ -2401,7 +2286,7 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 				setAddrAndRW_cont(cx, cy + lineStart, cx, cy + lineEnd);
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 				setDCForData();
-				for (int p = 0; p<lineEnd - lineStart + 1; p++)
+				for (int p = 0; p < lineEnd - lineStart + 1; p++)
 				{
 					write16_cont(_fontColor);
 				}
@@ -2843,41 +2728,41 @@ void ILI9341_due::eraseTextLine(uint16_t color, uint8_t row)
 }
 
 
-void ILI9341_due::selectFont(gTextFont font)
+void ILI9341_due::setFont(gTextFont font)
 {
 	_font = font;
 }
 
-void ILI9341_due::selectFont(gTextFont font, uint16_t fontColor)
+void ILI9341_due::setFont(gTextFont font, uint16_t fontColor)
 {
 	_font = font;
 	_fontColor = fontColor;
 }
 
-void ILI9341_due::selectFont(gTextFont font, uint16_t fontColor, uint16_t backgroundColor)
+void ILI9341_due::setFont(gTextFont font, uint16_t fontColor, uint16_t backgroundColor)
 {
 	_font = font;
 	_fontColor = fontColor;
 	_fontBgColor = backgroundColor;
 }
 
-void ILI9341_due::setTextColor(uint16_t color)
+void ILI9341_due::setGTextColor(uint16_t color)
 {
 	_fontColor = color;
 }
 
-void ILI9341_due::setTextColor(uint8_t R, uint8_t G, uint8_t B)
+void ILI9341_due::setGTextColor(uint8_t R, uint8_t G, uint8_t B)
 {
 	_fontColor = color565(R, G, B);
 }
 
-void ILI9341_due::setTextColor(uint16_t color, uint16_t backgroundColor)
+void ILI9341_due::setGTextColor(uint16_t color, uint16_t backgroundColor)
 {
 	_fontColor = color;
 	_fontBgColor = backgroundColor;
 }
 
-void ILI9341_due::setTextColor(uint8_t R, uint8_t G, uint8_t B, uint8_t bgR, uint8_t bgG, uint8_t bgB)
+void ILI9341_due::setGTextColor(uint8_t R, uint8_t G, uint8_t B, uint8_t bgR, uint8_t bgG, uint8_t bgB)
 {
 	_fontColor = color565(R, G, B);
 	_fontBgColor = color565(bgR, bgG, bgB);

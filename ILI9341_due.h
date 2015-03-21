@@ -29,6 +29,8 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with ILI9341_due.  If not, see <http://www.gnu.org/licenses/>.
 
+selectFont -> setFont
+setFontColor -> setGTextColor
 */
 
 /***************************************************
@@ -54,17 +56,17 @@ MIT license, all text above must be included in any redistribution
 
 // comment out the SPI mode you want to use (does not matter for AVR)
 //#define ILI9341_SPI_MODE_NORMAL	// uses SPI library
-#define ILI9341_SPI_MODE_EXTENDED	// uses Extended SPI in Due, make sure you use pin 4, 10 or 52 for CS
-//#define ILI9341_SPI_MODE_DMA		// uses DMA in Due
+//#define ILI9341_SPI_MODE_EXTENDED	// uses Extended SPI in Due, make sure you use pin 4, 10 or 52 for CS
+#define ILI9341_SPI_MODE_DMA		// uses DMA in Due
 
 // set the clock divider
 #if defined __SAM3X8E__
-#define ILI9341_SPI_CLKDIVIDER 4	// for Due
+#define ILI9341_SPI_CLKDIVIDER 1	// for Due
 #elif defined __AVR__
 #define ILI9341_SPI_CLKDIVIDER SPI_CLOCK_DIV32	// for Uno, Mega,...
 #endif
 
-//#define ILI_USE_SPI_TRANSACTION
+#define ILI_USE_SPI_TRANSACTION
 
 
 // comment out the features you do not need to save flash memory and RAM (especially on AVR)
@@ -491,13 +493,13 @@ public:
 	void clearArea(uint16_t color);
 
 	// Font Functions
-	void selectFont(gTextFont font);
-	void selectFont(gTextFont font, uint16_t color);
-	void selectFont(gTextFont font, uint16_t color, uint16_t backgroundColor);
-	void setTextColor(uint16_t color);
-	void setTextColor(uint8_t R, uint8_t G, uint8_t B);
-	void setTextColor(uint16_t color, uint16_t backgroundColor);
-	void setTextColor(uint8_t R, uint8_t G, uint8_t B, uint8_t bgR, uint8_t bgG, uint8_t bgB);
+	void setFont(gTextFont font);
+	void setFont(gTextFont font, uint16_t color);
+	void setFont(gTextFont font, uint16_t color, uint16_t backgroundColor);
+	void setGTextColor(uint16_t color);
+	void setGTextColor(uint8_t R, uint8_t G, uint8_t B);
+	void setGTextColor(uint16_t color, uint16_t backgroundColor);
+	void setGTextColor(uint8_t R, uint8_t G, uint8_t B, uint8_t bgR, uint8_t bgG, uint8_t bgB);
 	void setFontLetterSpacing(uint8_t letterSpacing);
 	uint8_t getFontLetterSpacing()	{
 		return _letterSpacing;
@@ -547,6 +549,10 @@ public:
 		return pgm_read_byte(font + GTEXT_FONT_HEIGHT);
 	};
 
+#ifdef FEATURE_GTEXT_PRINT_ENABLED
+	virtual size_t write(uint8_t);
+#endif
+
 	uint16_t charWidth(uint8_t c);
 	uint16_t stringWidth(const char* str);
 	uint16_t stringWidth_P(PGM_P str);
@@ -590,10 +596,6 @@ public:
 
 		return width;
 	};
-
-#ifdef FEATURE_GTEXT_PRINT_ENABLED
-	virtual size_t write(uint8_t);
-#endif
 #endif
 
 #ifdef FEATURE_ARC_ENABLED
@@ -641,6 +643,29 @@ public:
 		return sin(radians);
 	}
 #endif
+
+
+	__attribute__((always_inline))
+		void beginTransaction() {
+#ifdef ILI_USE_SPI_TRANSACTION
+#if defined __AVR__
+		SPI.beginTransaction(_spiSettings);
+#elif defined (__SAM3X8E__)
+		SPI.beginTransaction(_spiSettings);
+#endif
+#endif
+	}
+
+	__attribute__((always_inline))
+		void endTransaction() {
+#ifdef ILI_USE_SPI_TRANSACTION
+#if defined __AVR__
+		SPI.endTransaction();
+#elif defined (__SAM3X8E__)
+		SPI.endTransaction();
+#endif
+#endif
+	}
 
 	inline __attribute__((always_inline))
 		void spiwrite(uint8_t c) {
@@ -1466,6 +1491,7 @@ private:
 #ifdef ILI_USE_SPI_TRANSACTION
 	SPISettings _spiSettings;
 	uint8_t _transactionId;
+	bool _isInTransaction;
 #endif
 	//Pio *_dcport;
 #ifdef __SAM3X8E__
@@ -1640,7 +1666,7 @@ private:
 			src = &ff;
 			src_incr = DMAC_CTRLB_SRC_INCR_FIXED;
 		}
-		ILI_dmac_channel_disable(ILI_SPI_DMAC_TX_CH);
+		dmac_channel_disable(ILI_SPI_DMAC_TX_CH);
 		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_TX_CH].DMAC_SADDR = (uint32_t)src;
 		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_TX_CH].DMAC_DADDR = (uint32_t)&SPI0->SPI_TDR;
 		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_TX_CH].DMAC_DSCR = 0;
@@ -1654,7 +1680,7 @@ private:
 		DMAC->DMAC_CH_NUM[ILI_SPI_DMAC_TX_CH].DMAC_CFG = DMAC_CFG_DST_PER(ILI_SPI_TX_IDX) |
 			DMAC_CFG_DST_H2SEL | DMAC_CFG_SOD | DMAC_CFG_FIFOCFG_ALAP_CFG;
 
-		ILI_dmac_channel_enable(ILI_SPI_DMAC_TX_CH);
+		dmac_channel_enable(ILI_SPI_DMAC_TX_CH);
 	}
 	//------------------------------------------------------------------------------
 	inline uint8_t dmaSpiTransfer(uint8_t b) {
@@ -1723,7 +1749,7 @@ private:
 		while ((pSpi->SPI_SR & SPI_SR_TXEMPTY) == 0) {}
 		// leave RDR empty
 		pSpi->SPI_RDR;
-	}
+}
 #endif
 };
 
