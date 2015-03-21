@@ -58,28 +58,25 @@ void setup()
 
 void loop()
 {
-	if (tft.getRotation() == iliRotation90 || tft.getRotation() == iliRotation270){
-		bmpDraw("giraffe.565", 0, 0);
-		delay(2000);
-		bmpDraw("SOLDHO~1.565", 0, 0);
-		delay(2000);
-		bmpDraw("GLOOMY~1.565", 0, 0);
-		delay(2000);
-	    bmpDraw("MOTIVA~1.565", 0, 0);
-	    delay(2000);
-	}
-	else
-	{
-		bmpDraw("smokeP.565", 0, 0);
-		delay(2000);
-		bmpDraw("origP.565", 0, 0);
-		delay(2000);
-		bmpDraw("radioP.565", 0, 0);
-		delay(2000);
-		bmpDraw("stopP.565", 0, 0);
-		delay(2000);
-	}
+	tft.setRotation(iliRotation270);	// landscape
+	bmpDraw("giraffe.565", 0, 0);
+	delay(2000);
+	bmpDraw("SOLDHO~1.565", 0, 0);
+	delay(2000);
+	bmpDraw("GLOOMY~1.565", 0, 0);
+	delay(2000);
+	bmpDraw("MOTIVA~1.565", 0, 0);
+	delay(2000);
 
+	tft.setRotation(iliRotation0);	// landscape
+	bmpDraw("smokeP.565", 0, 0);
+	delay(2000);
+	bmpDraw("origP.565", 0, 0);
+	delay(2000);
+	bmpDraw("radioP.565", 0, 0);
+	delay(2000);
+	bmpDraw("stopP.565", 0, 0);
+	delay(2000);
 }
 
 // This function opens a Windows Bitmap (BMP) file and
@@ -164,7 +161,7 @@ void bmpDraw(char* filename, int x, int y) {
 					uint8_t buffer[2 * BUFFPIXELCOUNT]; // pixel buffer (contains already formatted data for ILI9341 display)
 
 					bmpFile.seekSet(54);	//skip header
-					uint32_t totalPixels = bmpWidth*bmpHeight;
+					uint32_t totalPixels = (uint32_t)bmpWidth*(uint32_t)bmpHeight;
 					uint16_t numFullBufferRuns = totalPixels / BUFFPIXELCOUNT;
 					for (uint32_t p = 0; p < numFullBufferRuns; p++) {
 						// read pixels into the buffer
