@@ -152,13 +152,15 @@ bool ILI9341_due::begin(void)
 #ifdef ILI_USE_SPI_TRANSACTION
 #if SPI_MODE_NORMAL
 		SPI.begin();
+		beginTransaction();
 #elif SPI_MODE_EXTENDED
 		SPI.begin(_cs);
+		beginTransaction();
 #elif SPI_MODE_DMA
 		dmaBegin();
 		dmaInit(ILI9341_SPI_CLKDIVIDER);
 #endif
-		beginTransaction();
+	    
 #else
 #if SPI_MODE_NORMAL
 		SPI.begin();

@@ -66,7 +66,7 @@ MIT license, all text above must be included in any redistribution
 #define ILI9341_SPI_CLKDIVIDER SPI_CLOCK_DIV32	// for Uno, Mega,...
 #endif
 
-#define ILI_USE_SPI_TRANSACTION
+//#define ILI_USE_SPI_TRANSACTION
 
 
 // comment out the features you do not need to save flash memory and RAM (especially on AVR)
@@ -602,16 +602,12 @@ public:
 	inline __attribute__((always_inline))
 		void drawArc(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float start, float end, uint16_t color)
 	{
-#ifdef ILI_USE_SPI_TRANSACTION
-		SPI.beginTransaction(_spiSettings);
-#endif
+		beginTransaction();
 		if (start == 0 && end == _arcAngleMax)
 			drawArcOffsetted(cx, cy, radius, thickness, 0, _arcAngleMax, color);
 		else
 			drawArcOffsetted(cx, cy, radius, thickness, start + (_arcAngleOffset / (float)360)*_arcAngleMax, end + (_arcAngleOffset / (float)360)*_arcAngleMax, color);
-#ifdef ILI_USE_SPI_TRANSACTION
-		SPI.endTransaction();
-#endif
+		endTransaction();
 	}
 
 	//int32_t cos_lookup(int32_t angle)
@@ -651,7 +647,13 @@ public:
 #if defined __AVR__
 		SPI.beginTransaction(_spiSettings);
 #elif defined (__SAM3X8E__)
+#if SPI_MODE_NORMAL
 		SPI.beginTransaction(_spiSettings);
+#elif SPI_MODE_EXTENDED
+		SPI.beginTransaction(_cs, _spiSettings);
+#elif SPI_MODE_DMA
+		dmaInit(ILI9341_SPI_CLKDIVIDER);
+#endif
 #endif
 #endif
 	}
