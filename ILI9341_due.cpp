@@ -87,6 +87,7 @@ ILI9341_due::ILI9341_due(uint8_t cs, uint8_t dc, uint8_t rst)
 	_cs = cs;
 	_dc = dc;
 	_rst = rst;
+	_spiClkDivider = ILI9341_SPI_CLKDIVIDER;
 	_width = ILI9341_TFTWIDTH;
 	_height = ILI9341_TFTHEIGHT;
 	_rotation = iliRotation0;
@@ -127,60 +128,14 @@ bool ILI9341_due::begin(void)
 		_cspinmask = digitalPinToBitMask(_cs);
 #endif
 
-#ifdef ILI_USE_SPI_TRANSACTION
-#if defined (__SAM3X8E__)
-		_spiSettings = SPISettings(F_CPU / ILI9341_SPI_CLKDIVIDER, MSBFIRST, SPI_MODE0);
-#elif defined (__AVR__)
-#if ILI9341_SPI_CLKDIVIDER == SPI_CLOCK_DIV2
-		_spiSettings = SPISettings(F_CPU / 2, MSBFIRST, SPI_MODE0);
-#elif ILI9341_SPI_CLKDIVIDER == SPI_CLOCK_DIV4
-		_spiSettings = SPISettings(F_CPU / 4, MSBFIRST, SPI_MODE0);
-#elif ILI9341_SPI_CLKDIVIDER == SPI_CLOCK_DIV8
-		_spiSettings = SPISettings(F_CPU / 8, MSBFIRST, SPI_MODE0);
-#elif ILI9341_SPI_CLKDIVIDER == SPI_CLOCK_DIV16
-		_spiSettings = SPISettings(F_CPU / 16, MSBFIRST, SPI_MODE0);
-#elif ILI9341_SPI_CLKDIVIDER == SPI_CLOCK_DIV32
-		_spiSettings = SPISettings(F_CPU / 32, MSBFIRST, SPI_MODE0);
-#elif ILI9341_SPI_CLKDIVIDER == SPI_CLOCK_DIV64
-		_spiSettings = SPISettings(F_CPU / 64, MSBFIRST, SPI_MODE0);
-#elif ILI9341_SPI_CLKDIVIDER == SPI_CLOCK_DIV128
-		_spiSettings = SPISettings(F_CPU / 128, MSBFIRST, SPI_MODE0);
-#endif
-#endif
-#endif
-
-#ifdef ILI_USE_SPI_TRANSACTION
 #if SPI_MODE_NORMAL
 		SPI.begin();
-		beginTransaction();
 #elif SPI_MODE_EXTENDED
 		SPI.begin(_cs);
-		beginTransaction();
 #elif SPI_MODE_DMA
 		dmaBegin();
-		dmaInit(ILI9341_SPI_CLKDIVIDER);
 #endif
-	    
-#else
-#if SPI_MODE_NORMAL
-		SPI.begin();
-		SPI.setClockDivider(ILI9341_SPI_CLKDIVIDER);
-		SPI.setBitOrder(MSBFIRST);
-		SPI.setDataMode(SPI_MODE0);
-#elif SPI_MODE_EXTENDED
-		SPI.begin(_cs);
-		SPI.setClockDivider(_cs, ILI9341_SPI_CLKDIVIDER);
-		SPI.setBitOrder(_cs, MSBFIRST);
-		SPI.setDataMode(_cs, SPI_MODE0);
-#elif SPI_MODE_DMA
-		dmaBegin();
-		dmaInit(ILI9341_SPI_CLKDIVIDER);
-#endif
-#endif
-
-#if SPI_MODE_DMA
-
-#endif
+		setSPIClockDivider(ILI9341_SPI_CLKDIVIDER);
 
 		// toggle RST low to reset
 		if (_rst < 255) {
@@ -212,14 +167,19 @@ bool ILI9341_due::begin(void)
 		uint8_t x = readcommand8(ILI9341_RDMODE);
 		Serial.print(F("\nDisplay Power Mode: 0x")); Serial.println(x, HEX);
 		x = readcommand8(ILI9341_RDMADCTL);
-		Serial.print(F("\nMADCTL Mode: 0x")); Serial.println(x, HEX);
+		Serial.print(F("MADCTL Mode: 0x")); Serial.println(x, HEX);
 		x = readcommand8(ILI9341_RDPIXFMT);
-		Serial.print(F("\nPixel Format: 0x")); Serial.println(x, HEX);
+		Serial.print(F("Pixel Format: 0x")); Serial.println(x, HEX);
 		x = readcommand8(ILI9341_RDIMGFMT);
-		Serial.print(F("\nImage Format: 0x")); Serial.println(x, HEX);
+		Serial.print(F("Image Format: 0x")); Serial.println(x, HEX);
 		x = readcommand8(ILI9341_RDSELFDIAG);
-		Serial.print(F("\nSelf Diagnostic: 0x")); Serial.println(x, HEX);
+		Serial.print(F("Self Diagnostic: 0x")); Serial.println(x, HEX);
+
+#ifdef ILI_USE_SPI_TRANSACTION
+#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 		endTransaction();
+#endif
+#endif
 		return true;
 	}
 	else {
@@ -256,17 +216,45 @@ void ILI9341_due::setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t 
 
 void ILI9341_due::setSPIClockDivider(uint8_t divider)
 {
+	_spiClkDivider = divider;
 #ifdef ILI_USE_SPI_TRANSACTION
+#if defined (__SAM3X8E__)
 	_spiSettings = SPISettings(F_CPU / divider, MSBFIRST, SPI_MODE0);
-	SPI.setClockDivider(_cs, divider);
+#elif defined (__AVR__)
+#if divider == SPI_CLOCK_DIV2
+	_spiSettings = SPISettings(F_CPU / 2, MSBFIRST, SPI_MODE0);
+#elif divider == SPI_CLOCK_DIV4
+	_spiSettings = SPISettings(F_CPU / 4, MSBFIRST, SPI_MODE0);
+#elif divider == SPI_CLOCK_DIV8
+	_spiSettings = SPISettings(F_CPU / 8, MSBFIRST, SPI_MODE0);
+#elif divider == SPI_CLOCK_DIV16
+	_spiSettings = SPISettings(F_CPU / 16, MSBFIRST, SPI_MODE0);
+#elif divider == SPI_CLOCK_DIV32
+	_spiSettings = SPISettings(F_CPU / 32, MSBFIRST, SPI_MODE0);
+#elif divider == SPI_CLOCK_DIV64
+	_spiSettings = SPISettings(F_CPU / 64, MSBFIRST, SPI_MODE0);
+#elif divider == SPI_CLOCK_DIV128
+	_spiSettings = SPISettings(F_CPU / 128, MSBFIRST, SPI_MODE0);
+#endif
+#endif
+#endif
+
+#ifdef ILI_USE_SPI_TRANSACTION
+	beginTransaction();
 #else
 #if SPI_MODE_NORMAL
 	SPI.setClockDivider(divider);
+	SPI.setBitOrder(MSBFIRST);
+	SPI.setDataMode(SPI_MODE0);
 #elif SPI_MODE_EXTENDED
 	SPI.setClockDivider(_cs, divider);
-#elif SPI_MODE_DMA
-	dmaInit(divider);
+	SPI.setBitOrder(_cs, MSBFIRST);
+	SPI.setDataMode(_cs, SPI_MODE0);
 #endif
+#endif
+
+#if SPI_MODE_DMA
+	dmaInit(divider);
 #endif
 }
 
@@ -290,8 +278,8 @@ void ILI9341_due::pushColors(uint16_t *colors, uint16_t offset, uint16_t len) {
 #elif SPI_MODE_DMA
 	for (uint16_t i = 0; i < (len << 1); i += 2) {
 		uint16_t color = *colors;
-		_scanlineBuffer[i] = highByte(color);
-		_scanlineBuffer[i + 1] = lowByte(color);
+		_scanline[i] = highByte(color);
+		_scanline[i + 1] = lowByte(color);
 		colors++;
 	}
 	writeScanline_cont(len);
@@ -365,7 +353,7 @@ void ILI9341_due::drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uin
 	setDCForData();
 	while (h-- > 0) {
 		write16_cont(color);
-	}
+}
 #elif SPI_MODE_DMA
 	writeScanline_cont(h);
 #endif
@@ -413,7 +401,7 @@ void ILI9341_due::fillScreen(uint16_t color)
 	//const uint16_t bytesToWrite = _width;	// DMA16
 	for (uint16_t y = 0; y < _height; y++)
 	{
-		write_cont(_scanlineBuffer, bytesToWrite);
+		write_cont(_scanline, bytesToWrite);
 	}
 	disableCS();
 	endTransaction();
@@ -438,7 +426,7 @@ void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, int16_t w, int16_t h, u
 	if ((y + h - 1) >= _height) h = _height - y;
 
 	setAddrAndRW_cont(x, y, x + w - 1, y + h - 1);
-#if SPI_MODE_DMA
+#if SPI_MODE_DMA 
 	const uint16_t maxNumLinesInScanlineBuffer = (SCANLINE_BUFFER_SIZE >> 1) / w;
 	const uint16_t numPixelsInOneGo = w*maxNumLinesInScanlineBuffer;
 
@@ -464,7 +452,7 @@ void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, int16_t w, int16_t h, u
 		{
 			write16_cont(color);
 		}
-	}
+}
 	disableCS();
 #endif
 }
@@ -853,7 +841,7 @@ void ILI9341_due::screenshotToConsole()
 				printHex8(lastColor, 3);
 				totalImageDataLength += 10;
 				sameColorPixelCount16 = sameColorPixelCount - 65535;
-			}
+		}
 			else
 				sameColorPixelCount16 = sameColorPixelCount;
 			printHex16(&sameColorPixelCount16, 1);
@@ -864,7 +852,7 @@ void ILI9341_due::screenshotToConsole()
 			lastColor[0] = color[0];
 			lastColor[1] = color[1];
 			lastColor[2] = color[2];
-		}
+}
 	}
 	disableCS();
 	endTransaction();
@@ -1037,12 +1025,12 @@ void ILI9341_due::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
 		if (cornername & 0x1) {
 			drawFastVLine_cont_noFill(x0 + x, y0 - y, 2 * y + 1 + delta, color);
 			drawFastVLine_cont_noFill(x0 + y, y0 - x, 2 * x + 1 + delta, color);
-		}
+	}
 		if (cornername & 0x2) {
 			drawFastVLine_cont_noFill(x0 - x, y0 - y, 2 * y + 1 + delta, color);
 			drawFastVLine_cont_noFill(x0 - y, y0 - x, 2 * x + 1 + delta, color);
 		}
-	}
+}
 	disableCS();
 }
 
@@ -1124,13 +1112,13 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0,
 				xbegin = x0 + 1;
 				y0 += ystep;
 				err += dx;
+				}
 			}
-		}
 		if (x0 > xbegin + 1) {
 			writeVLine_cont_noCS_noFill(y0, xbegin, x0 - xbegin, color);
 		}
 
-	}
+		}
 	else {
 		for (; x0 <= x1; x0++) {
 			err -= dy;
@@ -1153,7 +1141,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0,
 	}
 	disableCS();
 	endTransaction();
-}
+	}
 
 
 // Draw a rectangle
@@ -1313,7 +1301,7 @@ void ILI9341_due::fillTriangle(int16_t x0, int16_t y0,
 	}
 	disableCS();
 	endTransaction();
-}
+	}
 
 // draws monochrome (single color) bitmaps
 void ILI9341_due::drawBitmap(int16_t x, int16_t y,
@@ -1336,19 +1324,19 @@ void ILI9341_due::drawBitmap(int16_t x, int16_t y,
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 				drawPixel_noTrans(x + i, y + j, color);
 #elif SPI_MODE_DMA
-				_scanlineBuffer[i << 1] = _hiByte;
-				_scanlineBuffer[(i << 1) + 1] = _loByte;
+				_scanline[i << 1] = _hiByte;
+				_scanline[(i << 1) + 1] = _loByte;
 #endif
 			}
-		}
+			}
 #if SPI_MODE_DMA
 		setAddrAndRW_cont(x + i, y + j, x + w - 1, y + j);
 		writeScanline_cont(w);
 #endif
-	}
+		}
 	disableCS();
 	endTransaction();
-}
+	}
 
 #ifdef FEATURE_PRINT_ENABLED
 size_t ILI9341_due::write(uint8_t c) {
@@ -1508,8 +1496,8 @@ void ILI9341_due::drawChar(int16_t x, int16_t y, unsigned char c,
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 						write16_cont(color);
 #elif SPI_MODE_DMA
-						_scanlineBuffer[scanlineId++] = highByte(color);
-						_scanlineBuffer[scanlineId++] = lowByte(color);
+						_scanline[scanlineId++] = highByte(color);
+						_scanline[scanlineId++] = lowByte(color);
 #endif	
 					}
 				}
@@ -1518,8 +1506,8 @@ void ILI9341_due::drawChar(int16_t x, int16_t y, unsigned char c,
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 					write16_cont(bgcolor);
 #elif SPI_MODE_DMA
-					_scanlineBuffer[scanlineId++] = highByte(bgcolor);
-					_scanlineBuffer[scanlineId++] = lowByte(bgcolor);
+					_scanline[scanlineId++] = highByte(bgcolor);
+					_scanline[scanlineId++] = lowByte(bgcolor);
 #endif	
 				}
 #if SPI_MODE_DMA
@@ -2157,8 +2145,8 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 					writedata16_cont(_fontBgColor);
 #elif SPI_MODE_DMA
-					_scanlineBuffer[lineId++] = fontBgColorHi;
-					_scanlineBuffer[lineId++] = fontBgColorLo;
+					_scanline[lineId++] = fontBgColorHi;
+					_scanline[lineId++] = fontBgColorLo;
 #endif
 				}
 				else
@@ -2166,14 +2154,14 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 					writedata16_cont(_fontColor);
 #elif SPI_MODE_DMA
-					_scanlineBuffer[lineId++] = fontColorHi;
-					_scanlineBuffer[lineId++] = fontColorLo;
+					_scanline[lineId++] = fontColorHi;
+					_scanline[lineId++] = fontColorLo;
 #endif
 				}
 				data >>= 1;
 			}
 			//delay(50);
-		}
+			}
 		//Serial << endl;
 		cx++;
 #if SPI_MODE_DMA
@@ -2193,7 +2181,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 		_x += _letterSpacing;
 	}
 	//Serial << "letterSpacing " << _letterSpacing <<" x: " << _x <<endl;
-}
+	}
 
 void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight)
 {
@@ -2295,12 +2283,12 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 #elif SPI_MODE_DMA
 				writeScanline_cont(lineEnd - lineStart + 1);
 #endif
-			}
-			//delay(25);
 		}
+			//delay(25);
+	}
 		//Serial << endl;
 		cx++;
-	}
+}
 	disableCS();	// to put CS line back up
 
 	_x += charWidth;
@@ -2308,8 +2296,8 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 	if (_letterSpacing > 0 && !_isLastChar)
 	{
 		_x += _letterSpacing;
+		}
 	}
-}
 
 void ILI9341_due::puts(char *str)
 {

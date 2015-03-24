@@ -1,7 +1,7 @@
 /*
 v0.94.000
 
-ILI9341_due_.h - Arduino Due library for interfacing with ILI9341-based TFTs
+ILI9341_due.h - Arduino Due library for interfacing with ILI9341-based TFTs
 
 Copyright (c) 2014  Marek Buriak
 
@@ -50,43 +50,9 @@ MIT license, all text above must be included in any redistribution
 
 #ifndef _ILI9341_dueH_
 #define _ILI9341_dueH_
+
+#include <ILI9341_due_config.h>
 //#include "../Streaming/Streaming.h"
-
-// USER CONFIG SECTION START
-
-// comment out the SPI mode you want to use (does not matter for AVR)
-//#define ILI9341_SPI_MODE_NORMAL	// uses SPI library
-//#define ILI9341_SPI_MODE_EXTENDED	// uses Extended SPI in Due, make sure you use pin 4, 10 or 52 for CS
-#define ILI9341_SPI_MODE_DMA		// uses DMA in Due
-
-// set the clock divider
-#if defined __SAM3X8E__
-#define ILI9341_SPI_CLKDIVIDER 1	// for Due
-#elif defined __AVR__
-#define ILI9341_SPI_CLKDIVIDER SPI_CLOCK_DIV32	// for Uno, Mega,...
-#endif
-
-//#define ILI_USE_SPI_TRANSACTION
-
-
-// comment out the features you do not need to save flash memory and RAM (especially on AVR)
-
-#define FEATURE_GTEXT_ENABLED
-// commenting out/disabling the ARC feature will exclude the drawArc function. It is going to save a few ROM bytes.
-#define FEATURE_ARC_ENABLED
-// commenting out/disabling the PRINT feature will exclude the drawChars and print functions, it saves around 3.6kB ROM and 1.3kB RAM(!)
-// I recommend using gText for drawing the text.
-//#define FEATURE_PRINT_ENABLED
-#define FEATURE_GTEXT_PRINT_ENABLED
-
-// number representing the maximum angle (e.g. if 100, then if you pass in start=0 and end=50, you get a half circle)
-// this can be changed with setArcParams function at runtime
-#define ARC_ANGLE_MAX 360		
-// rotational offset in degrees defining position of value 0 (-90 will put it at the top of circle)
-// this can be changed with setArcParams function at runtime
-#define ARC_ANGLE_OFFSET -90	
-
-// USER CONFIG SECTION END
 
 #ifdef __AVR__
 #define SPI_MODE_NORMAL 1
@@ -652,7 +618,8 @@ public:
 #elif SPI_MODE_EXTENDED
 		SPI.beginTransaction(_cs, _spiSettings);
 #elif SPI_MODE_DMA
-		dmaInit(ILI9341_SPI_CLKDIVIDER);
+		SPI.beginTransaction(_spiSettings);
+		dmaInit(_spiClkDivider);
 #endif
 #endif
 #endif
@@ -704,7 +671,7 @@ public:
 #if SPI_MODE_NORMAL
 		spiwrite(c);
 #elif SPI_MODE_EXTENDED
-		SPI.transfer(_cs, c, SPI_CONTINUE); 
+		SPI.transfer(_cs, c, SPI_CONTINUE);
 #elif SPI_MODE_DMA
 		dmaSend(c);
 #endif
@@ -718,7 +685,7 @@ public:
 		spiwrite(c);
 		disableCS();
 #elif SPI_MODE_EXTENDED
-		SPI.transfer(_cs, c, SPI_LAST); 
+		SPI.transfer(_cs, c, SPI_LAST);
 #elif SPI_MODE_DMA
 		dmaSend(c);
 		disableCS();
@@ -732,7 +699,7 @@ public:
 #if SPI_MODE_NORMAL
 		spiwrite16(d);
 #elif SPI_MODE_EXTENDED
-		SPI.transfer(_cs, highByte(d), SPI_CONTINUE); 
+		SPI.transfer(_cs, highByte(d), SPI_CONTINUE);
 		SPI.transfer(_cs, lowByte(d), SPI_CONTINUE);
 #elif SPI_MODE_DMA
 		dmaSend(highByte(d));
@@ -746,7 +713,7 @@ public:
 		spiwrite16(d);
 		disableCS();
 #elif SPI_MODE_EXTENDED
-		SPI.transfer(_cs, highByte(d), SPI_CONTINUE); 
+		SPI.transfer(_cs, highByte(d), SPI_CONTINUE);
 		SPI.transfer(_cs, lowByte(d), SPI_LAST);
 #elif SPI_MODE_DMA
 		dmaSend(highByte(d));
@@ -916,7 +883,7 @@ public:
 		write16_last(d);
 	}
 
-#if SPI_MODE_DMA
+#ifdef __SAM3X8E__
 	// Enables CS, sets DC and writes n-bytes from the buffer via DMA
 	// Does not disable CS
 	/*inline __attribute__((always_inline))
@@ -939,7 +906,11 @@ public:
 	// CS and DC have to be set prior to calling this method
 	inline __attribute__((always_inline))
 		void write_cont(const uint8_t* buf, size_t n) {
+#if SPI_MODE_EXTENDED
+		SPI.transfer(_cs, (void*)buf, n, SPI_CONTINUE);
+#elif SPI_MODE_DMA
 		dmaSend(buf, n);
+#endif
 	}
 
 	// DMA16
@@ -950,7 +921,9 @@ public:
 
 	inline __attribute__((always_inline))
 		void read_cont(uint8_t* buf, size_t n) {
+#if SPI_MODE_DMA
 		dmaReceive(buf, n);
+#endif
 	}
 
 	// Writes n-bytes from the buffer via DMA and disables CS
@@ -967,15 +940,20 @@ public:
 		void writeScanline_cont(size_t n) {
 		setDCForData();
 		enableCS();
-		dmaSend(_scanlineBuffer, n << 1);	// each pixel is 2 bytes
-		//dmaSend(_scanlineBuffer, n); // DMA16
+#if SPI_MODE_EXTENDED
+		SPI.transfer(_cs, _scanline, n << 1, SPI_CONTINUE);
+#elif SPI_MODE_DMA
+		dmaSend(_scanline, n << 1);	// each pixel is 2 bytes
+#endif
+		
+		//dmaSend(_scanline, n); // DMA16
 	}
 
 	// writes n-bytes from the scanline buffer via DMA
 	// Does not enable CS nor sets DS nor disables CS
 	//inline __attribute__((always_inline))
 	//	void writeScanline_cont_noCS_noDC(size_t n) {
-	//		dmaSend(_scanlineBuffer, n << 1);	// each pixel is 2 bytes
+	//		dmaSend(_scanline, n << 1);	// each pixel is 2 bytes
 	//}
 
 	// Enables CS, sets DC, writes n-bytes from the scanline buffer via DMA and disabled CS
@@ -983,8 +961,12 @@ public:
 		void writeScanline_last(size_t n) {
 		setDCForData();
 		enableCS();
-		dmaSend(_scanlineBuffer, n << 1);	// each pixel is 2 bytes
-		//dmaSend(_scanlineBuffer, n);	// DMA16
+#if SPI_MODE_EXTENDED
+		SPI.transfer(_cs, _scanline, n << 1, SPI_LAST);
+#elif SPI_MODE_DMA
+		dmaSend(_scanline, n << 1);	// each pixel is 2 bytes
+		//dmaSend(_scanline, n);	// DMA16
+#endif
 		disableCS();
 	}
 
@@ -1015,7 +997,7 @@ public:
 		disableCS();
 		return r;
 #endif
-	}
+}
 
 	// Reads 2 bytes
 	__attribute__((always_inline))
@@ -1108,14 +1090,14 @@ public:
 		return r;
 	}
 
-#if SPI_MODE_DMA
+#if SPI_MODE_DMA | SPI_MODE_EXTENDED
 	//void fillScanline(uint8_t color) __attribute__((always_inline)) {
-	//	//for(uint16_t i=0; i<sizeof(_scanlineBuffer); i++)
+	//	//for(uint16_t i=0; i<sizeof(_scanline); i++)
 	//	//{
-	//	//	_scanlineBuffer[i] = color;
+	//	//	_scanline[i] = color;
 	//	//}
-	//	_scanlineBuffer[0]=color;
-	//	memmove(_scanlineBuffer+sizeof(_scanlineBuffer[0]), _scanlineBuffer, sizeof(_scanlineBuffer)-sizeof(_scanlineBuffer[0]));
+	//	_scanline[0]=color;
+	//	memmove(_scanline+sizeof(_scanline[0]), _scanline, sizeof(_scanline)-sizeof(_scanline[0]));
 	//	//arr[0]=color;
 	//	//memcpy( ((uint8_t*)arr)+sizeof(arr[0]), arr, sizeof(arr)-sizeof(arr[0]) ); // this hack does not seem to work on Due
 	//}
@@ -1123,10 +1105,10 @@ public:
 	//void fillScanline(uint8_t color, size_t seedCopyCount) __attribute__((always_inline)) {
 	//	//for(uint16_t i=0; i<seedCopyCount; i++)
 	//	//{
-	//	//	_scanlineBuffer[i] = color;
+	//	//	_scanline[i] = color;
 	//	//}
-	//	_scanlineBuffer[0]=color;
-	//	memmove(_scanlineBuffer+sizeof(_scanlineBuffer[0]), _scanlineBuffer, seedCopyCount-sizeof(_scanlineBuffer[0]));
+	//	_scanline[0]=color;
+	//	memmove(_scanline+sizeof(_scanline[0]), _scanline, seedCopyCount-sizeof(_scanline[0]));
 	//	//arr[0]=color;
 	//	//memcpy( ((uint8_t*)arr)+sizeof(arr[0]), arr, seedCopyCount-sizeof(arr[0]) );
 	//}
@@ -1136,10 +1118,10 @@ public:
 		void fillScanline(uint16_t color) {
 		_hiByte = highByte(color);
 		_loByte = lowByte(color);
-		for (uint16_t i = 0; i < sizeof(_scanlineBuffer); i += 2)
+		for (uint16_t i = 0; i < sizeof(_scanline); i += 2)
 		{
-			_scanlineBuffer[i] = _hiByte;
-			_scanlineBuffer[i + 1] = _loByte;
+			_scanline[i] = _hiByte;
+			_scanline[i + 1] = _loByte;
 		}
 
 		// DMA16
@@ -1148,23 +1130,23 @@ public:
 		//	_scanline[i] = color;
 		//}
 
-		/*_scanlineBuffer[0]=highByte(color);
-		_scanlineBuffer[1]=lowByte(color);
-		_scanlineBuffer[2]=_scanlineBuffer[0];
-		_scanlineBuffer[3]=_scanlineBuffer[1];
+		/*_scanline[0]=highByte(color);
+		_scanline[1]=lowByte(color);
+		_scanline[2]=_scanline[0];
+		_scanline[3]=_scanline[1];
 
-		memcpy(_scanlineBuffer+4, _scanlineBuffer, 4);
-		memcpy(_scanlineBuffer+8, _scanlineBuffer, 8);
-		memcpy(_scanlineBuffer+16, _scanlineBuffer, 16);
-		memcpy(_scanlineBuffer+32, _scanlineBuffer, 32);
-		memcpy(_scanlineBuffer+64, _scanlineBuffer, 64);
-		memcpy(_scanlineBuffer+128, _scanlineBuffer, 128);
-		memcpy(_scanlineBuffer+256, _scanlineBuffer, 256);
-		memcpy(_scanlineBuffer+512, _scanlineBuffer, 128);*/
+		memcpy(_scanline+4, _scanline, 4);
+		memcpy(_scanline+8, _scanline, 8);
+		memcpy(_scanline+16, _scanline, 16);
+		memcpy(_scanline+32, _scanline, 32);
+		memcpy(_scanline+64, _scanline, 64);
+		memcpy(_scanline+128, _scanline, 128);
+		memcpy(_scanline+256, _scanline, 256);
+		memcpy(_scanline+512, _scanline, 128);*/
 
-		/*for(uint16_t i=0; i<sizeof(_scanlineBuffer); i+=2)
+		/*for(uint16_t i=0; i<sizeof(_scanline); i+=2)
 		{
-		memcpy(_scanlineBuffer+i, _scanlineBuffer, 2);
+		memcpy(_scanline+i, _scanline, 2);
 		}*/
 
 		//arr[0]=highByte(color);
@@ -1179,8 +1161,8 @@ public:
 		_loByte = lowByte(color);
 		for (uint16_t i = 0; i < (n << 1); i += 2)
 		{
-			_scanlineBuffer[i] = _hiByte;
-			_scanlineBuffer[i + 1] = _loByte;
+			_scanline[i] = _hiByte;
+			_scanline[i + 1] = _loByte;
 		}
 
 		// DMA16
@@ -1189,9 +1171,9 @@ public:
 		//	_scanline[i] = color;
 		//}
 
-		/*_scanlineBuffer[0]=highByte(color);
-		_scanlineBuffer[1]=lowByte(color);
-		memmove(((uint8_t*)_scanlineBuffer)+2*sizeof(_scanlineBuffer[0]), _scanlineBuffer, (n << 1) -2*sizeof(_scanlineBuffer[0]));
+		/*_scanline[0]=highByte(color);
+		_scanline[1]=lowByte(color);
+		memmove(((uint8_t*)_scanline)+2*sizeof(_scanline[0]), _scanline, (n << 1) -2*sizeof(_scanline[0]));
 		*/
 	}
 
@@ -1313,7 +1295,7 @@ public:
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 		do { write16_cont(color); } while (--w > 0);
 #elif SPI_MODE_DMA
-		write_cont(_scanlineBuffer, w << 1);
+		write_cont(_scanline, w << 1);
 #endif
 	}
 
@@ -1341,7 +1323,7 @@ public:
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 		do { write16_cont(color); } while (--h > 0);
 #elif SPI_MODE_DMA
-		write_cont(_scanlineBuffer, h << 1);
+		write_cont(_scanline, h << 1);
 #endif
 	}
 
@@ -1485,11 +1467,12 @@ private:
 	uint8_t  _rst;
 	uint8_t _hiByte, _loByte;
 	bool _isIdle, _isInSleep;
-#if SPI_MODE_DMA
-	uint8_t _scanlineBuffer[SCANLINE_BUFFER_SIZE];
-	//uint16_t _scanlineBuffer[SCANLINE_BUFFER_SIZE];	 // DMA16
+#if SPI_MODE_DMA | SPI_MODE_EXTENDED
+	uint8_t _scanline[SCANLINE_BUFFER_SIZE];
+	//uint16_t _scanline[SCANLINE_BUFFER_SIZE];	 // DMA16
 #endif
 
+	uint8_t _spiClkDivider;
 #ifdef ILI_USE_SPI_TRANSACTION
 	SPISettings _spiSettings;
 	uint8_t _transactionId;
