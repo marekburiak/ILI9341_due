@@ -31,6 +31,14 @@ along with ILI9341_due.  If not, see <http://www.gnu.org/licenses/>.
 
 selectFont -> setFont
 setFontColor -> setGTextColor
+setCursor -> cursorToXY
+setTextSize -> setTextScale
+setFontLetterSpacing -> setTextLetterSpacing
+getFontLetterSpacing -> getTextLetterSpacing
+ILI9341_due_gText(&tft) -> gTextArea
+
+new:
+setTextLineSpacing
 */
 
 /***************************************************
@@ -462,48 +470,54 @@ public:
 	void setFont(gTextFont font);
 	void setFont(gTextFont font, uint16_t color);
 	void setFont(gTextFont font, uint16_t color, uint16_t backgroundColor);
-	void setGTextColor(uint16_t color);
-	void setGTextColor(uint8_t R, uint8_t G, uint8_t B);
-	void setGTextColor(uint16_t color, uint16_t backgroundColor);
-	void setGTextColor(uint8_t R, uint8_t G, uint8_t B, uint8_t bgR, uint8_t bgG, uint8_t bgB);
-	void setFontLetterSpacing(uint8_t letterSpacing);
-	uint8_t getFontLetterSpacing()	{
+	void setTextColor(uint16_t color);
+	void setTextColor(uint8_t R, uint8_t G, uint8_t B);
+	void setTextColor(uint16_t color, uint16_t backgroundColor);
+	void setTextColor(uint8_t R, uint8_t G, uint8_t B, uint8_t bgR, uint8_t bgG, uint8_t bgB);
+	void setTextLetterSpacing(uint8_t letterSpacing);
+	uint8_t getTextLetterSpacing()	{
 		return _letterSpacing;
 	};
+	void setTextLineSpacing(uint8_t letterSpacing);
+	uint8_t getTextLineSpacing()	{
+		return _lineSpacing;
+	};
+	void setTextWrap(bool wrap);
 	void setFontMode(gTextFontMode fontMode);
 
-	int putChar(uint8_t c);
 	void puts(char *str);
 	void puts(const String &str); // for Arduino String Class
-	void puts_P(PGM_P str);
+	void puts(const __FlashStringHelper* str);
 
+	void printAt(String &str, int16_t x, int16_t y); // for Arduino String class
+	void printAt(const char* str, int16_t x, int16_t y);
+	void printAt(const __FlashStringHelper* str, int16_t x, int16_t y);
 
-	void drawString(String &str, int16_t x, int16_t y); // for Arduino String class
-	void drawString_P(PGM_P str, int16_t x, int16_t y);
+	void printAt(char *str, int16_t x, int16_t y);
+	void printAt(char *str, int16_t x, int16_t y, gTextEraseLine eraseLine);
+	void printAt(char *str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAligned(char *str, gTextAlign align);
+	void printAligned(char *str, gTextAlign align, gTextEraseLine eraseLine);
+	void printAligned(char *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
 
-	void drawString(char *str, int16_t x, int16_t y);
-	void drawString(char *str, int16_t x, int16_t y, gTextEraseLine eraseLine);
-	void drawString(char *str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
-	void drawString(char *str, gTextAlign align);
-	void drawString(char *str, gTextAlign align, gTextEraseLine eraseLine);
-	void drawString(char *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAlignedOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY);
+	void printAlignedOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
+	void printAlignedOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
 
-	void drawStringOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY);
-	void drawStringOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
-	void drawStringOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAtPivoted(char *str, int16_t x, int16_t y, gTextPivot pivot);
+	void printAlignedPivoted(char *str, gTextAlign align, gTextPivot pivot);
+	void printAlignedPivoted(char *str, gTextAlign align, gTextPivot pivot, gTextEraseLine eraseLine);
+	void printAlignedPivoted(char *str, gTextAlign align, gTextPivot pivot, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
 
-	void drawStringPivoted(char *str, int16_t x, int16_t y, gTextPivot pivot);
-	void drawStringPivoted(char *str, gTextAlign align, gTextPivot pivot);
-	void drawStringPivoted(char *str, gTextAlign align, gTextPivot pivot, gTextEraseLine eraseLine);
-	void drawStringPivoted(char *str, gTextAlign align, gTextPivot pivot, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
-
-	void drawStringPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
-	void drawStringPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
-	void drawStringPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAlignedPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
+	void printAlignedPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
+	void printAlignedPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
 
 	void cursorTo(uint8_t column, uint8_t row); // 0 based coordinates for character columns and rows
 	void cursorTo(int8_t column); // move cursor on the current row
 	void cursorToXY(int16_t x, int16_t y); // coordinates relative to active text area
+	
+	void setTextScale(uint8_t s);
 
 	inline __attribute__((always_inline))
 		uint8_t fontHeight()	{
@@ -636,7 +650,7 @@ public:
 #endif
 	}
 
-	inline __attribute__((always_inline))
+	__attribute__((always_inline))
 		void spiwrite(uint8_t c) {
 #if defined __AVR__
 		SPDR = c;
@@ -649,7 +663,7 @@ public:
 #endif
 	}
 
-	inline __attribute__((always_inline))
+	__attribute__((always_inline))
 		void spiwrite16(uint16_t d) {
 #if defined __AVR__
 		SPDR = highByte(d);
@@ -666,7 +680,7 @@ public:
 
 	// writes 1 byte
 	// CS and DC have to be set prior to calling this method
-	inline __attribute__((always_inline))
+	__attribute__((always_inline))
 		void write8_cont(uint8_t c){
 #if SPI_MODE_NORMAL
 		spiwrite(c);
@@ -694,7 +708,7 @@ public:
 
 	// Writes 2 bytes
 	// CS, DC have to be set prior to calling this method
-	inline __attribute__((always_inline))
+	__attribute__((always_inline))
 		void write16_cont(uint16_t d) {
 #if SPI_MODE_NORMAL
 		spiwrite16(d);
@@ -707,7 +721,7 @@ public:
 #endif
 	}
 
-	inline __attribute__((always_inline))
+	__attribute__((always_inline))
 		void write16_last(uint16_t d) {
 #if SPI_MODE_NORMAL
 		spiwrite16(d);
@@ -769,7 +783,7 @@ public:
 #endif
 		void setAddrAndRW_cont(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 	{
-		enableCS();
+		
 		setDCForCommand();
 		write8_cont(ILI9341_CASET); // Column addr set
 		setDCForData();
@@ -1385,6 +1399,7 @@ public:
 	inline __attribute__((always_inline))
 		void writePixel_last(int16_t x, int16_t y, uint16_t color)
 	{
+		enableCS();
 		setAddrAndRW_cont(x, y, x, y);
 		setDCForData();
 		write16_last(color);
@@ -1502,11 +1517,13 @@ private:
 	gTextArea _area;
 	int16_t	_x;
 	int16_t	_y;
-	uint8_t _scale;
+	uint8_t _textScale;
 	uint8_t _letterSpacing;
+	uint8_t _lineSpacing;
 	bool _isLastChar;
 	uint8_t _fontMode;
 	bool _needScroll;
+	bool _wrap;
 
 	void specialChar(uint8_t c);
 	void drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight);
