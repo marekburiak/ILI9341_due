@@ -24,10 +24,6 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with ILI9341_due.  If not, see <http://www.gnu.org/licenses/>.
 
-
-setFontColor -> setTextColor
-defineArea -> setArea
-new clearArea
 */
 
 /***************************************************
@@ -1808,6 +1804,7 @@ bool ILI9341_due::setArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2) //, te
 	_y = y1;
 }
 
+__attribute__((always_inline))
 void ILI9341_due::specialChar(uint8_t c)
 {
 
@@ -1904,8 +1901,9 @@ void ILI9341_due::specialChar(uint8_t c)
 		* Room for simple wrap
 		*/
 
-		_x = _area.x1;
+		_x = _xStart; // _area.x1;
 		_y = _y + (height + _lineSpacing)*_textScale;
+
 		//			}
 		//		}
 		//#ifndef GLCD_NO_SCROLLDOWN
@@ -2173,7 +2171,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 						//Serial << cx << " " << cy + (i * 8 + bitId)*_textScale << " " << _textScale <<endl2;
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 						setDCForData();
-						
+
 
 						while (pixelsInOnePointToDraw--){
 							write16_cont(_fontBgColor);
@@ -2193,7 +2191,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 						_scanline[lineId++] = fontColorHi;
 						_scanline[lineId++] = fontColorLo;
 #endif
-				}
+					}
 					else{
 						setAddrAndRW_cont(cx, py, cx + _textScale - 1, py + _textScale - 1);
 						setDCForData();
@@ -2202,11 +2200,11 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 							write16_cont(_fontColor);
 						}
 					}
-		}
+				}
 				data >>= 1;
-	}
+			}
 			//delay(50);
-}
+		}
 		//Serial << endl;
 		cx += _textScale;
 #if SPI_MODE_DMA
@@ -2305,20 +2303,20 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 						for (int p = 0; p < lineEnd - lineStart + 1; p++)
 						{
 							write16_cont(_fontColor);
-					}
+						}
 #elif SPI_MODE_DMA
 						writeScanline_cont(lineEnd - lineStart + 1);
 #endif
-				}
+					}
 					lastBit = bit;
-			}
+				}
 				else if (bit ^ 0x00)	// increment only if bit is 1
 				{
 					lineEnd++;
 				}
 
 				data >>= 1;
-		}
+			}
 
 			if (lineEnd == charHeight - 1)	// we have a line that goes all the way to the bottom
 			{
@@ -2328,13 +2326,13 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 				for (int p = 0; p < lineEnd - lineStart + 1; p++)
 				{
 					write16_cont(_fontColor);
-			}
+				}
 #elif SPI_MODE_DMA
 				writeScanline_cont(lineEnd - lineStart + 1);
 #endif
-	}
+			}
 			//delay(25);
-}
+		}
 		//Serial << endl;
 		cx++;
 	}
@@ -2378,24 +2376,17 @@ void ILI9341_due::puts(const __FlashStringHelper *str)
 	}
 }
 
-void ILI9341_due::printAt(String &str, int16_t x, int16_t y)
-{
-	cursorToXY(x, y);
-	puts(str);
-}
-
-void ILI9341_due::printAt(const char* str, int16_t x, int16_t y)
-{
-	cursorToXY(x, y);
-	puts(str);
-}
-
 void ILI9341_due::printAt(char *str, int16_t x, int16_t y)
 {
 	cursorToXY(x, y);
 	puts(str);
 }
 
+void ILI9341_due::printAt(String &str, int16_t x, int16_t y)
+{
+	cursorToXY(x, y);
+	puts(str);
+}
 
 void ILI9341_due::printAt(const __FlashStringHelper *str, int16_t x, int16_t y)
 {
@@ -2409,13 +2400,13 @@ void ILI9341_due::printAt(char *str, int16_t x, int16_t y, uint16_t pixelsCleare
 
 	// CLEAR PIXELS ON THE LEFT
 	if (pixelsClearedOnLeft > 0)
-		fillRect(_x - pixelsClearedOnLeft, _y, pixelsClearedOnLeft, fontHeight(), _fontBgColor);
+		fillRect(_x - pixelsClearedOnLeft, _y, pixelsClearedOnLeft, scaledFontHeight(), ILI9341_BLUE);// , _fontBgColor);
 
 	puts(str);
 
 	// CLEAR PIXELS ON THE RIGHT
 	if (pixelsClearedOnRight > 0)
-		fillRect(_x, _y, pixelsClearedOnRight, fontHeight(), _fontBgColor);
+		fillRect(_x, _y, pixelsClearedOnRight, scaledFontHeight(), ILI9341_RED); //_fontBgColor);
 }
 
 void ILI9341_due::printAt(char *str, int16_t x, int16_t y, gTextEraseLine eraseLine)
@@ -2426,7 +2417,7 @@ void ILI9341_due::printAt(char *str, int16_t x, int16_t y, gTextEraseLine eraseL
 	if (eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
 	{
 		uint16_t clearX1 = max(min(_x, _area.x1), _x - 1024);
-		fillRect(clearX1, _y, _x - clearX1, fontHeight(), _fontBgColor);
+		fillRect(clearX1, _y, _x - clearX1, scaledFontHeight(), ILI9341_BLUE);//, _fontBgColor);
 	}
 
 	puts(str);
@@ -2435,7 +2426,7 @@ void ILI9341_due::printAt(char *str, int16_t x, int16_t y, gTextEraseLine eraseL
 	if (eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
 	{
 		uint16_t clearX2 = min(max(_x, _area.x2), _x + 1024);
-		fillRect(_x, _y, clearX2 - _x, fontHeight(), _fontBgColor);
+		fillRect(_x, _y, clearX2 - _x, scaledFontHeight(), ILI9341_RED); //, _fontBgColor);
 	}
 }
 
@@ -2532,8 +2523,8 @@ void ILI9341_due::printAlignedPivotedOffseted(char *str, gTextAlign align, gText
 void ILI9341_due::printAlignedPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
 {
 	//Serial << pixelsClearedOnLeft << " " << pixelsClearedOnRight << endl;
-	_x = _area.x1;
-	_y = _area.y1;
+	_x = _xStart = _area.x1;
+	_y = _yStart = _area.y1;
 
 	//PIVOT
 	if (pivot == gTextPivotDefault)
@@ -2616,7 +2607,7 @@ void ILI9341_due::printAlignedPivotedOffseted(char *str, gTextAlign align, gText
 	{
 		int16_t clearX1 = max(min(_x, (int16_t)_area.x1), _x - (int16_t)pixelsClearedOnLeft);
 		//Serial.println(clearX1);
-		fillRect(clearX1, _y, _x - clearX1, fontHeight(), _fontBgColor);
+		fillRect(clearX1, _y, _x - clearX1, scaledFontHeight(), ILI9341_BLUE);//  _fontBgColor);
 	}
 
 	puts(str);
@@ -2627,7 +2618,7 @@ void ILI9341_due::printAlignedPivotedOffseted(char *str, gTextAlign align, gText
 		int16_t clearX2 = min(max(_x, _area.x2), _x + pixelsClearedOnRight);
 		//Serial << "area from " << _area.x1 << " to " << _area.x2 << endl;
 		//Serial << "clearing on right from " << _x << " to " << clearX2 << endl;
-		fillRect(_x, _y, clearX2 - _x, fontHeight(), _fontBgColor);
+		fillRect(_x, _y, clearX2 - _x, scaledFontHeight(), ILI9341_RED);// _fontBgColor);
 		//TOTRY
 		//fillRect(_x, _y, clearX2 - _x + 1, fontHeight(), _fontBgColor);
 	}
@@ -2649,36 +2640,36 @@ void ILI9341_due::applyPivot(char *str, gTextPivot pivot)
 	}
 	case gTextPivotMiddleLeft:
 	{
-		_y -= fontHeight() / 2;
+		_y -= scaledFontHeight() / 2;
 		break;
 	}
 	case gTextPivotMiddleCenter:
 	{
 		_x -= stringWidth(str) / 2;
-		_y -= fontHeight() / 2;
+		_y -= scaledFontHeight() / 2;
 		break;
 	}
 	case gTextPivotMiddleRight:
 	{
 		_x -= stringWidth(str);
-		_y -= fontHeight() / 2;
+		_y -= scaledFontHeight() / 2;
 		break;
 	}
 	case gTextPivotBottomLeft:
 	{
-		_y -= fontHeight();
+		_y -= scaledFontHeight();
 		break;
 	}
 	case gTextPivotBottomCenter:
 	{
 		_x -= stringWidth(str) / 2;
-		_y -= fontHeight();
+		_y -= scaledFontHeight();
 		break;
 	}
 	case gTextPivotBottomRight:
 	{
 		_x -= stringWidth(str);
-		_y -= fontHeight();
+		_y -= scaledFontHeight();
 		break;
 	}
 	}
@@ -2693,8 +2684,8 @@ void ILI9341_due::cursorTo(uint8_t column, uint8_t row)
 	* Text position is relative to current text area
 	*/
 
-	_x = column * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1) + _area.x1;
-	_y = row * (fontHeight() + 1) + _area.y1;
+	_x = _area.x1 + column * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1);
+	_y = _area.y1 + row * (fontHeight() + _lineSpacing) * _textScale;
 
 #ifndef GLCD_NODEFER_SCROLL
 	/*
@@ -2725,6 +2716,7 @@ void ILI9341_due::cursorTo(int8_t column)
 #endif
 }
 
+__attribute__((always_inline))
 void ILI9341_due::cursorToXY(int16_t x, int16_t y)
 {
 
@@ -2732,16 +2724,16 @@ void ILI9341_due::cursorToXY(int16_t x, int16_t y)
 	* Text position is relative to current text area
 	*/
 
-	_x = _area.x1 + x;
-	_y = _area.y1 + y;
+	_x = _xStart = _area.x1 + x;
+	_y = _yStart = _area.y1 + y;
 	//Serial << F("cursorToXY x:") << x << F(" y:") << y << endl;
 
-#ifndef GLCD_NODEFER_SCROLL
-	/*
-	* Make sure to clear a deferred scroll operation when repositioning
-	*/
-	_needScroll = 0;
-#endif
+	//#ifndef GLCD_NODEFER_SCROLL
+	//	/*
+	//	* Make sure to clear a deferred scroll operation when repositioning
+	//	*/
+	//	_needScroll = 0;
+	//#endif
 }
 
 void ILI9341_due::setTextScale(uint8_t s) {
@@ -2751,25 +2743,25 @@ void ILI9341_due::setTextScale(uint8_t s) {
 
 void ILI9341_due::eraseTextLine(uint16_t color, gTextEraseLine type)
 {
-	int16_t x = _x;
+	/*int16_t x = _x;
 	int16_t y = _y;
-	int16_t height = fontHeight();
+	int16_t height = fontHeight();*/
 	//uint8_t color = (_fontColor == BLACK) ? WHITE : BLACK;
 
 	switch (type)
 	{
 	case gTextEraseToEOL:
-		fillRect(x, y, _area.x2 - x, height, color);
+		fillRect(_x, _y, _area.x2 - _x, scaledFontHeight(), color);
 		break;
 	case gTextEraseFromBOL:
-		fillRect(_area.x1, y, x - _area.x1, height, color);
+		fillRect(_area.x1, _y, _x - _area.x1, scaledFontHeight(), color);
 		break;
 	case gTextEraseFullLine:
-		fillRect(_area.x1, y, _area.x2 - _area.x1, height, color);
+		fillRect(_area.x1, _y, _area.x2 - _area.x1, scaledFontHeight(), color);
 		break;
 	}
 
-	cursorToXY(x, y);
+	//cursorToXY(x, y);
 }
 
 void ILI9341_due::eraseTextLine(uint16_t color, uint8_t row)

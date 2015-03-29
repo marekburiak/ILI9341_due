@@ -30,6 +30,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with ILI9341_due.  If not, see <http://www.gnu.org/licenses/>.
 
 selectFont -> setFont
+defineArea -> setArea
+new clearArea
 setFontColor -> setGTextColor
 setCursor -> cursorToXY
 setTextSize -> setTextScale
@@ -486,16 +488,18 @@ public:
 	void setFontMode(gTextFontMode fontMode);
 
 	void puts(char *str);
-	void puts(const String &str); // for Arduino String Class
+	void puts(const String &str);
 	void puts(const __FlashStringHelper* str);
-
-	void printAt(String &str, int16_t x, int16_t y); // for Arduino String class
-	void printAt(const char* str, int16_t x, int16_t y);
+	
+	void printAt(char *str, int16_t x, int16_t y);
+	void printAt(String &str, int16_t x, int16_t y);
 	void printAt(const __FlashStringHelper* str, int16_t x, int16_t y);
 
-	void printAt(char *str, int16_t x, int16_t y);
 	void printAt(char *str, int16_t x, int16_t y, gTextEraseLine eraseLine);
 	void printAt(char *str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+
+	void printAtPivoted(char *str, int16_t x, int16_t y, gTextPivot pivot);
+
 	void printAligned(char *str, gTextAlign align);
 	void printAligned(char *str, gTextAlign align, gTextEraseLine eraseLine);
 	void printAligned(char *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
@@ -504,7 +508,8 @@ public:
 	void printAlignedOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
 	void printAlignedOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
 
-	void printAtPivoted(char *str, int16_t x, int16_t y, gTextPivot pivot);
+	
+
 	void printAlignedPivoted(char *str, gTextAlign align, gTextPivot pivot);
 	void printAlignedPivoted(char *str, gTextAlign align, gTextPivot pivot, gTextEraseLine eraseLine);
 	void printAlignedPivoted(char *str, gTextAlign align, gTextPivot pivot, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
@@ -519,12 +524,17 @@ public:
 	
 	void setTextScale(uint8_t s);
 
-	inline __attribute__((always_inline))
+	__attribute__((always_inline))
 		uint8_t fontHeight()	{
 		return pgm_read_byte(_font + GTEXT_FONT_HEIGHT);
 	};
 
-	inline __attribute__((always_inline))
+	__attribute__((always_inline))
+		uint16_t scaledFontHeight()	{
+		return (uint16_t)(pgm_read_byte(_font + GTEXT_FONT_HEIGHT)) * (uint16_t)_textScale;
+	};
+
+	__attribute__((always_inline))
 		uint8_t fontHeight(gTextFont font) {
 		return pgm_read_byte(font + GTEXT_FONT_HEIGHT);
 	};
@@ -1516,7 +1526,9 @@ private:
 	gTextFont _font;
 	gTextArea _area;
 	int16_t	_x;
+	int16_t	_xStart;
 	int16_t	_y;
+	int16_t	_yStart;
 	uint8_t _textScale;
 	uint8_t _letterSpacing;
 	uint8_t _lineSpacing;
