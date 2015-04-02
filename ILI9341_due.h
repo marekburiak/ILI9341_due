@@ -487,36 +487,74 @@ public:
 	void setTextWrap(bool wrap);
 	void setFontMode(gTextFontMode fontMode);
 
-	void puts(char *str);
+	void puts(const char *str);
 	void puts(const String &str);
 	void puts(const __FlashStringHelper* str);
 	
-	void printAt(char *str, int16_t x, int16_t y);
-	void printAt(String &str, int16_t x, int16_t y);
+	void printAt(const char *str, int16_t x, int16_t y);
+	void printAt(const String &str, int16_t x, int16_t y);
 	void printAt(const __FlashStringHelper* str, int16_t x, int16_t y);
 
-	void printAt(char *str, int16_t x, int16_t y, gTextEraseLine eraseLine);
-	void printAt(char *str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAt(const char *str, int16_t x, int16_t y, gTextEraseLine eraseLine);
+	void printAt(const String &str, int16_t x, int16_t y, gTextEraseLine eraseLine);
+	void printAt(const __FlashStringHelper *str, int16_t x, int16_t y, gTextEraseLine eraseLine);
 
-	void printAtPivoted(char *str, int16_t x, int16_t y, gTextPivot pivot);
+	void printAt(const char *str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAt(const String &str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAt(const __FlashStringHelper *str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
 
-	void printAligned(char *str, gTextAlign align);
-	void printAligned(char *str, gTextAlign align, gTextEraseLine eraseLine);
-	void printAligned(char *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAtPivoted(const char *str, int16_t x, int16_t y, gTextPivot pivot);
+	void printAtPivoted(const String &str, int16_t x, int16_t y, gTextPivot pivot);
+	void printAtPivoted(const __FlashStringHelper *str, int16_t x, int16_t y, gTextPivot pivot);
 
-	void printAlignedOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY);
-	void printAlignedOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
-	void printAlignedOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAligned(const char *str, gTextAlign align);
+	void printAligned(const String &str, gTextAlign align);
+	void printAligned(const __FlashStringHelper *str, gTextAlign align);
 
+	void printAligned(const char *str, gTextAlign align, gTextEraseLine eraseLine);
+	void printAligned(const String &str, gTextAlign align, gTextEraseLine eraseLine);
+	void printAligned(const __FlashStringHelper *str, gTextAlign align, gTextEraseLine eraseLine);
 	
+	void printAligned(const char *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAligned(const String &str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAligned(const __FlashStringHelper *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
 
-	void printAlignedPivoted(char *str, gTextAlign align, gTextPivot pivot);
-	void printAlignedPivoted(char *str, gTextAlign align, gTextPivot pivot, gTextEraseLine eraseLine);
-	void printAlignedPivoted(char *str, gTextAlign align, gTextPivot pivot, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAlignedOffseted(const char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY);
+	void printAlignedOffseted(const String &str, gTextAlign align, uint16_t offsetX, uint16_t offsetY);
+	void printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY);
 
-	void printAlignedPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
-	void printAlignedPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
-	void printAlignedPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAlignedOffseted(const char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
+	void printAlignedOffseted(const String &str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
+	void printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
+
+	void printAlignedOffseted(const char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAlignedOffseted(const String &str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+
+	void printAlignedPivoted(const char *str, gTextAlign align, gTextPivot pivot);
+	void printAlignedPivoted(const String &str, gTextAlign align, gTextPivot pivot);
+	void printAlignedPivoted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot);
+
+	void printAlignedPivoted(const char *str, gTextAlign align, gTextPivot pivot, gTextEraseLine eraseLine);
+	void printAlignedPivoted(const String &str, gTextAlign align, gTextPivot pivot, gTextEraseLine eraseLine);
+	void printAlignedPivoted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, gTextEraseLine eraseLine);
+
+	void printAlignedPivoted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAlignedPivoted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAlignedPivoted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+
+	void printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
+	void printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
+	void printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
+
+	void printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
+	void printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
+	void printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
+
+	void printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+
 
 	void cursorTo(uint8_t column, uint8_t row); // 0 based coordinates for character columns and rows
 	void cursorTo(int8_t column); // move cursor on the current row
@@ -545,8 +583,8 @@ public:
 
 	uint16_t charWidth(uint8_t c);
 	uint16_t stringWidth(const char* str);
-	uint16_t stringWidth_P(PGM_P str);
-	uint16_t stringWidth_P(String &str);
+	uint16_t stringWidth(const __FlashStringHelper *str);
+	uint16_t stringWidth(const String &str);
 
 	void eraseTextLine(uint16_t color, gTextEraseLine type = gTextEraseToEOL); //ansi like line erase function 
 	void eraseTextLine(uint16_t color, uint8_t row); // erase the entire text line in the given row and move cursor to left position
@@ -1532,7 +1570,7 @@ private:
 	uint8_t _textScale;
 	uint8_t _letterSpacing;
 	uint8_t _lineSpacing;
-	bool _isLastChar;
+	bool _isFirstChar;
 	uint8_t _fontMode;
 	bool _needScroll;
 	bool _wrap;
@@ -1540,7 +1578,15 @@ private:
 	void specialChar(uint8_t c);
 	void drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight);
 	void drawTransparentChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight);
-	void applyPivot(char *str, gTextPivot pivot);
+	void applyPivot(const char *str, gTextPivot pivot, gTextAlign align);
+	void applyPivot(const String &str, gTextPivot pivot, gTextAlign align);
+	void applyPivot(const __FlashStringHelper *str, gTextPivot pivot, gTextAlign align);
+	void applyAlignOffset(gTextAlign align, uint16_t offsetX, uint16_t offsetY);
+	void applyAlignPivotOffset(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
+	void applyAlignPivotOffset(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
+	void applyAlignPivotOffset(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
+	void clearPixelsOnLeft(uint16_t pixelsToClearOnLeft);
+	void clearPixelsOnRight(uint16_t pixelsToClearOnRight);
 #endif
 	bool pinIsChipSelect(uint8_t cs);
 

@@ -43,5 +43,4 @@ Copyright (c) 2014  Marek Buriak
 #define ARC_ANGLE_OFFSET -90	
 
 
-
 #endif

@@ -105,9 +105,9 @@ ILI9341_due::ILI9341_due(uint8_t cs, uint8_t dc, uint8_t rst)
 	_fontBgColor = ILI9341_BLACK;
 	_fontColor = ILI9341_WHITE;
 	_letterSpacing = 2;
-	_lineSpacing = 1;
+	_lineSpacing = 0;
 	_textScale = 1;
-	_isLastChar = false;
+	_isFirstChar = true;
 	setArea(0, 0, _width - 1, _height - 1);
 #endif
 }
@@ -423,7 +423,7 @@ void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, int16_t w, int16_t h, u
 {
 	//Serial << "x:" << x << " y:" << y << " w:" << x << " h:" << h << " width:" << _width << " height:" << _height <<endl;
 	// rudimentary clipping (drawChar w/big text requires this)
-	if ((x >= _width) || (y >= _height)) return;
+	if ((x >= _width) || (y >= _height) || (x + w - 1 < 0) || (y + h - 1 < 0)) return;
 	if ((x + w - 1) >= _width)  w = _width - x;
 	if ((y + h - 1) >= _height) h = _height - y;
 	enableCS();
@@ -2028,19 +2028,19 @@ size_t ILI9341_due::write(uint8_t c)
 		charWidth = pgm_read_byte(_font + GTEXT_FONT_WIDTH_TABLE + c);
 	}
 
-#ifndef GLCD_NODEFER_SCROLL
-	/*
-	* check for a defered scroll
-	* If there is a deferred scroll,
-	* Fake a newline to complete it.
-	*/
-
-	if (_needScroll)
-	{
-		write('\n'); // fake a newline to cause wrap/scroll
-		_needScroll = 0;
-	}
-#endif
+	//#ifndef GLCD_NODEFER_SCROLL
+	//	/*
+	//	* check for a defered scroll
+	//	* If there is a deferred scroll,
+	//	* Fake a newline to complete it.
+	//	*/
+	//
+	//	if (_needScroll)
+	//	{
+	//		write('\n'); // fake a newline to cause wrap/scroll
+	//		_needScroll = 0;
+	//	}
+	//#endif
 
 	/*
 	* If the character won't fit in the text area,
@@ -2049,21 +2049,21 @@ size_t ILI9341_due::write(uint8_t c)
 	* NOTE/WARNING: the below calculation assumes a 1 pixel pad.
 	* This will need to be changed if/when configurable pixel padding is supported.
 	*/
-	if (_wrap && _x + charWidth > _area.x2)
-	{
-		write('\n'); // fake a newline to cause wrap/scroll
-#ifndef GLCD_NODEFER_SCROLL
-		/*
-		* We can't defer a scroll at this point since we need to ouput
-		* a character right now.
-		*/
-		if (_needScroll)
-		{
-			write('\n'); // fake a newline to cause wrap/scroll
-			_needScroll = 0;
-		}
-#endif
-	}
+	//	if (_wrap && _x + charWidth > _area.x2)
+	//	{
+	//		write('\n'); // fake a newline to cause wrap/scroll
+	//#ifndef GLCD_NODEFER_SCROLL
+	//		/*
+	//		* We can't defer a scroll at this point since we need to ouput
+	//		* a character right now.
+	//		*/
+	//		if (_needScroll)
+	//		{
+	//			write('\n'); // fake a newline to cause wrap/scroll
+	//			_needScroll = 0;
+	//		}
+	//#endif
+	//	}
 
 	if (_fontMode == gTextFontModeSolid)
 		drawSolidChar(c, index, charWidth, charHeight);
@@ -2092,8 +2092,6 @@ size_t ILI9341_due::write(uint8_t c)
 void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight)
 {
 	uint8_t bitId = 0;
-	int16_t cx = _x;
-	int16_t cy = _y;
 	uint16_t py;
 #if SPI_MODE_DMA
 	uint8_t fontColorHi = highByte(_fontColor);
@@ -2111,6 +2109,16 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 		numPixelsInOnePoint = (uint16_t)_textScale *(uint16_t)_textScale;
 	uint16_t pixelsInOnePointToDraw;
 
+	if (_letterSpacing > 0 && !_isFirstChar)
+	{
+		fillRect(_x, _y, _letterSpacing * _textScale, (charHeight + _lineSpacing)*_textScale, _fontBgColor);
+		_x += _letterSpacing * _textScale;
+	}
+
+	if (_lineSpacing > 0){
+		fillRect(_x, _y + charHeight*_textScale, charWidth * _textScale, _lineSpacing *_textScale, _fontBgColor);
+	}
+
 #if SPI_MODE_DMA
 	if (_textScale > 1)
 		fillScanline(_fontBgColor);	//pre-fill the scanline, we will be drawing different lenghts of it
@@ -2123,94 +2131,101 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 		//Serial << "Printing row" << endl;
 		lineId = 0;
 		numRenderBits = 8;
-		setAddrAndRW_cont(cx, cy, cx, cy + charHeight * _textScale - 1);
-		setDCForData();
-		for (uint8_t i = 0; i < charHeightInBytes; i++)	/* each vertical byte */
+		if (_x >= 0 && _x < _width)
 		{
-			uint16_t page = i*charWidth; // page must be 16 bit to prevent overflow
-			uint8_t data = pgm_read_byte(_font + index + page + j);
-
-			/*
-			* This funkyness is because when the character glyph is not a
-			* multiple of 8 in height, the residual bits in the font data
-			* were aligned to the incorrect end of the byte with respect
-			* to the GLCD. I believe that this was an initial oversight (bug)
-			* in Thieles font creator program. It is easily fixed
-			* in the font program but then creates a potential backward
-			* compatiblity problem.
-			*	--- bperrybap
-			*/
-			if (charHeight > 8 && charHeight < (i + 1) * 8)	/* is it last byte of multibyte tall font? */
+			setAddrAndRW_cont(_x, _y, _x, _y + charHeight * _textScale - 1);
+			setDCForData();
+			for (uint8_t i = 0; i < charHeightInBytes; i++)	/* each vertical byte */
 			{
-				data >>= ((i + 1) << 3) - charHeight;	// (i+1)*8
-			}
-			//Serial << "data:" <<data << " x:" << cx << " y:" << cy << endl;
+				uint16_t page = i*charWidth; // page must be 16 bit to prevent overflow
+				uint8_t data = pgm_read_byte(_font + index + page + j);
 
-
-			if (i == charHeightInBytes - 1)	// last byte in column
-				numRenderBits = numRemainingBits;
-
-			for (bitId = 0; bitId < numRenderBits; bitId++)
-			{
-				py = cy + (i * 8 + bitId)*_textScale;
-				if ((data & 0x01) == 0)
+				/*
+				* This funkyness is because when the character glyph is not a
+				* multiple of 8 in height, the residual bits in the font data
+				* were aligned to the incorrect end of the byte with respect
+				* to the GLCD. I believe that this was an initial oversight (bug)
+				* in Thieles font creator program. It is easily fixed
+				* in the font program but then creates a potential backward
+				* compatiblity problem.
+				*	--- bperrybap
+				*/
+				if (charHeight > 8 && charHeight < (i + 1) * 8)	/* is it last byte of multibyte tall font? */
 				{
-					if (_textScale == 1)
+					data >>= ((i + 1) << 3) - charHeight;	// (i+1)*8
+				}
+				//Serial << "data:" <<data << " x:" << cx << " y:" << cy << endl;
+
+
+				if (i == charHeightInBytes - 1)	// last byte in column
+					numRenderBits = numRemainingBits;
+
+				for (bitId = 0; bitId < numRenderBits; bitId++)
+				{
+					py = _y + (i * 8 + bitId)*_textScale;
+					if ((data & 0x01) == 0)
 					{
+						if (_textScale == 1)
+						{
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-						write16_cont(_fontBgColor);
+							write16_cont(_fontBgColor);
 #elif SPI_MODE_DMA
-						_scanline[lineId++] = fontBgColorHi;
-						_scanline[lineId++] = fontBgColorLo;
+							_scanline[lineId++] = fontBgColorHi;
+							_scanline[lineId++] = fontBgColorLo;
 #endif
+						}
+						else
+						{
+							setAddrAndRW_cont(_x, py, _x + _textScale - 1, py + _textScale - 1);
+							pixelsInOnePointToDraw = numPixelsInOnePoint;
+							//Serial << cx << " " << cy + (i * 8 + bitId)*_textScale << " " << _textScale <<endl2;
+#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+							setDCForData();
+
+							while (pixelsInOnePointToDraw--){
+								write16_cont(_fontBgColor);
+							}
+#elif SPI_MODE_DMA
+							writeScanline_cont(pixelsInOnePointToDraw);
+#endif
+						}
 					}
 					else
 					{
-						setAddrAndRW_cont(cx, py, cx + _textScale - 1, py + _textScale - 1);
-						pixelsInOnePointToDraw = numPixelsInOnePoint;
-						//Serial << cx << " " << cy + (i * 8 + bitId)*_textScale << " " << _textScale <<endl2;
+						if (_textScale == 1)
+						{
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-						setDCForData();
-
-
-						while (pixelsInOnePointToDraw--){
-							write16_cont(_fontBgColor);
+							writedata16_cont(_fontColor);
+#elif SPI_MODE_DMA
+							_scanline[lineId++] = fontColorHi;
+							_scanline[lineId++] = fontColorLo;
+#endif
 						}
-#elif SPI_MODE_DMA
-						writeScanline_cont(pixelsInOnePointToDraw);
-#endif
-					}
-				}
-				else
-				{
-					if (_textScale == 1)
-					{
+						else
+						{
+							setAddrAndRW_cont(_x, py, _x + _textScale - 1, py + _textScale - 1);
+							pixelsInOnePointToDraw = numPixelsInOnePoint;
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-						writedata16_cont(_fontColor);
+							setDCForData();
+							while (pixelsInOnePointToDraw--){
+								write16_cont(_fontColor);
+							}
 #elif SPI_MODE_DMA
-						_scanline[lineId++] = fontColorHi;
-						_scanline[lineId++] = fontColorLo;
+							writeScanline_cont(pixelsInOnePointToDraw);
 #endif
-					}
-					else{
-						setAddrAndRW_cont(cx, py, cx + _textScale - 1, py + _textScale - 1);
-						setDCForData();
-						pixelsInOnePointToDraw = numPixelsInOnePoint;
-						while (pixelsInOnePointToDraw--){
-							write16_cont(_fontColor);
 						}
 					}
+					data >>= 1;
 				}
-				data >>= 1;
+				//delay(50);
 			}
-			//delay(50);
 		}
 		//Serial << endl;
-		cx += _textScale;
+		_x += _textScale;
 #if SPI_MODE_DMA
 		if (_textScale == 1)
 		{
-			writeScanline_cont(charHeight * _textScale);	// height in px * 2 bytes per px
+			writeScanline_cont(charHeight);	// height in px * 2 bytes per px
 		}
 #endif
 
@@ -2218,15 +2233,11 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 	}
 	disableCS();	// to put CS line back up
 
-	_x += charWidth * _textScale;
+	//_x = cx;
 
 	//Serial << " ending at " << _x  << " lastChar " << _lastChar <<endl;
 
-	if (_letterSpacing > 0 && !_isLastChar)
-	{
-		fillRect(_x, _y, _letterSpacing * _textScale, (charHeight + _lineSpacing)*_textScale, _fontBgColor);
-		_x += _letterSpacing * _textScale;
-	}
+
 	//Serial << "letterSpacing " << _letterSpacing <<" x: " << _x <<endl;
 }
 
@@ -2234,10 +2245,13 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 {
 	uint8_t bitId = 0;
 	uint8_t bit = 0, lastBit = 0;
-	int16_t cx = _x;
-	int16_t cy = _y;
 	uint16_t lineStart = 0;
 	uint16_t lineEnd = 0;
+
+	if (_letterSpacing > 0 && !_isFirstChar)
+	{
+		_x += _letterSpacing * _textScale;
+	}
 
 #if SPI_MODE_DMA
 	fillScanline(_fontColor);	//pre-fill the scanline, we will be drawing different lenghts of it
@@ -2257,132 +2271,142 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 		lineId = 0;
 		numRenderBits = 8;
 
-		for (uint8_t i = 0; i < charHeightInBytes; i++)	/* each vertical byte */
+		if (_x >= 0 && _x < _width)
 		{
-			uint16_t page = i*charWidth; // page must be 16 bit to prevent overflow
-			uint8_t data = pgm_read_byte(_font + index + page + j);
-
-			/*
-			* This funkyness is because when the character glyph is not a
-			* multiple of 8 in height, the residual bits in the font data
-			* were aligned to the incorrect end of the byte with respect
-			* to the GLCD. I believe that this was an initial oversight (bug)
-			* in Thieles font creator program. It is easily fixed
-			* in the font program but then creates a potential backward
-			* compatiblity problem.
-			*	--- bperrybap
-			*/
-			if (charHeight > 8 && charHeight < (i + 1) * 8)	/* is it last byte of multibyte tall font? */
+			for (uint8_t i = 0; i < charHeightInBytes; i++)	/* each vertical byte */
 			{
-				data >>= ((i + 1) << 3) - charHeight;	// (i+1)*8
-			}
-			//Serial << "data:" <<data << " x:" << cx << " y:" << cy << endl;
+				uint16_t page = i*charWidth; // page must be 16 bit to prevent overflow
+				uint8_t data = pgm_read_byte(_font + index + page + j);
 
-			if (i == 0)
-			{
-				bit = lastBit = lineStart = 0;
-			}
-			else if (i == charHeightInBytes - 1)	// last byte in column
-				numRenderBits = numRemainingBits;
-
-			for (bitId = 0; bitId < numRenderBits; bitId++)
-			{
-				bit = data & 0x01;
-				if (bit ^ lastBit)	// same as bit != lastBit
+				/*
+				* This funkyness is because when the character glyph is not a
+				* multiple of 8 in height, the residual bits in the font data
+				* were aligned to the incorrect end of the byte with respect
+				* to the GLCD. I believe that this was an initial oversight (bug)
+				* in Thieles font creator program. It is easily fixed
+				* in the font program but then creates a potential backward
+				* compatiblity problem.
+				*	--- bperrybap
+				*/
+				if (charHeight > 8 && charHeight < (i + 1) * 8)	/* is it last byte of multibyte tall font? */
 				{
-					if (bit ^ 0x00) // if bit != 0 (so it's 1)
-					{
-						lineStart = lineEnd = i * 8 + bitId;
-					}
-					else
-					{
-						setAddrAndRW_cont(cx, cy + lineStart, cx, cy + lineEnd);
+					data >>= ((i + 1) << 3) - charHeight;	// (i+1)*8
+				}
+				//Serial << "data:" <<data << " x:" << cx << " y:" << cy << endl;
 
+				if (i == 0)
+					bit = lastBit = lineStart = 0;
+				else if (i == charHeightInBytes - 1)	// last byte in column
+					numRenderBits = numRemainingBits;
+
+				for (bitId = 0; bitId < numRenderBits; bitId++)
+				{
+					bit = data & 0x01;
+					if (bit ^ lastBit)	// same as bit != lastBit
+					{
+						if (bit ^ 0x00) // if bit != 0 (so it's 1)
+						{
+							lineStart = lineEnd = (i * 8 + bitId) * _textScale;
+						}
+						else
+						{
+							setAddrAndRW_cont(_x, _y + lineStart, _x + _textScale - 1, _y + lineEnd + _textScale - 1);
+							//fillRect(cx, cy + lineStart, _textScale, lineEnd - lineStart + _textScale, ILI9341_BLUEVIOLET);
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-						setDCForData();
-						for (int p = 0; p < lineEnd - lineStart + 1; p++)
+							setDCForData();
+#endif
+							for (uint8_t s = 0; s < _textScale; s++)
+							{
+#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+								for (uint16_t p = 0; p < lineEnd - lineStart + _textScale; p++)
+								{
+									write16_cont(_fontColor);
+								}
+#elif SPI_MODE_DMA
+								writeScanline_cont(lineEnd - lineStart + _textScale);
+#endif
+							}
+						}
+						lastBit = bit;
+					}
+					else if (bit ^ 0x00)	// increment only if bit is 1
+					{
+						lineEnd += _textScale;
+					}
+
+					data >>= 1;
+				}
+
+				if (lineEnd == (charHeight - 1) * _textScale)	// we have a line that goes all the way to the bottom
+				{
+					//fillRect(cx, cy + lineStart, _textScale, lineEnd - lineStart + _textScale, ILI9341_BLUEVIOLET);
+					setAddrAndRW_cont(_x, _y + lineStart, _x + _textScale - 1, _y + lineEnd + _textScale - 1);
+#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+					setDCForData();
+#endif
+					for (uint8_t s = 0; s < _textScale; s++)
+					{
+#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+						for (uint16_t p = 0; p < lineEnd - lineStart + _textScale; p++)
 						{
 							write16_cont(_fontColor);
 						}
 #elif SPI_MODE_DMA
-						writeScanline_cont(lineEnd - lineStart + 1);
+						writeScanline_cont(lineEnd - lineStart + _textScale);
 #endif
+						//delay(25);
 					}
-					lastBit = bit;
 				}
-				else if (bit ^ 0x00)	// increment only if bit is 1
-				{
-					lineEnd++;
-				}
-
-				data >>= 1;
 			}
-
-			if (lineEnd == charHeight - 1)	// we have a line that goes all the way to the bottom
-			{
-				setAddrAndRW_cont(cx, cy + lineStart, cx, cy + lineEnd);
-#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-				setDCForData();
-				for (int p = 0; p < lineEnd - lineStart + 1; p++)
-				{
-					write16_cont(_fontColor);
-				}
-#elif SPI_MODE_DMA
-				writeScanline_cont(lineEnd - lineStart + 1);
-#endif
-			}
-			//delay(25);
 		}
 		//Serial << endl;
-		cx++;
+		_x += _textScale;
 	}
 	disableCS();	// to put CS line back up
 
-	_x += charWidth;
-
-	if (_letterSpacing > 0 && !_isLastChar)
-	{
-		_x += _letterSpacing;
-	}
+	//_x = cx;
 }
 
-void ILI9341_due::puts(char *str)
+void ILI9341_due::puts(const char *str)
 {
+	_isFirstChar = true;
 	while (*str)
 	{
-		if (*(str + 1) == 0)
-			_isLastChar = true;
 		write((uint8_t)*str);
+		_isFirstChar = false;
 		str++;
 	}
-	_isLastChar = false;
 }
 
 void ILI9341_due::puts(const String &str)
 {
+	_isFirstChar = true;
 	for (int i = 0; i < str.length(); i++)
 	{
 		write(str[i]);
+		_isFirstChar = false;
 	}
 }
 
 void ILI9341_due::puts(const __FlashStringHelper *str)
 {
-	const char *p = (const char PROGMEM *)str;
+	_isFirstChar = true;
+	PGM_P p = reinterpret_cast<PGM_P>(str);
 	uint8_t c;
 	while ((c = pgm_read_byte(p)) != 0) {
 		write(c);
+		_isFirstChar = false;
 		p++;
 	}
 }
 
-void ILI9341_due::printAt(char *str, int16_t x, int16_t y)
+void ILI9341_due::printAt(const char *str, int16_t x, int16_t y)
 {
 	cursorToXY(x, y);
 	puts(str);
 }
 
-void ILI9341_due::printAt(String &str, int16_t x, int16_t y)
+void ILI9341_due::printAt(const String &str, int16_t x, int16_t y)
 {
 	cursorToXY(x, y);
 	puts(str);
@@ -2394,7 +2418,31 @@ void ILI9341_due::printAt(const __FlashStringHelper *str, int16_t x, int16_t y)
 	puts(str);
 }
 
-void ILI9341_due::printAt(char *str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+void ILI9341_due::printAt(const char *str, int16_t x, int16_t y, gTextEraseLine eraseLine)
+{
+	cursorToXY(x, y);
+	clearPixelsOnLeft(1024);
+	puts(str);
+	clearPixelsOnRight(1024);
+}
+
+void ILI9341_due::printAt(const String &str, int16_t x, int16_t y, gTextEraseLine eraseLine)
+{
+	cursorToXY(x, y);
+	clearPixelsOnLeft(1024);
+	puts(str);
+	clearPixelsOnRight(1024);
+}
+
+void ILI9341_due::printAt(const __FlashStringHelper *str, int16_t x, int16_t y, gTextEraseLine eraseLine)
+{
+	cursorToXY(x, y);
+	clearPixelsOnLeft(1024);
+	puts(str);
+	clearPixelsOnRight(1024);
+}
+
+void ILI9341_due::printAt(const char *str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
 {
 	cursorToXY(x, y);
 
@@ -2409,34 +2457,55 @@ void ILI9341_due::printAt(char *str, int16_t x, int16_t y, uint16_t pixelsCleare
 		fillRect(_x, _y, pixelsClearedOnRight, scaledFontHeight(), ILI9341_RED); //_fontBgColor);
 }
 
-void ILI9341_due::printAt(char *str, int16_t x, int16_t y, gTextEraseLine eraseLine)
+void ILI9341_due::printAt(const String &str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
 {
 	cursorToXY(x, y);
 
 	// CLEAR PIXELS ON THE LEFT
-	if (eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
-	{
-		uint16_t clearX1 = max(min(_x, _area.x1), _x - 1024);
-		fillRect(clearX1, _y, _x - clearX1, scaledFontHeight(), ILI9341_BLUE);//, _fontBgColor);
-	}
+	if (pixelsClearedOnLeft > 0)
+		fillRect(_x - pixelsClearedOnLeft, _y, pixelsClearedOnLeft, scaledFontHeight(), ILI9341_BLUE);// , _fontBgColor);
 
 	puts(str);
 
 	// CLEAR PIXELS ON THE RIGHT
-	if (eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
-	{
-		uint16_t clearX2 = min(max(_x, _area.x2), _x + 1024);
-		fillRect(_x, _y, clearX2 - _x, scaledFontHeight(), ILI9341_RED); //, _fontBgColor);
-	}
+	if (pixelsClearedOnRight > 0)
+		fillRect(_x, _y, pixelsClearedOnRight, scaledFontHeight(), ILI9341_RED); //_fontBgColor);
+}
+
+void ILI9341_due::printAt(const __FlashStringHelper *str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+{
+	cursorToXY(x, y);
+
+	// CLEAR PIXELS ON THE LEFT
+	if (pixelsClearedOnLeft > 0)
+		fillRect(_x - pixelsClearedOnLeft, _y, pixelsClearedOnLeft, scaledFontHeight(), ILI9341_BLUE);// , _fontBgColor);
+
+	puts(str);
+
+	// CLEAR PIXELS ON THE RIGHT
+	if (pixelsClearedOnRight > 0)
+		fillRect(_x, _y, pixelsClearedOnRight, scaledFontHeight(), ILI9341_RED); //_fontBgColor);
 }
 
 __attribute__((always_inline))
-void ILI9341_due::printAligned(char *str, gTextAlign align)
+void ILI9341_due::printAligned(const char *str, gTextAlign align)
 {
 	printAlignedPivotedOffseted(str, align, gTextPivotDefault, 0, 0, 0, 0);
 }
 
-void ILI9341_due::printAligned(char *str, gTextAlign align, gTextEraseLine eraseLine)
+__attribute__((always_inline))
+void ILI9341_due::printAligned(const String &str, gTextAlign align)
+{
+	printAlignedPivotedOffseted(str, align, gTextPivotDefault, 0, 0, 0, 0);
+}
+
+__attribute__((always_inline))
+void ILI9341_due::printAligned(const __FlashStringHelper *str, gTextAlign align)
+{
+	printAlignedPivotedOffseted(str, align, gTextPivotDefault, 0, 0, 0, 0);
+}
+
+void ILI9341_due::printAligned(const char *str, gTextAlign align, gTextEraseLine eraseLine)
 {
 	uint16_t pixelsClearedOnLeft = 0;
 	uint16_t pixelsClearedOnRight = 0;
@@ -2447,17 +2516,53 @@ void ILI9341_due::printAligned(char *str, gTextAlign align, gTextEraseLine erase
 	printAlignedPivotedOffseted(str, align, gTextPivotDefault, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
-void ILI9341_due::printAligned(char *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+void ILI9341_due::printAligned(const String &str, gTextAlign align, gTextEraseLine eraseLine)
+{
+	uint16_t pixelsClearedOnLeft = 0;
+	uint16_t pixelsClearedOnRight = 0;
+	if (eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnLeft = 1024;
+	if (eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnRight = 1024;
+	printAlignedPivotedOffseted(str, align, gTextPivotDefault, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+void ILI9341_due::printAligned(const __FlashStringHelper *str, gTextAlign align, gTextEraseLine eraseLine)
+{
+	uint16_t pixelsClearedOnLeft = 0;
+	uint16_t pixelsClearedOnRight = 0;
+	if (eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnLeft = 1024;
+	if (eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnRight = 1024;
+	printAlignedPivotedOffseted(str, align, gTextPivotDefault, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+__attribute__((always_inline))
+void ILI9341_due::printAligned(const char *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
 {
 	printAlignedPivotedOffseted(str, align, gTextPivotDefault, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
-void ILI9341_due::printAlignedOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY)
+__attribute__((always_inline))
+void ILI9341_due::printAligned(const String &str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+{
+	printAlignedPivotedOffseted(str, align, gTextPivotDefault, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+__attribute__((always_inline))
+void ILI9341_due::printAligned(const __FlashStringHelper *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+{
+	printAlignedPivotedOffseted(str, align, gTextPivotDefault, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+__attribute__((always_inline))
+void ILI9341_due::printAlignedOffseted(const char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY)
 {
 	printAlignedPivotedOffseted(str, align, gTextPivotDefault, offsetX, offsetY, 0, 0);
 }
 
-void ILI9341_due::printAlignedOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine)
+void ILI9341_due::printAlignedOffseted(const char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine)
 {
 	uint16_t pixelsClearedOnLeft = 0;
 	uint16_t pixelsClearedOnRight = 0;
@@ -2468,27 +2573,79 @@ void ILI9341_due::printAlignedOffseted(char *str, gTextAlign align, uint16_t off
 	printAlignedPivotedOffseted(str, align, gTextPivotDefault, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
-void ILI9341_due::printAlignedOffseted(char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+void ILI9341_due::printAlignedOffseted(const String &str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine)
+{
+	uint16_t pixelsClearedOnLeft = 0;
+	uint16_t pixelsClearedOnRight = 0;
+	if (eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnLeft = 1024;
+	if (eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnRight = 1024;
+	printAlignedPivotedOffseted(str, align, gTextPivotDefault, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+void ILI9341_due::printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine)
+{
+	uint16_t pixelsClearedOnLeft = 0;
+	uint16_t pixelsClearedOnRight = 0;
+	if (eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnLeft = 1024;
+	if (eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnRight = 1024;
+	printAlignedPivotedOffseted(str, align, gTextPivotDefault, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+void ILI9341_due::printAlignedOffseted(const char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
 {
 	printAlignedPivotedOffseted(str, align, gTextPivotDefault, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
-void ILI9341_due::printAtPivoted(char *str, int16_t x, int16_t y, gTextPivot pivot)
+void ILI9341_due::printAtPivoted(const char *str, int16_t x, int16_t y, gTextPivot pivot)
 {
 	cursorToXY(x, y);
 
 	if (pivot != gTextPivotTopLeft && pivot != gTextPivotDefault)
-		applyPivot(str, pivot);
+		applyPivot(str, pivot, gTextAlignTopLeft);
 
 	puts(str);
 }
 
-void ILI9341_due::printAlignedPivoted(char *str, gTextAlign align, gTextPivot pivot)
+void ILI9341_due::printAtPivoted(const String &str, int16_t x, int16_t y, gTextPivot pivot)
+{
+	cursorToXY(x, y);
+
+	if (pivot != gTextPivotTopLeft && pivot != gTextPivotDefault)
+		applyPivot(str, pivot, gTextAlignTopLeft);
+
+	puts(str);
+}
+
+void ILI9341_due::printAtPivoted(const __FlashStringHelper *str, int16_t x, int16_t y, gTextPivot pivot)
+{
+	cursorToXY(x, y);
+
+	if (pivot != gTextPivotTopLeft && pivot != gTextPivotDefault)
+		applyPivot(str, pivot, gTextAlignTopLeft);
+
+	puts(str);
+}
+
+void ILI9341_due::printAlignedPivoted(const char *str, gTextAlign align, gTextPivot pivot)
 {
 	printAlignedPivotedOffseted(str, align, pivot, 0, 0, 0, 0);
 }
 
-void ILI9341_due::printAlignedPivoted(char *str, gTextAlign align, gTextPivot pivot, gTextEraseLine eraseLine)
+void ILI9341_due::printAlignedPivoted(const String &str, gTextAlign align, gTextPivot pivot)
+{
+	printAlignedPivotedOffseted(str, align, pivot, 0, 0, 0, 0);
+}
+
+void ILI9341_due::printAlignedPivoted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot)
+{
+	printAlignedPivotedOffseted(str, align, pivot, 0, 0, 0, 0);
+}
+
+void ILI9341_due::printAlignedPivoted(const char *str, gTextAlign align, gTextPivot pivot, gTextEraseLine eraseLine)
 {
 	uint16_t pixelsClearedOnLeft = 0;
 	uint16_t pixelsClearedOnRight = 0;
@@ -2499,17 +2656,59 @@ void ILI9341_due::printAlignedPivoted(char *str, gTextAlign align, gTextPivot pi
 	printAlignedPivotedOffseted(str, align, pivot, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
-void ILI9341_due::printAlignedPivoted(char *str, gTextAlign align, gTextPivot pivot, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+void ILI9341_due::printAlignedPivoted(const String &str, gTextAlign align, gTextPivot pivot, gTextEraseLine eraseLine)
+{
+	uint16_t pixelsClearedOnLeft = 0;
+	uint16_t pixelsClearedOnRight = 0;
+	if (eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnLeft = 1024;
+	if (eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnRight = 1024;
+	printAlignedPivotedOffseted(str, align, pivot, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+void ILI9341_due::printAlignedPivoted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, gTextEraseLine eraseLine)
+{
+	uint16_t pixelsClearedOnLeft = 0;
+	uint16_t pixelsClearedOnRight = 0;
+	if (eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnLeft = 1024;
+	if (eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnRight = 1024;
+	printAlignedPivotedOffseted(str, align, pivot, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+void ILI9341_due::printAlignedPivoted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
 {
 	printAlignedPivotedOffseted(str, align, pivot, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
-void ILI9341_due::printAlignedPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY)
+void ILI9341_due::printAlignedPivoted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+{
+	printAlignedPivotedOffseted(str, align, pivot, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+void ILI9341_due::printAlignedPivoted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+{
+	printAlignedPivotedOffseted(str, align, pivot, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+void ILI9341_due::printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY)
 {
 	printAlignedPivotedOffseted(str, align, pivot, offsetX, offsetY, 0, 0);
 }
 
-void ILI9341_due::printAlignedPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine)
+void ILI9341_due::printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY)
+{
+	printAlignedPivotedOffseted(str, align, pivot, offsetX, offsetY, 0, 0);
+}
+
+void ILI9341_due::printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY)
+{
+	printAlignedPivotedOffseted(str, align, pivot, offsetX, offsetY, 0, 0);
+}
+
+void ILI9341_due::printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine)
 {
 	uint16_t pixelsClearedOnLeft = 0;
 	uint16_t pixelsClearedOnRight = 0;
@@ -2520,33 +2719,121 @@ void ILI9341_due::printAlignedPivotedOffseted(char *str, gTextAlign align, gText
 	printAlignedPivotedOffseted(str, align, pivot, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
-void ILI9341_due::printAlignedPivotedOffseted(char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+void ILI9341_due::printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine)
+{
+	uint16_t pixelsClearedOnLeft = 0;
+	uint16_t pixelsClearedOnRight = 0;
+	if (eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnLeft = 1024;
+	if (eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnRight = 1024;
+	printAlignedPivotedOffseted(str, align, pivot, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+void ILI9341_due::printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine)
+{
+	uint16_t pixelsClearedOnLeft = 0;
+	uint16_t pixelsClearedOnRight = 0;
+	if (eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnLeft = 1024;
+	if (eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
+		pixelsClearedOnRight = 1024;
+	printAlignedPivotedOffseted(str, align, pivot, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+void ILI9341_due::printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
 {
 	//Serial << pixelsClearedOnLeft << " " << pixelsClearedOnRight << endl;
 	_x = _xStart = _area.x1;
 	_y = _yStart = _area.y1;
 
-	//PIVOT
-	if (pivot == gTextPivotDefault)
+	applyAlignPivotOffset(str, align, pivot, offsetX, offsetY);
+
+	clearPixelsOnLeft(pixelsClearedOnLeft);
+	puts(str);
+	clearPixelsOnRight(pixelsClearedOnRight);
+}
+
+void ILI9341_due::printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+{
+	//Serial << pixelsClearedOnLeft << " " << pixelsClearedOnRight << endl;
+	_x = _xStart = _area.x1;
+	_y = _yStart = _area.y1;
+
+	applyAlignPivotOffset(str, align, pivot, offsetX, offsetY);
+
+	clearPixelsOnLeft(pixelsClearedOnLeft);
+	puts(str);
+	clearPixelsOnRight(pixelsClearedOnRight);
+}
+
+void ILI9341_due::printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+{
+	//Serial << pixelsClearedOnLeft << " " << pixelsClearedOnRight << endl;
+	_x = _xStart = _area.x1;
+	_y = _yStart = _area.y1;
+
+	applyAlignPivotOffset(str, align, pivot, offsetX, offsetY);
+
+	clearPixelsOnLeft(pixelsClearedOnLeft);
+	puts(str);
+	clearPixelsOnRight(pixelsClearedOnRight);
+}
+
+__attribute__((always_inline))
+void ILI9341_due::clearPixelsOnLeft(uint16_t pixelsToClearOnLeft){
+	// CLEAR PIXELS ON THE LEFT
+	if (pixelsToClearOnLeft > 0)
 	{
-		switch (align)
-		{
-		case gTextAlignTopLeft: { pivot = gTextPivotTopLeft; break;	}
-		case gTextAlignTopCenter: { pivot = gTextPivotTopCenter; break;	}
-		case gTextAlignTopRight: { pivot = gTextPivotTopRight; break; }
-		case gTextAlignMiddleLeft: { pivot = gTextPivotMiddleLeft; break; }
-		case gTextAlignMiddleCenter: { pivot = gTextPivotMiddleCenter; break; }
-		case gTextAlignMiddleRight: { pivot = gTextPivotMiddleRight; break; }
-		case gTextAlignBottomLeft: { pivot = gTextPivotBottomLeft; break; }
-		case gTextAlignBottomCenter: { pivot = gTextPivotBottomCenter; break; }
-		case gTextAlignBottomRight: { pivot = gTextPivotBottomRight; break; }
-		}
+		int16_t clearX1 = max(min(_x, (int16_t)_area.x1), _x - (int16_t)pixelsToClearOnLeft);
+		//Serial.println(clearX1);
+		fillRect(clearX1, _y, _x - clearX1, scaledFontHeight(), ILI9341_BLUE);//  _fontBgColor);
 	}
+}
 
+__attribute__((always_inline))
+void ILI9341_due::clearPixelsOnRight(uint16_t pixelsToClearOnRight){
+	// CLEAR PIXELS ON THE RIGHT
+	if (pixelsToClearOnRight > 0)
+	{
+		int16_t clearX2 = min(max(_x, _area.x2), _x + pixelsToClearOnRight);
+		//Serial << "area from " << _area.x1 << " to " << _area.x2 << endl;
+		//Serial << "clearing on right from " << _x << " to " << clearX2 << endl;
+		fillRect(_x, _y, clearX2 - _x, scaledFontHeight(), ILI9341_RED);// _fontBgColor);
+		//TOTRY
+		//fillRect(_x, _y, clearX2 - _x + 1, fontHeight(), _fontBgColor);
+	}
+}
+
+void ILI9341_due::applyAlignPivotOffset(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY){
+	//PIVOT
 	if (pivot != gTextPivotTopLeft)
-		applyPivot(str, pivot);
+		applyPivot(str, pivot, align);
 
-	// ALIGN
+	// ALIGN & OFFSET
+	applyAlignOffset(align, offsetX, offsetY);
+}
+
+void ILI9341_due::applyAlignPivotOffset(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY){
+	//PIVOT
+	if (pivot != gTextPivotTopLeft)
+		applyPivot(str, pivot, align);
+
+	// ALIGN & OFFSET
+	applyAlignOffset(align, offsetX, offsetY);
+}
+
+void ILI9341_due::applyAlignPivotOffset(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY){
+	//PIVOT
+	if (pivot != gTextPivotTopLeft)
+		applyPivot(str, pivot, align);
+
+	// ALIGN & OFFSET
+	applyAlignOffset(align, offsetX, offsetY);
+}
+
+void ILI9341_due::applyAlignOffset(gTextAlign align, uint16_t offsetX, uint16_t offsetY)
+{
 	if (align != gTextAlignTopLeft)
 	{
 		switch (align)
@@ -2597,81 +2884,155 @@ void ILI9341_due::printAlignedPivotedOffseted(char *str, gTextAlign align, gText
 		}
 		}
 	}
-
 	// OFFSET
 	_x += offsetX;
 	_y += offsetY;
+}
 
-	// CLEAR PIXELS ON THE LEFT
-	if (pixelsClearedOnLeft > 0)
+void ILI9341_due::applyPivot(const String &str, gTextPivot pivot, gTextAlign align)
+{
+	applyPivot(str.c_str(), pivot, align);
+}
+
+void ILI9341_due::applyPivot(const __FlashStringHelper *str, gTextPivot pivot, gTextAlign align)
+{
+	//PIVOT
+	if (pivot == gTextPivotDefault)
 	{
-		int16_t clearX1 = max(min(_x, (int16_t)_area.x1), _x - (int16_t)pixelsClearedOnLeft);
-		//Serial.println(clearX1);
-		fillRect(clearX1, _y, _x - clearX1, scaledFontHeight(), ILI9341_BLUE);//  _fontBgColor);
+		switch (align)
+		{
+		case gTextAlignTopLeft: { pivot = gTextPivotTopLeft; break;	}
+		case gTextAlignTopCenter: { pivot = gTextPivotTopCenter; break;	}
+		case gTextAlignTopRight: { pivot = gTextPivotTopRight; break; }
+		case gTextAlignMiddleLeft: { pivot = gTextPivotMiddleLeft; break; }
+		case gTextAlignMiddleCenter: { pivot = gTextPivotMiddleCenter; break; }
+		case gTextAlignMiddleRight: { pivot = gTextPivotMiddleRight; break; }
+		case gTextAlignBottomLeft: { pivot = gTextPivotBottomLeft; break; }
+		case gTextAlignBottomCenter: { pivot = gTextPivotBottomCenter; break; }
+		case gTextAlignBottomRight: { pivot = gTextPivotBottomRight; break; }
+		}
 	}
 
-	puts(str);
-
-	// CLEAR PIXELS ON THE RIGHT
-	if (pixelsClearedOnRight > 0)
+	if (pivot != gTextPivotTopLeft)
 	{
-		int16_t clearX2 = min(max(_x, _area.x2), _x + pixelsClearedOnRight);
-		//Serial << "area from " << _area.x1 << " to " << _area.x2 << endl;
-		//Serial << "clearing on right from " << _x << " to " << clearX2 << endl;
-		fillRect(_x, _y, clearX2 - _x, scaledFontHeight(), ILI9341_RED);// _fontBgColor);
-		//TOTRY
-		//fillRect(_x, _y, clearX2 - _x + 1, fontHeight(), _fontBgColor);
+		switch (pivot)
+		{
+		case gTextPivotTopCenter:
+		{
+			_x -= stringWidth(str) / 2;
+			break;
+		}
+		case gTextPivotTopRight:
+		{
+			_x -= stringWidth(str);
+			break;
+		}
+		case gTextPivotMiddleLeft:
+		{
+			_y -= scaledFontHeight() / 2;
+			break;
+		}
+		case gTextPivotMiddleCenter:
+		{
+			_x -= stringWidth(str) / 2;
+			_y -= scaledFontHeight() / 2;
+			break;
+		}
+		case gTextPivotMiddleRight:
+		{
+			_x -= stringWidth(str);
+			_y -= scaledFontHeight() / 2;
+			break;
+		}
+		case gTextPivotBottomLeft:
+		{
+			_y -= scaledFontHeight();
+			break;
+		}
+		case gTextPivotBottomCenter:
+		{
+			_x -= stringWidth(str) / 2;
+			_y -= scaledFontHeight();
+			break;
+		}
+		case gTextPivotBottomRight:
+		{
+			_x -= stringWidth(str);
+			_y -= scaledFontHeight();
+			break;
+		}
+		}
 	}
 }
 
-void ILI9341_due::applyPivot(char *str, gTextPivot pivot)
+void ILI9341_due::applyPivot(const char *str, gTextPivot pivot, gTextAlign align)
 {
-	switch (pivot)
+	//PIVOT
+	if (pivot == gTextPivotDefault)
 	{
-	case gTextPivotTopCenter:
-	{
-		_x -= stringWidth(str) / 2;
-		break;
+		switch (align)
+		{
+		case gTextAlignTopLeft: { pivot = gTextPivotTopLeft; break;	}
+		case gTextAlignTopCenter: { pivot = gTextPivotTopCenter; break;	}
+		case gTextAlignTopRight: { pivot = gTextPivotTopRight; break; }
+		case gTextAlignMiddleLeft: { pivot = gTextPivotMiddleLeft; break; }
+		case gTextAlignMiddleCenter: { pivot = gTextPivotMiddleCenter; break; }
+		case gTextAlignMiddleRight: { pivot = gTextPivotMiddleRight; break; }
+		case gTextAlignBottomLeft: { pivot = gTextPivotBottomLeft; break; }
+		case gTextAlignBottomCenter: { pivot = gTextPivotBottomCenter; break; }
+		case gTextAlignBottomRight: { pivot = gTextPivotBottomRight; break; }
+		}
 	}
-	case gTextPivotTopRight:
+
+	if (pivot != gTextPivotTopLeft)
 	{
-		_x -= stringWidth(str);
-		break;
-	}
-	case gTextPivotMiddleLeft:
-	{
-		_y -= scaledFontHeight() / 2;
-		break;
-	}
-	case gTextPivotMiddleCenter:
-	{
-		_x -= stringWidth(str) / 2;
-		_y -= scaledFontHeight() / 2;
-		break;
-	}
-	case gTextPivotMiddleRight:
-	{
-		_x -= stringWidth(str);
-		_y -= scaledFontHeight() / 2;
-		break;
-	}
-	case gTextPivotBottomLeft:
-	{
-		_y -= scaledFontHeight();
-		break;
-	}
-	case gTextPivotBottomCenter:
-	{
-		_x -= stringWidth(str) / 2;
-		_y -= scaledFontHeight();
-		break;
-	}
-	case gTextPivotBottomRight:
-	{
-		_x -= stringWidth(str);
-		_y -= scaledFontHeight();
-		break;
-	}
+		switch (pivot)
+		{
+		case gTextPivotTopCenter:
+		{
+			_x -= stringWidth(str) / 2;
+			break;
+		}
+		case gTextPivotTopRight:
+		{
+			_x -= stringWidth(str);
+			break;
+		}
+		case gTextPivotMiddleLeft:
+		{
+			_y -= scaledFontHeight() / 2;
+			break;
+		}
+		case gTextPivotMiddleCenter:
+		{
+			_x -= stringWidth(str) / 2;
+			_y -= scaledFontHeight() / 2;
+			break;
+		}
+		case gTextPivotMiddleRight:
+		{
+			_x -= stringWidth(str);
+			_y -= scaledFontHeight() / 2;
+			break;
+		}
+		case gTextPivotBottomLeft:
+		{
+			_y -= scaledFontHeight();
+			break;
+		}
+		case gTextPivotBottomCenter:
+		{
+			_x -= stringWidth(str) / 2;
+			_y -= scaledFontHeight();
+			break;
+		}
+		case gTextPivotBottomRight:
+		{
+			_x -= stringWidth(str);
+			_y -= scaledFontHeight();
+			break;
+		}
+		}
 	}
 }
 
@@ -2867,18 +3228,20 @@ uint16_t ILI9341_due::stringWidth(const char* str)
 	return width;
 }
 
-uint16_t ILI9341_due::stringWidth_P(PGM_P str)
+uint16_t ILI9341_due::stringWidth(const __FlashStringHelper *str)
 {
+	PGM_P p = reinterpret_cast<PGM_P>(str);
 	uint16_t width = 0;
-
-	while (pgm_read_byte(str) != 0) {
-		width += charWidth(pgm_read_byte(str++)) + _letterSpacing * _textScale;
+	uint8_t c;
+	while ((c = pgm_read_byte(p)) != 0) {
+		width += charWidth(c) + _letterSpacing * _textScale;
+		p++;
 	}
 	width -= _letterSpacing;
 	return width;
 }
 
-uint16_t ILI9341_due::stringWidth_P(String &str)
+uint16_t ILI9341_due::stringWidth(const String &str)
 {
 	uint16_t width = 0;
 
