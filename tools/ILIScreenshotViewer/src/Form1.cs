@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.IO.Ports;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -12,6 +13,7 @@ namespace ILIScreenshotViewer
 {
     public partial class Form1 : Form
     {
+        private bool loadImageFromData = false;
         public Form1()
         {
             InitializeComponent();
@@ -19,8 +21,7 @@ namespace ILIScreenshotViewer
 
         private void btnShow_Click(object sender, EventArgs e)
         {
-            lblFailed.Visible = false;
-            var bitmap = new Bitmap(320, 240, PixelFormat.Format24bppRgb);
+
 
             //var hexString = Clipboard.GetText();
             //for (int x = 0; x < 320; x++)
@@ -43,10 +44,19 @@ namespace ILIScreenshotViewer
             //    }
             //}
 
+            loadImage(Clipboard.GetText());
+
+        }
+
+        private void loadImage(string hexString)
+        {
+            Console.WriteLine(hexString);
+            lblFailed.Visible = false;
+            var bitmap = new Bitmap(320, 240, PixelFormat.Format24bppRgb);
 
             try
             {
-                string hexString = Clipboard.GetText();
+
                 //for (int x = 0; x < 320; x++)
                 //{
                 //    for (int y = 0; y < 240; y++)
@@ -104,9 +114,10 @@ namespace ILIScreenshotViewer
                     btnSaveAs.Visible = false;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                lblFailed.Text = "Failed to load an image from clipboard\nTry increasing ILI9341_SPI_CLKDIVIDER or\nchange to NORMAL or EXTENDED SPI mode.";
+                lblFailed.Text = "Failed to load the image.\nTry increasing ILI9341_SPI_CLKDIVIDER or\nchange to NORMAL or EXTENDED SPI mode.";
+                textBox1.AppendText(ex.Message + "\r\n");
                 pictureBox.Image = null;
                 lblFailed.Visible = true;
                 btnSaveAs.Visible = false;
@@ -135,7 +146,69 @@ namespace ILIScreenshotViewer
                 pictureBox.Image.Save(saveFileDialog.FileName, imageFormat);
             }
 
-    }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            cbSerialPorts.Items.AddRange(SerialPort.GetPortNames());
+            cbSerialPorts.Text = Properties.Settings.Default.Port;
+            cbBaudRates.Text = Properties.Settings.Default.BaudRate;
+        }
+
+        private void btnConnect_Click(object sender, EventArgs e)
+        {
+            if (serialPort1.IsOpen)
+            {
+                serialPort1.Close();
+                btnConnect.Text = "Connect";
+                textBox1.AppendText(serialPort1.PortName + " closed\r\n");
+            }
+            else
+            {
+                try
+                {
+                    serialPort1.PortName = cbSerialPorts.Text;
+                    serialPort1.BaudRate = Int32.Parse(cbBaudRates.Text);
+                    serialPort1.DataBits = 8;
+                    serialPort1.Parity = Parity.None;
+                    serialPort1.StopBits = StopBits.One;
+                    serialPort1.DtrEnable = true;
+                    serialPort1.Open();
+                    textBox1.AppendText(serialPort1.PortName + " opened\r\n");
+                    btnConnect.Text = "Close";
+                }
+                catch (Exception ex)
+                {
+                    textBox1.AppendText(ex.Message + "\r\n");
+                }
+
+            }
+        }
+
+        private void serialPort1_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            string data = serialPort1.ReadLine();
+            if (loadImageFromData && data != string.Empty)
+            {
+                loadImageFromData = false;
+                data = data.TrimEnd('\r');
+                this.Invoke(new Action<string>(d => { textBox1.AppendText("Loading Image...\r\n"); textBox1.ScrollToCaret(); }), new object[] { data });
+                this.Invoke(new Action<string>(d => { loadImage(d); }), new object[] { data });
+            }
+            else if (data.Contains("= PIXEL DATA START ="))
+                loadImageFromData = true;
+            else if (data.Contains("= PIXEL DATA END ="))
+            { }
+            else
+                this.Invoke(new Action<string>(d => { textBox1.AppendText(d + "\r\n"); textBox1.ScrollToCaret(); }), new object[] { data });
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Properties.Settings.Default.Port = cbSerialPorts.Text;
+            Properties.Settings.Default.BaudRate = cbBaudRates.Text;
+            Properties.Settings.Default.Save();
+        }
 
     }
 }

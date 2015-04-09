@@ -35,6 +35,9 @@ Copyright (c) 2014  Marek Buriak
 //#define FEATURE_PRINT_ENABLED
 #define FEATURE_GTEXT_PRINT_ENABLED
 
+//#define LINE_SPACING_AS_PART_OF_LETTERS
+#define TEXT_SCALING_ENABLED
+
 // number representing the maximum angle (e.g. if 100, then if you pass in start=0 and end=50, you get a half circle)
 // this can be changed with setArcParams function at runtime
 #define ARC_ANGLE_MAX 360		

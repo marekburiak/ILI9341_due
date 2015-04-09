@@ -396,6 +396,96 @@ class ILI9341_due
 	: public Print
 #endif
 {
+private:
+
+	int16_t _width, _height; // Display w/h as modified by current rotation
+#ifdef FEATURE_PRINT_ENABLED
+	int16_t	_cursorX, _cursorY;
+	uint16_t _textcolor, _textbgcolor;
+	uint8_t	_textsize;
+	boolean _wrap; // If set, 'wrap' text at right edge of display
+#endif
+	iliRotation	_rotation;
+
+#ifdef FEATURE_ARC_ENABLED
+	float _arcAngleMax;
+	int _arcAngleOffset;
+
+	void drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float startAngle, float endAngle, uint16_t color);
+#endif
+
+	void drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uint16_t color);
+	void drawFastVLine_noTrans(int16_t x, int16_t y, int16_t h, uint16_t color);
+	void drawFastHLine_noTrans(int16_t x, int16_t y, int16_t w, uint16_t color);
+	void drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
+
+	uint8_t  _rst;
+	uint8_t _hiByte, _loByte;
+	bool _isIdle, _isInSleep;
+#if SPI_MODE_DMA | SPI_MODE_EXTENDED
+	uint8_t _scanline[SCANLINE_BUFFER_SIZE];
+	//uint16_t _scanline[SCANLINE_BUFFER_SIZE];	 // DMA16
+#endif
+
+	uint8_t _spiClkDivider;
+#ifdef ILI_USE_SPI_TRANSACTION
+	SPISettings _spiSettings;
+	uint8_t _transactionId;
+	bool _isInTransaction;
+#endif
+	//Pio *_dcport;
+#ifdef __SAM3X8E__
+	volatile RwReg *_dcport;
+	uint32_t  _cs, _dc, _dcpinmask;
+#else
+	volatile uint8_t *_dcport, *_csport;
+	uint8_t  _cs, _dc, _cspinmask, _dcpinmask, _backupSPCR;
+#endif
+
+
+#if SPI_MODE_NORMAL | SPI_MODE_DMA
+#ifdef __SAM3X8E__
+	//Pio *_csport;
+	volatile RwReg *_csport;
+	uint32_t _cspinmask;
+#endif
+#endif
+#ifdef FEATURE_GTEXT_ENABLED
+	uint16_t _fontColor;
+	uint16_t _fontBgColor;
+	gTextFont _font;
+	gTextArea _area;
+	int16_t	_x;
+	int16_t	_xStart;
+	int16_t	_y;
+	int16_t	_yStart;
+#ifdef TEXT_SCALING_ENABLED
+	uint8_t _textScale;
+#else
+#define _textScale 1
+#endif
+	uint8_t _letterSpacing;
+	uint8_t _lineSpacing;
+	bool _isFirstChar;
+	uint8_t _fontMode;
+	bool _needScroll;
+	bool _wrap;
+
+	void specialChar(uint8_t c);
+	void drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight);
+	void drawTransparentChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight);
+	void applyPivot(const char *str, gTextPivot pivot, gTextAlign align);
+	void applyPivot(const String &str, gTextPivot pivot, gTextAlign align);
+	void applyPivot(const __FlashStringHelper *str, gTextPivot pivot, gTextAlign align);
+	void applyAlignOffset(gTextAlign align, uint16_t offsetX, uint16_t offsetY);
+	void applyAlignPivotOffset(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
+	void applyAlignPivotOffset(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
+	void applyAlignPivotOffset(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
+	void clearPixelsOnLeft(uint16_t pixelsToClearOnLeft);
+	void clearPixelsOnRight(uint16_t pixelsToClearOnRight);
+#endif
+	bool pinIsChipSelect(uint8_t cs);
+
 public:
 	ILI9341_due(uint8_t cs, uint8_t dc, uint8_t rst = 255);
 
@@ -427,6 +517,14 @@ public:
 	// Pass 8-bit (each) R,G,B, get back 16-bit packed color
 	static uint16_t color565(uint8_t r, uint8_t g, uint8_t b) {
 		return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+	}
+
+	int16_t width() {
+		return _width;
+	}
+
+	int16_t height() {
+		return _height;
 	}
 
 	//uint8_t readdata(void);
@@ -464,6 +562,7 @@ public:
 #ifdef FEATURE_GTEXT_ENABLED
 	bool setArea(gTextArea area);
 	bool setArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2); //, textMode mode=DEFAULT_SCROLLDIR);
+	bool setAreaWH(int16_t x, int16_t y, int16_t w, int16_t h); //, textMode mode=DEFAULT_SCROLLDIR);
 	bool setArea(int16_t x1, int16_t y1, int16_t columns, int16_t rows, gTextFont font); //, textMode mode=DEFAULT_SCROLLDIR);
 	void clearArea();
 	void clearArea(uint16_t color);
@@ -589,7 +688,6 @@ public:
 	void eraseTextLine(uint16_t color, gTextEraseLine type = gTextEraseToEOL); //ansi like line erase function 
 	void eraseTextLine(uint16_t color, uint8_t row); // erase the entire text line in the given row and move cursor to left position
 
-	void printNumber(long n);
 
 	static uint16_t charWidth(uint8_t c, gTextFont font)
 	{
@@ -668,6 +766,7 @@ public:
 	}
 #endif
 
+private:
 
 	__attribute__((always_inline))
 		void beginTransaction() {
@@ -1497,98 +1596,6 @@ public:
 		void setDCForCommand(){
 		*_dcport &= ~_dcpinmask;
 	}
-
-	int16_t width() {
-		return _width;
-	}
-
-	int16_t height() {
-		return _height;
-	}
-private:
-	int16_t _width, _height; // Display w/h as modified by current rotation
-#ifdef FEATURE_PRINT_ENABLED
-	int16_t	_cursorX, _cursorY;
-	uint16_t _textcolor, _textbgcolor;
-	uint8_t	_textsize;
-	boolean _wrap; // If set, 'wrap' text at right edge of display
-#endif
-	iliRotation	_rotation;
-
-#ifdef FEATURE_ARC_ENABLED
-	float _arcAngleMax;
-	int _arcAngleOffset;
-
-	void drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float startAngle, float endAngle, uint16_t color);
-#endif
-
-	void drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uint16_t color);
-	void drawFastVLine_noTrans(int16_t x, int16_t y, int16_t h, uint16_t color);
-	void drawFastHLine_noTrans(int16_t x, int16_t y, int16_t w, uint16_t color);
-	void drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
-
-	uint8_t  _rst;
-	uint8_t _hiByte, _loByte;
-	bool _isIdle, _isInSleep;
-#if SPI_MODE_DMA | SPI_MODE_EXTENDED
-	uint8_t _scanline[SCANLINE_BUFFER_SIZE];
-	//uint16_t _scanline[SCANLINE_BUFFER_SIZE];	 // DMA16
-#endif
-
-	uint8_t _spiClkDivider;
-#ifdef ILI_USE_SPI_TRANSACTION
-	SPISettings _spiSettings;
-	uint8_t _transactionId;
-	bool _isInTransaction;
-#endif
-	//Pio *_dcport;
-#ifdef __SAM3X8E__
-	volatile RwReg *_dcport;
-	uint32_t  _cs, _dc, _dcpinmask;
-#else
-	volatile uint8_t *_dcport, *_csport;
-	uint8_t  _cs, _dc, _cspinmask, _dcpinmask, _backupSPCR;
-#endif
-
-
-#if SPI_MODE_NORMAL | SPI_MODE_DMA
-#ifdef __SAM3X8E__
-	//Pio *_csport;
-	volatile RwReg *_csport;
-	uint32_t _cspinmask;
-#endif
-#endif
-#ifdef FEATURE_GTEXT_ENABLED
-	uint16_t _fontColor;
-	uint16_t _fontBgColor;
-	gTextFont _font;
-	gTextArea _area;
-	int16_t	_x;
-	int16_t	_xStart;
-	int16_t	_y;
-	int16_t	_yStart;
-	uint8_t _textScale;
-	uint8_t _letterSpacing;
-	uint8_t _lineSpacing;
-	bool _isFirstChar;
-	uint8_t _fontMode;
-	bool _needScroll;
-	bool _wrap;
-
-	void specialChar(uint8_t c);
-	void drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight);
-	void drawTransparentChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight);
-	void applyPivot(const char *str, gTextPivot pivot, gTextAlign align);
-	void applyPivot(const String &str, gTextPivot pivot, gTextAlign align);
-	void applyPivot(const __FlashStringHelper *str, gTextPivot pivot, gTextAlign align);
-	void applyAlignOffset(gTextAlign align, uint16_t offsetX, uint16_t offsetY);
-	void applyAlignPivotOffset(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
-	void applyAlignPivotOffset(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
-	void applyAlignPivotOffset(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
-	void clearPixelsOnLeft(uint16_t pixelsToClearOnLeft);
-	void clearPixelsOnRight(uint16_t pixelsToClearOnRight);
-#endif
-	bool pinIsChipSelect(uint8_t cs);
 
 #if SPI_MODE_DMA
 	/** Use SAM3X DMAC if nonzero */
