@@ -1095,12 +1095,12 @@ private:
 	disableCS();
 	}*/
 
-	// Enables CS, sets DC and writes n-bytes from the scanline buffer via DMA
+	// Writes n-bytes from the scanline buffer via DMA
 	// Does not disable CS
 	inline __attribute__((always_inline))
-		void writeScanline_cont(size_t n) {
-		setDCForData();
-		enableCS();
+		void writeScanline(size_t n) {
+		/*setDCForData();
+		enableCS();*/
 #if SPI_MODE_EXTENDED
 		SPI.transfer(_cs, _scanline, n << 1, SPI_CONTINUE);
 #elif SPI_MODE_DMA
@@ -1117,18 +1117,16 @@ private:
 	//		dmaSend(_scanline, n << 1);	// each pixel is 2 bytes
 	//}
 
-	// Enables CS, sets DC, writes n-bytes from the scanline buffer via DMA and disabled CS
+	// Writes n-bytes from the scanline buffer via DMA and disabled CS
 	inline __attribute__((always_inline))
 		void writeScanline_last(size_t n) {
-		setDCForData();
-		enableCS();
 #if SPI_MODE_EXTENDED
 		SPI.transfer(_cs, _scanline, n << 1, SPI_LAST);
 #elif SPI_MODE_DMA
 		dmaSend(_scanline, n << 1);	// each pixel is 2 bytes
 		//dmaSend(_scanline, n);	// DMA16
-#endif
 		disableCS();
+#endif
 	}
 
 #endif
