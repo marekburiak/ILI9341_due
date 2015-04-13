@@ -263,7 +263,8 @@ void ILI9341_due::pushColor(uint16_t color)
 {
 	beginTransaction();
 	enableCS();
-	writedata16_last(color);
+	setDCForData();
+	write16_last(color);
 	endTransaction();
 }
 
@@ -272,17 +273,13 @@ void ILI9341_due::pushColors(uint16_t *colors, uint16_t offset, uint16_t len) {
 	enableCS();
 	setDCForData();
 	colors = colors + offset * 2;
-#if SPI_MODE_NORMAL
-	for (uint16_t i = 0; i < len; i++) {
-		write16_cont(colors[i]);
-	}
-	disableCS();
-#elif SPI_MODE_EXTENDED
-	for (uint16_t i = 0; i < len-1; i++) {
+	#if SPI_MODE_EXTENDED
+	uint16_t i;
+	for (i = 0; i < len-1; i++) {
 		write16_cont(colors[i]);
 	}
 	write16_last(colors[i]);
-#elif SPI_MODE_DMA
+#else
 	for (uint16_t i = 0; i < (len << 1); i += 2) {
 		uint16_t color = *colors;
 		_scanline[i] = highByte(color);
@@ -306,13 +303,30 @@ void ILI9341_due::pushColors565(uint8_t *colors, uint16_t offset, uint16_t len) 
 	setDCForData();
 	colors = colors + offset;
 
-#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-	for (uint16_t i = 0; i < len; i++) {
-		write8_cont(colors[i]);
-	}
-#elif SPI_MODE_DMA
+//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+//	for (uint16_t i = 0; i < len; i++) {
+//		write8_cont(colors[i]);
+//	}
+//#elif SPI_MODE_DMA
 	write_cont(colors, len);
-#endif
+//#endif
+	disableCS();
+	endTransaction();
+}
+
+void ILI9341_due::pushColors565(const uint16_t *colors, uint16_t offset, uint16_t len) {
+	beginTransaction();
+	enableCS();
+	setDCForData();
+	colors = colors + offset;
+
+	//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+	//	for (uint16_t i = 0; i < len; i++) {
+	//		write8_cont(colors[i]);
+	//	}
+	//#elif SPI_MODE_DMA
+	write_cont(colors, len);
+	//#endif
 	disableCS();
 	endTransaction();
 }
@@ -321,6 +335,14 @@ void ILI9341_due::pushColors565(uint8_t *colors, uint16_t offset, uint16_t len) 
 void ILI9341_due::drawPixel(int16_t x, int16_t y, uint16_t color) {
 	beginTransaction();
 	drawPixel_noTrans(x, y, color);
+	endTransaction();
+}
+
+void ILI9341_due::drawImage(const uint16_t *colors, uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
+	beginTransaction();
+	enableCS();
+	setAddrAndRW_cont(x, y, x + width - 1, y + height - 1);
+	pushColors565(colors, 0, (uint16_t)width*(uint16_t)height);
 	endTransaction();
 }
 
@@ -399,12 +421,12 @@ void ILI9341_due::drawFastHLine_noTrans(int16_t x, int16_t y, int16_t w, uint16_
 
 void ILI9341_due::fillScreen(uint16_t color)
 {
-#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-	beginTransaction();
-	fillRect_noTrans(0, 0, _width, _height, color);
-	endTransaction();
-
-#elif SPI_MODE_DMA
+//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+//	beginTransaction();
+//	fillRect_noTrans(0, 0, _width, _height, color);
+//	endTransaction();
+//
+//#elif SPI_MODE_DMA
 	fillScanline(color);
 	beginTransaction();
 	enableCS();
@@ -418,7 +440,7 @@ void ILI9341_due::fillScreen(uint16_t color)
 	}
 	disableCS();
 	endTransaction();
-#endif
+//#endif
 }
 
 // fill a rectangle
@@ -692,7 +714,7 @@ void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 		for (int x = xmin; x <= xmax; x++) {
 			bool y1StartFound = false, y2StartFound = false;
 			bool y1EndFound = false, y2EndSearching = false;
-			int y1s = 0, y1e = 0, y2s = 0, y2e = 0;
+			int y1s = 0, y1e = 0, y2s = 0;
 			for (int y = ymin; y <= ymax; y++)
 			{
 				int x2 = x * x;
@@ -2152,7 +2174,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 		if (_x >= 0 && _x < _width)
 		{
 			setAddrAndRW_cont(_x, _y, _x, _y + charHeight * _textScale - 1);
-			setDCForData();  // needed?
+			setDCForData();
 			for (uint8_t i = 0; i < charHeightInBytes; i++)	/* each vertical byte */
 			{
 				uint16_t page = i*charWidth; // page must be 16 bit to prevent overflow
@@ -2212,7 +2234,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 						if (_textScale == 1)
 						{
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-							writedata16_cont(_fontColor);
+							write16_cont(_fontColor);
 #elif SPI_MODE_DMA
 							_scanline[lineId++] = fontColorHi;
 							_scanline[lineId++] = fontColorLo;
