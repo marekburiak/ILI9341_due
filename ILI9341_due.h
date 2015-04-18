@@ -388,8 +388,17 @@ typedef enum {
 #define swap(a, b) { typeof(a) t = a; a = b; b = t; }
 #endif
 
-#define SCANLINE_BUFFER_SIZE 640 // 320 2-byte pixels
-//#define SCANLINE_BUFFER_SIZE 320 // 320 2-byte pixels DMA16
+#if SPI_MODE_DMA | SPI_MODE_EXTENDED
+#define SCANLINE_PIXEL_COUNT 320 // 320 2-byte pixels
+#elif SPI_MODE_NORMAL
+#define SCANLINE_PIXEL_COUNT 16 // 320 1-word pixels
+#endif
+
+#if SPI_MODE_DMA | SPI_MODE_EXTENDED
+#define SCANLINE_BUFFER_SIZE SCANLINE_PIXEL_COUNT << 1 
+#elif SPI_MODE_NORMAL
+#define SCANLINE_BUFFER_SIZE SCANLINE_PIXEL_COUNT
+#endif
 
 class ILI9341_due
 #if defined(FEATURE_PRINT_ENABLED) | defined(FEATURE_GTEXT_PRINT_ENABLED)
@@ -422,9 +431,17 @@ private:
 	uint8_t  _rst;
 	uint8_t _hiByte, _loByte;
 	bool _isIdle, _isInSleep;
-	uint8_t _scanline[SCANLINE_BUFFER_SIZE];
+
 #if SPI_MODE_DMA | SPI_MODE_EXTENDED
-	
+	uint8_t _scanline[SCANLINE_BUFFER_SIZE];
+	uint16_t _scanline16[SCANLINE_PIXEL_COUNT];
+#elif SPI_MODE_NORMAL
+	uint16_t _scanline[SCANLINE_BUFFER_SIZE];
+#endif
+
+	uint16_t _scanlineCounter = 0;
+#if SPI_MODE_DMA | SPI_MODE_EXTENDED
+
 	//uint16_t _scanline[SCANLINE_BUFFER_SIZE];	 // DMA16
 #endif
 
@@ -494,8 +511,8 @@ public:
 	bool begin(void);
 	void pushColor(uint16_t color);
 	void pushColors(uint16_t *colors, uint16_t offset, uint16_t len);
-	void pushColors565(uint8_t *colors, uint16_t offset, uint16_t len);
-	void pushColors565(const uint16_t *colors, uint16_t offset, uint16_t len);
+	void pushColors565(uint8_t *colors, uint16_t offset, uint32_t len);
+	void pushColors565(const uint16_t *colors, uint16_t offset, uint32_t len);
 	void fillScreen(uint16_t color);
 	void drawPixel(int16_t x, int16_t y, uint16_t color);
 	void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
@@ -592,7 +609,7 @@ public:
 	void puts(const char *str);
 	void puts(const String &str);
 	void puts(const __FlashStringHelper* str);
-	
+
 	void printAt(const char *str, int16_t x, int16_t y);
 	void printAt(const String &str, int16_t x, int16_t y);
 	void printAt(const __FlashStringHelper* str, int16_t x, int16_t y);
@@ -616,7 +633,7 @@ public:
 	void printAligned(const char *str, gTextAlign align, gTextEraseLine eraseLine);
 	void printAligned(const String &str, gTextAlign align, gTextEraseLine eraseLine);
 	void printAligned(const __FlashStringHelper *str, gTextAlign align, gTextEraseLine eraseLine);
-	
+
 	void printAligned(const char *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
 	void printAligned(const String &str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
 	void printAligned(const __FlashStringHelper *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
@@ -661,7 +678,7 @@ public:
 	void cursorTo(uint8_t column, uint8_t row); // 0 based coordinates for character columns and rows
 	void cursorTo(int8_t column); // move cursor on the current row
 	void cursorToXY(int16_t x, int16_t y); // coordinates relative to active text area
-	
+
 	void setTextScale(uint8_t s);
 
 	__attribute__((always_inline))
@@ -1027,28 +1044,28 @@ private:
 		write8_last(c);
 	}
 
-//	// Enables CS, sets DC to Data, writes 2 bytes
-//	// Does not disable CS
-//	__attribute__((always_inline))
-//		void writedata16_cont(uint16_t d) {
-//		setDCForData();
-//#if SPI_MODE_NORMAL | SPI_MODE_DMA
-//		enableCS();
-//#endif
-//		write16_cont(d);
-//	}
-//
-//	// Enables CS, sets DC to Data, writes 2 bytes, disables CS
-//	__attribute__((always_inline))
-//		void writedata16_last(uint16_t d) {
-//		setDCForData();
-//#if SPI_MODE_NORMAL | SPI_MODE_DMA
-//		enableCS();
-//#endif
-//		write16_last(d);
-//	}
+	//	// Enables CS, sets DC to Data, writes 2 bytes
+	//	// Does not disable CS
+	//	__attribute__((always_inline))
+	//		void writedata16_cont(uint16_t d) {
+	//		setDCForData();
+	//#if SPI_MODE_NORMAL | SPI_MODE_DMA
+	//		enableCS();
+	//#endif
+	//		write16_cont(d);
+	//	}
+	//
+	//	// Enables CS, sets DC to Data, writes 2 bytes, disables CS
+	//	__attribute__((always_inline))
+	//		void writedata16_last(uint16_t d) {
+	//		setDCForData();
+	//#if SPI_MODE_NORMAL | SPI_MODE_DMA
+	//		enableCS();
+	//#endif
+	//		write16_last(d);
+	//	}
 
-//#ifdef __SAM3X8E__
+	//#ifdef __SAM3X8E__
 	// Enables CS, sets DC and writes n-bytes from the buffer via DMA
 	// Does not disable CS
 	/*inline __attribute__((always_inline))
@@ -1112,6 +1129,30 @@ private:
 	disableCS();
 	}*/
 
+	//	inline __attribute__((always_inline))
+	//		void writeScanline(uint16_t d) {
+	//		/*setDCForData();
+	//		enableCS();*/
+	//#if SPI_MODE_NORMAL
+	//		Serial.println(_scanlineCounter);
+	//		if (_scanlineCounter == SCANLINE_BUFFER_SIZE)
+	//		{
+	//			spiTransfer(_scanline, SCANLINE_BUFFER_SIZE);
+	//			_scanlineCounter = 0;
+	//		}
+	//
+	//		_scanline[_scanlineCounter++] = highByte(d);
+	//		_scanline[_scanlineCounter++] = lowByte(d);
+	//		
+	//#elif SPI_MODE_EXTENDED
+	//		SPI.transfer(_cs, _scanline, n << 1, SPI_CONTINUE);
+	//#elif SPI_MODE_DMA
+	//		dmaSend(_scanline, n << 1);	// each pixel is 2 bytes
+	//#endif
+	//
+	//		//dmaSend(_scanline, n); // DMA16
+	//	}
+
 	// Writes n-bytes from the scanline buffer via DMA
 	// Does not disable CS
 	inline __attribute__((always_inline))
@@ -1125,7 +1166,22 @@ private:
 #elif SPI_MODE_DMA
 		dmaSend(_scanline, n << 1);	// each pixel is 2 bytes
 #endif
-		
+
+		//dmaSend(_scanline, n); // DMA16
+	}
+
+	inline __attribute__((always_inline))
+		void writeScanline16(size_t n) {
+		/*setDCForData();
+		enableCS();*/
+#if SPI_MODE_NORMAL
+		spiTransfer(_scanline, n);
+#elif SPI_MODE_EXTENDED
+		SPI.transfer(_cs, _scanline, n << 1, SPI_CONTINUE);
+#elif SPI_MODE_DMA
+		dmaSend(_scanline16, n);	// each pixel is 2 bytes
+#endif
+
 		//dmaSend(_scanline, n); // DMA16
 	}
 
@@ -1148,7 +1204,7 @@ private:
 #endif
 	}
 
-//#endif
+	//#endif
 
 	// Reads 1 byte
 	__attribute__((always_inline))
@@ -1175,7 +1231,7 @@ private:
 		disableCS();
 		return r;
 #endif
-}
+	}
 
 	// Reads 2 bytes
 	__attribute__((always_inline))
@@ -1268,7 +1324,7 @@ private:
 		return r;
 	}
 
-//#if SPI_MODE_DMA | SPI_MODE_EXTENDED
+	//#if SPI_MODE_DMA | SPI_MODE_EXTENDED
 	//void fillScanline(uint8_t color) __attribute__((always_inline)) {
 	//	//for(uint16_t i=0; i<sizeof(_scanline); i++)
 	//	//{
@@ -1291,16 +1347,31 @@ private:
 	//	//memcpy( ((uint8_t*)arr)+sizeof(arr[0]), arr, seedCopyCount-sizeof(arr[0]) );
 	//}
 
+	__attribute__((always_inline))
+		void fillScanline16(uint16_t color) {
+
+		for (uint16_t i = 0; i < SCANLINE_PIXEL_COUNT; i++)
+		{
+			_scanline16[i] = color;
+		}
+	}
 	// Sets all pixels in the scanline buffer to the specified color
 	__attribute__((always_inline))
 		void fillScanline(uint16_t color) {
+#if SPI_MODE_DMA | SPI_MODE_EXTENDED
 		_hiByte = highByte(color);
 		_loByte = lowByte(color);
-		for (uint16_t i = 0; i < sizeof(_scanline); i += 2)
+		for (uint16_t i = 0; i < SCANLINE_BUFFER_SIZE; i += 2)
 		{
 			_scanline[i] = _hiByte;
 			_scanline[i + 1] = _loByte;
 		}
+#elif SPI_MODE_NORMAL
+		for (uint16_t i = 0; i < SCANLINE_PIXEL_COUNT; i++)
+		{
+			_scanline[i] = color;
+		}
+#endif
 
 		// DMA16
 		//for (uint16_t i = 0; i < sizeof(_scanline); i++)
@@ -1367,7 +1438,7 @@ private:
 	//	return dst;
 	//}
 
-//#endif
+	//#endif
 
 	//	// Writes a sequence that will render a horizontal line
 	//	// At the end CS is kept enabled.
@@ -1616,7 +1687,7 @@ private:
 	}
 #ifdef __AVR__
 	inline __attribute__((always_inline))
-	void spiTransfer(const uint8_t *buf, size_t count) {
+		void spiTransfer(const uint8_t *buf, size_t count) {
 		SPDR = *buf;
 		while (--count > 0) {
 			uint8_t out = *(buf + 1);
@@ -1628,6 +1699,25 @@ private:
 		while (!(SPSR & _BV(SPIF))) ;
 		//*buf = SPDR;
 	} 
+
+	inline __attribute__((always_inline))
+		void spiTransfer(uint16_t *buf, size_t count) {
+		uint16_t pixel = *buf;
+		SPDR = highByte(pixel);
+		while (!(SPSR & _BV(SPIF)));
+		SPDR = lowByte(pixel);
+		while (--count > 0) {
+			uint16_t out = *(buf + 1);
+			while (!(SPSR & _BV(SPIF)));
+			//uint8_t in = SPDR;
+			SPDR = highByte(out);
+			while (!(SPSR & _BV(SPIF)));
+			SPDR = lowByte(out);
+			buf++;
+		}
+		while (!(SPSR & _BV(SPIF)));
+		//*buf = SPDR;
+	}
 
 	void spiTransfer(const uint16_t *buf, size_t count) {
 		uint16_t pixel = pgm_read_word(buf);
@@ -1776,7 +1866,22 @@ private:
 		// no mode fault detection, set master mode
 		pSpi->SPI_MR = SPI_PCS(ILI_SPI_CHIP_SEL) | SPI_MR_MODFDIS | SPI_MR_MSTR;
 		// mode 0, 8-bit,
-		pSpi->SPI_CSR[ILI_SPI_CHIP_SEL] = SPI_CSR_SCBR(scbr) | SPI_CSR_NCPHA;
+		pSpi->SPI_CSR[ILI_SPI_CHIP_SEL] = SPI_CSR_SCBR(scbr) | SPI_CSR_NCPHA | SPI_CSR_BITS_8_BIT;
+		// enable SPI
+		pSpi->SPI_CR |= SPI_CR_SPIEN;
+	}
+
+	void dmaInit16(uint8_t sckDivisor) {
+		uint8_t scbr = sckDivisor;
+		Spi* pSpi = SPI0;
+		//  disable SPI
+		pSpi->SPI_CR = SPI_CR_SPIDIS;
+		// reset SPI
+		pSpi->SPI_CR = SPI_CR_SWRST;
+		// no mode fault detection, set master mode
+		pSpi->SPI_MR = SPI_PCS(ILI_SPI_CHIP_SEL) | SPI_MR_MODFDIS | SPI_MR_MSTR;
+		// mode 0, 16-bit,
+		pSpi->SPI_CSR[ILI_SPI_CHIP_SEL] = SPI_CSR_SCBR(scbr) | SPI_CSR_NCPHA | SPI_CSR_BITS_16_BIT;
 		// enable SPI
 		pSpi->SPI_CR |= SPI_CR_SPIEN;
 	}
@@ -1822,7 +1927,7 @@ private:
 		dmac_channel_enable(ILI_SPI_DMAC_TX_CH);
 	}
 
-	static void ILI_spiDmaTX16(const uint16_t* src, uint16_t count) {
+	void spiDmaTX16(const uint16_t* src, uint16_t count) {
 		static uint16_t ff = 0XFFFF;
 		uint32_t src_incr = DMAC_CTRLB_SRC_INCR_INCREMENTING;
 		if (!src) {
@@ -1898,21 +2003,23 @@ private:
 	//------------------------------------------------------------------------------
 	void dmaSend(const uint8_t* buf, size_t n) {
 		Spi* pSpi = SPI0;
-#if ILI_USE_SAM3X_DMAC
-
 		spiDmaTX(buf, n);
 		while (!dmac_channel_transfer_done(ILI_SPI_DMAC_TX_CH)) {}
-#else  // #if ILI_USE_SAM3X_DMAC
-		while ((pSpi->SPI_SR & SPI_SR_TXEMPTY) == 0) {}
-		for (size_t i = 0; i < n; i++) {
-			pSpi->SPI_TDR = buf[i];
-			while ((pSpi->SPI_SR & SPI_SR_TDRE) == 0) {}
-		}
-#endif  // #if ILI_USE_SAM3X_DMAC
 		while ((pSpi->SPI_SR & SPI_SR_TXEMPTY) == 0) {}
 		// leave RDR empty
 		pSpi->SPI_RDR;
-}
+	}
+
+	void dmaSend(const uint16_t* buf, size_t n) {
+		Spi* pSpi = SPI0;
+		pSpi->SPI_CSR[ILI_SPI_CHIP_SEL] = SPI_CSR_SCBR(_spiClkDivider) | SPI_CSR_NCPHA | SPI_CSR_BITS_16_BIT;
+		spiDmaTX16(buf, n);
+		while (!dmac_channel_transfer_done(ILI_SPI_DMAC_TX_CH)) {}
+		while ((pSpi->SPI_SR & SPI_SR_TXEMPTY) == 0) {}
+		// leave RDR empty
+		pSpi->SPI_RDR;
+		pSpi->SPI_CSR[ILI_SPI_CHIP_SEL] = SPI_CSR_SCBR(_spiClkDivider) | SPI_CSR_NCPHA | SPI_CSR_BITS_8_BIT;
+	}
 #endif
 #endif
 };

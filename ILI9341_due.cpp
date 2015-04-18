@@ -297,7 +297,7 @@ void ILI9341_due::pushColors(uint16_t *colors, uint16_t offset, uint16_t len) {
 // in big endian (high byte first)
 // len should be the length of the array (so to push 320 pixels,
 // you have to have a 640-byte array and len should be 640)
-void ILI9341_due::pushColors565(uint8_t *colors, uint16_t offset, uint16_t len) {
+void ILI9341_due::pushColors565(uint8_t *colors, uint16_t offset, uint32_t len) {
 	beginTransaction();
 	enableCS();
 	setDCForData();
@@ -314,7 +314,7 @@ void ILI9341_due::pushColors565(uint8_t *colors, uint16_t offset, uint16_t len) 
 	endTransaction();
 }
 
-void ILI9341_due::pushColors565(const uint16_t *colors, uint16_t offset, uint16_t len) {
+void ILI9341_due::pushColors565(const uint16_t *colors, uint16_t offset, uint32_t len) {
 	beginTransaction();
 	enableCS();
 	setDCForData();
@@ -342,7 +342,7 @@ void ILI9341_due::drawImage(const uint16_t *colors, uint8_t x, uint8_t y, uint8_
 	beginTransaction();
 	enableCS();
 	setAddrAndRW_cont(x, y, x + width - 1, y + height - 1);
-	pushColors565(colors, 0, (uint16_t)width*(uint16_t)height);
+	pushColors565(colors, 0, (uint32_t)width*(uint32_t)height);
 	endTransaction();
 }
 
@@ -427,17 +427,26 @@ void ILI9341_due::fillScreen(uint16_t color)
 //	endTransaction();
 //
 //#elif SPI_MODE_DMA
-	fillScanline(color);
+	fillScanline16(color);
 	beginTransaction();
 	enableCS();
 	setAddrAndRW_cont(0, 0, _width - 1, _height - 1);
 	setDCForData();
+#if SPI_MODE_EXTENDED | SPI_MODE_DMA
 	const uint16_t bytesToWrite = _width << 1;
 	//const uint16_t bytesToWrite = _width;	// DMA16
 	for (uint16_t y = 0; y < _height; y++)
 	{
-		write_cont(_scanline, bytesToWrite);
+		writeScanline16(_width);
 	}
+#elif SPI_MODE_NORMAL
+	const uint32_t pixelsToWrite = 76800;
+	//const uint16_t bytesToWrite = _width;	// DMA16
+	for (uint32_t y = 0; y < pixelsToWrite; y += SCANLINE_PIXEL_COUNT)
+	{
+		writeScanline(SCANLINE_PIXEL_COUNT);
+	}
+#endif
 	disableCS();
 	endTransaction();
 //#endif
