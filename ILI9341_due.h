@@ -435,7 +435,7 @@ private:
 	uint16_t _scanline16[SCANLINE_PIXEL_COUNT];
 #if SPI_MODE_DMA | SPI_MODE_EXTENDED
 	uint8_t _scanline[SCANLINE_BUFFER_SIZE];
-	
+
 #elif SPI_MODE_NORMAL
 	uint16_t _scanline[SCANLINE_BUFFER_SIZE];
 #endif
@@ -510,17 +510,20 @@ public:
 
 
 	bool begin(void);
+	void fillScreen(uint16_t color);
+	void fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color);
+	void fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color);
+
 	void pushColor(uint16_t color);
 	void pushColors(uint16_t *colors, uint16_t offset, uint16_t len);
 	void pushColors565(uint8_t *colors, uint16_t offset, uint32_t len);
 	void pushColors565(const uint16_t *colors, uint16_t offset, uint32_t len);
-	void fillScreen(uint16_t color);
+	
 	void drawPixel(int16_t x, int16_t y, uint16_t color);
 	void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
 	void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
 	void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
-	void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
-	void fillRect_noTrans(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+	
 	void setRotation(iliRotation r);
 	void invertDisplay(boolean i);
 	void display(boolean d);
@@ -1789,7 +1792,7 @@ private:
 
 	void spiTransfer(byte _pin, uint16_t _data, SPITransferMode _mode) {
 		uint32_t ch = BOARD_PIN_TO_SPI_CHANNEL(_pin);
-		
+
 		SPI0->SPI_CSR[ch] = (SPI0->SPI_CSR[ch] &= 0xFFFFFF0F) | 0x00000080;	//set 16 bit
 		uint32_t d = _data | SPI_PCS(ch);
 		if (_mode == SPI_LAST)
@@ -1817,7 +1820,7 @@ private:
 		}
 
 		uint32_t ch = BOARD_PIN_TO_SPI_CHANNEL(_pin);
-		
+
 		SPI0->SPI_CSR[ch] = (SPI0->SPI_CSR[ch] &= 0xFFFFFF0F) | 0x00000080;	//set 16 bit
 		// Send the first byte
 		uint32_t d = *_buf;
@@ -1846,7 +1849,7 @@ private:
 			_count--;
 		}
 
-		
+
 		// Receive the last transferred byte
 		while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0)
 			;
@@ -1891,6 +1894,14 @@ private:
 	/** Poll for transfer complete. */
 	static bool dmac_channel_transfer_done(uint32_t ul_num) {
 		return (DMAC->DMAC_CHSR & (DMAC_CHSR_ENA0 << ul_num)) ? false : true;
+	}
+
+	static bool spi_set_16bit_transfer() {
+		SPI0->SPI_CSR[ILI_SPI_CHIP_SEL] = (SPI0->SPI_CSR[ILI_SPI_CHIP_SEL] &= 0xFFFFFF0F) | 0x00000080;
+	}
+
+	static bool spi_set_8bit_transfer() {
+		SPI0->SPI_CSR[ILI_SPI_CHIP_SEL] = SPI0->SPI_CSR[ILI_SPI_CHIP_SEL] &= 0xFFFFFF0F;
 	}
 	//------------------------------------------------------------------------------
 	void dmaBegin() {
@@ -2022,7 +2033,8 @@ private:
 		dmac_channel_enable(ILI_SPI_DMAC_TX_CH);
 	}
 	//------------------------------------------------------------------------------
-	inline uint8_t dmaSpiTransfer(uint8_t b) {
+	__attribute__((always_inline))
+		uint8_t dmaSpiTransfer(uint8_t b) {
 		Spi* pSpi = SPI0;
 
 		pSpi->SPI_TDR = b;
@@ -2030,10 +2042,21 @@ private:
 		b = pSpi->SPI_RDR;
 		return b;
 	}
+
+	__attribute__((always_inline))
+		uint16_t dmaSpiTransfer(uint16_t w) {
+		spi_set_16bit_transfer();
+		SPI0->SPI_TDR = w;
+		while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0) {}
+		w = SPI0->SPI_RDR;
+		spi_set_8bit_transfer();
+		return w;
+	}
 	//------------------------------------------------------------------------------
 	/** SPI receive a byte */
-	uint8_t dmaReceive() {
-		return dmaSpiTransfer(0XFF);
+	__attribute__((always_inline))
+		uint8_t dmaReceive() {
+		return dmaSpiTransfer((uint8_t)0XFF);
 	}
 	//------------------------------------------------------------------------------
 	/** SPI receive multiple bytes */
@@ -2068,8 +2091,14 @@ private:
 	}
 	//------------------------------------------------------------------------------
 	/** SPI send a byte */
-	void dmaSend(uint8_t b) {
+	__attribute__((always_inline))
+		void dmaSend(uint8_t b) {
 		dmaSpiTransfer(b);
+	}
+
+	__attribute__((always_inline))
+		void dmaSend(uint16_t w) {
+		dmaSpiTransfer(w);
 	}
 	//------------------------------------------------------------------------------
 	void dmaSend(const uint8_t* buf, size_t n) {

@@ -459,7 +459,7 @@ void ILI9341_due::fillScreen(uint16_t color)
 }
 
 // fill a rectangle
-void ILI9341_due::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
+void ILI9341_due::fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color)
 {
 	beginTransaction();
 	fillRect_noTrans(x, y, w, h, color);
@@ -467,7 +467,7 @@ void ILI9341_due::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t 
 }
 
 // fill a rectangle
-void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
+void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color)
 {
 	//Serial << "x:" << x << " y:" << y << " w:" << x << " h:" << h << " width:" << _width << " height:" << _height <<endl;
 	// rudimentary clipping (drawChar w/big text requires this)
@@ -477,31 +477,55 @@ void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, int16_t w, int16_t h, u
 	enableCS();
 	setAddrAndRW_cont(x, y, x + w - 1, y + h - 1);
 	setDCForData();
-#if SPI_MODE_DMA 
-	const uint16_t maxNumLinesInScanlineBuffer = (SCANLINE_BUFFER_SIZE >> 1) / w;
-	const uint16_t numPixelsInOneGo = w*maxNumLinesInScanlineBuffer;
 
-	fillScanline(color, numPixelsInOneGo);
-
-	for (uint16_t p = 0; p < h / maxNumLinesInScanlineBuffer; p++)
+	fillScanline16(color);
+	const uint32_t totalPixels = (uint32_t)w*(uint32_t)h;
+	const uint32_t numLoops = totalPixels / (uint32_t)SCANLINE_PIXEL_COUNT;
+	for (uint32_t l = 0; l<numLoops; l++)
 	{
-		writeScanline(numPixelsInOneGo);
+		writeScanline16(SCANLINE_PIXEL_COUNT);
 	}
-	writeScanline((w*h) % numPixelsInOneGo);
+	uint16_t remainingPixels = totalPixels % SCANLINE_PIXEL_COUNT;
+	if(remainingPixels > 0)
+		writeScanline16(remainingPixels);
 	disableCS();
-#elif SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-	// TODO: this can result in a very long transaction time
-	// should break this into multiple transactions, even though
-	// it'll cost more overhead, so we don't stall other SPI libs
-
-	for (y = h; y > 0; y--) {
-		for (x = w; x > 0; x--) {
-			write16_cont(color);
-		}
-	}
-	disableCS();
-#endif
 }
+
+//void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
+//{
+//	//Serial << "x:" << x << " y:" << y << " w:" << x << " h:" << h << " width:" << _width << " height:" << _height <<endl;
+//	// rudimentary clipping (drawChar w/big text requires this)
+//	if ((x >= _width) || (y >= _height) || (x + w - 1 < 0) || (y + h - 1 < 0)) return;
+//	if ((x + w - 1) >= _width)  w = _width - x;
+//	if ((y + h - 1) >= _height) h = _height - y;
+//	enableCS();
+//	setAddrAndRW_cont(x, y, x + w - 1, y + h - 1);
+//	setDCForData();
+//#if SPI_MODE_DMA 
+//	const uint16_t maxNumLinesInScanlineBuffer = (SCANLINE_BUFFER_SIZE >> 1) / w;
+//	const uint16_t numPixelsInOneGo = w*maxNumLinesInScanlineBuffer;
+//
+//	fillScanline(color, numPixelsInOneGo);
+//
+//	for (uint16_t p = 0; p < h / maxNumLinesInScanlineBuffer; p++)
+//	{
+//		writeScanline(numPixelsInOneGo);
+//	}
+//	writeScanline((w*h) % numPixelsInOneGo);
+//	disableCS();
+//#elif SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+//	// TODO: this can result in a very long transaction time
+//	// should break this into multiple transactions, even though
+//	// it'll cost more overhead, so we don't stall other SPI libs
+//
+//	for (y = h; y > 0; y--) {
+//		for (x = w; x > 0; x--) {
+//			write16_cont(color);
+//		}
+//	}
+//	disableCS();
+//#endif
+//}
 
 #define MADCTL_MY  0x80
 #define MADCTL_MX  0x40
