@@ -175,11 +175,11 @@ bool ILI9341_due::begin(void)
 		x = readcommand8(ILI9341_RDSELFDIAG);
 		Serial.print(F("Self Diagnostic: 0x")); Serial.println(x, HEX);
 
-//#ifdef ILI_USE_SPI_TRANSACTION
-//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+		//#ifdef ILI_USE_SPI_TRANSACTION
+		//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 		endTransaction();
-//#endif
-//#endif
+		//#endif
+		//#endif
 		return true;
 	}
 	else {
@@ -273,7 +273,7 @@ void ILI9341_due::pushColors(uint16_t *colors, uint16_t offset, uint16_t len) {
 	enableCS();
 	setDCForData();
 	colors = colors + offset * 2;
-	#if SPI_MODE_EXTENDED
+#if SPI_MODE_EXTENDED
 	uint16_t i;
 	for (i = 0; i < len-1; i++) {
 		write16_cont(colors[i]);
@@ -289,7 +289,7 @@ void ILI9341_due::pushColors(uint16_t *colors, uint16_t offset, uint16_t len) {
 	writeScanline(len);
 	disableCS();
 #endif
-	
+
 	endTransaction();
 }
 
@@ -303,13 +303,13 @@ void ILI9341_due::pushColors565(uint8_t *colors, uint16_t offset, uint32_t len) 
 	setDCForData();
 	colors = colors + offset;
 
-//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-//	for (uint16_t i = 0; i < len; i++) {
-//		write8_cont(colors[i]);
-//	}
-//#elif SPI_MODE_DMA
+	//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+	//	for (uint16_t i = 0; i < len; i++) {
+	//		write8_cont(colors[i]);
+	//	}
+	//#elif SPI_MODE_DMA
 	write_cont(colors, len);
-//#endif
+	//#endif
 	disableCS();
 	endTransaction();
 }
@@ -342,7 +342,15 @@ void ILI9341_due::drawImage(const uint16_t *colors, uint8_t x, uint8_t y, uint8_
 	beginTransaction();
 	enableCS();
 	setAddrAndRW_cont(x, y, x + width - 1, y + height - 1);
+#if SPI_MODE_DMA
+	for (uint16_t i = 0; i < (uint32_t)width*(uint32_t)height; i++)
+	{
+		_scanline16[i] = colors[i];
+	}
+	pushColors565(_scanline16, 0, (uint32_t)width*(uint32_t)height);
+#else
 	pushColors565(colors, 0, (uint32_t)width*(uint32_t)height);
+#endif
 	endTransaction();
 }
 
@@ -421,20 +429,18 @@ void ILI9341_due::drawFastHLine_noTrans(int16_t x, int16_t y, int16_t w, uint16_
 
 void ILI9341_due::fillScreen(uint16_t color)
 {
-//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-//	beginTransaction();
-//	fillRect_noTrans(0, 0, _width, _height, color);
-//	endTransaction();
-//
-//#elif SPI_MODE_DMA
+	//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+	//	beginTransaction();
+	//	fillRect_noTrans(0, 0, _width, _height, color);
+	//	endTransaction();
+	//
+	//#elif SPI_MODE_DMA
 	fillScanline16(color);
 	beginTransaction();
 	enableCS();
 	setAddrAndRW_cont(0, 0, _width - 1, _height - 1);
 	setDCForData();
 #if SPI_MODE_EXTENDED | SPI_MODE_DMA
-	const uint16_t bytesToWrite = _width << 1;
-	//const uint16_t bytesToWrite = _width;	// DMA16
 	for (uint16_t y = 0; y < _height; y++)
 	{
 		writeScanline16(_width);
@@ -444,12 +450,12 @@ void ILI9341_due::fillScreen(uint16_t color)
 	//const uint16_t bytesToWrite = _width;	// DMA16
 	for (uint32_t y = 0; y < pixelsToWrite; y += SCANLINE_PIXEL_COUNT)
 	{
-		writeScanline(SCANLINE_PIXEL_COUNT);
+		writeScanline16(SCANLINE_PIXEL_COUNT);
 	}
 #endif
 	disableCS();
 	endTransaction();
-//#endif
+	//#endif
 }
 
 // fill a rectangle
@@ -487,7 +493,7 @@ void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, int16_t w, int16_t h, u
 	// TODO: this can result in a very long transaction time
 	// should break this into multiple transactions, even though
 	// it'll cost more overhead, so we don't stall other SPI libs
-	
+
 	for (y = h; y > 0; y--) {
 		for (x = w; x > 0; x--) {
 			write16_cont(color);

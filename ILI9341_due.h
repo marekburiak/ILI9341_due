@@ -432,9 +432,10 @@ private:
 	uint8_t _hiByte, _loByte;
 	bool _isIdle, _isInSleep;
 
+	uint16_t _scanline16[SCANLINE_PIXEL_COUNT];
 #if SPI_MODE_DMA | SPI_MODE_EXTENDED
 	uint8_t _scanline[SCANLINE_BUFFER_SIZE];
-	uint16_t _scanline16[SCANLINE_PIXEL_COUNT];
+	
 #elif SPI_MODE_NORMAL
 	uint16_t _scanline[SCANLINE_BUFFER_SIZE];
 #endif
@@ -1175,9 +1176,9 @@ private:
 		/*setDCForData();
 		enableCS();*/
 #if SPI_MODE_NORMAL
-		spiTransfer(_scanline, n);
+		spiTransfer(_scanline16, n);
 #elif SPI_MODE_EXTENDED
-		SPI.transfer(_cs, _scanline, n << 1, SPI_CONTINUE);
+		spiTransfer(_cs, _scanline16, n, SPI_CONTINUE);
 #elif SPI_MODE_DMA
 		dmaSend(_scanline16, n);	// each pixel is 2 bytes
 #endif
@@ -1738,6 +1739,8 @@ private:
 	} 
 #elif defined __SAM3X8E__
 #if SPI_MODE_EXTENDED
+
+
 	void spiTransfer(byte _pin, const uint8_t *_buf, size_t _count, SPITransferMode _mode) {
 		if (_count == 0)
 			return;
@@ -1782,6 +1785,74 @@ private:
 		SPI0->SPI_RDR;
 
 		//*_buf = r;
+	}
+
+	void spiTransfer(byte _pin, uint16_t _data, SPITransferMode _mode) {
+		uint32_t ch = BOARD_PIN_TO_SPI_CHANNEL(_pin);
+		
+		SPI0->SPI_CSR[ch] = (SPI0->SPI_CSR[ch] &= 0xFFFFFF0F) | 0x00000080;	//set 16 bit
+		uint32_t d = _data | SPI_PCS(ch);
+		if (_mode == SPI_LAST)
+			d |= SPI_TDR_LASTXFER;
+
+		// SPI_Write(spi, _channel, _data);
+		while ((SPI0->SPI_SR & SPI_SR_TDRE) == 0)
+			;
+		SPI0->SPI_TDR = d;
+
+
+		while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0)
+			;
+		SPI0->SPI_RDR;
+		SPI0->SPI_CSR[ch] &= 0xFFFFFF0F; //restore 8bit
+	}
+
+	void spiTransfer(byte _pin, const uint16_t *_buf, size_t _count, SPITransferMode _mode) {
+		if (_count == 0)
+			return;
+
+		if (_count == 1) {
+			spiTransfer(_pin, *_buf, _mode);
+			return;
+		}
+
+		uint32_t ch = BOARD_PIN_TO_SPI_CHANNEL(_pin);
+		
+		SPI0->SPI_CSR[ch] = (SPI0->SPI_CSR[ch] &= 0xFFFFFF0F) | 0x00000080;	//set 16 bit
+		// Send the first byte
+		uint32_t d = *_buf;
+
+		while ((SPI0->SPI_SR & SPI_SR_TDRE) == 0)
+			;
+		SPI0->SPI_TDR = d | SPI_PCS(ch);
+
+		while (_count > 1) {
+			// Prepare next byte
+			d = *(_buf + 1);
+
+			if (_count == 2 && _mode == SPI_LAST)
+				d |= SPI_TDR_LASTXFER;
+
+			// Read transferred byte and send next one straight away
+			while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0)
+				;
+			SPI0->SPI_RDR;
+			SPI0->SPI_TDR = d | SPI_PCS(ch);
+
+			// Save read byte
+
+			//*_buf = r;
+			_buf++;
+			_count--;
+		}
+
+		
+		// Receive the last transferred byte
+		while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0)
+			;
+		SPI0->SPI_RDR;
+		//*_buf = r;
+		SPI0->SPI_CSR[ch] &= 0xFFFFFF0F; //restore 8bit
 	}
 #elif SPI_MODE_DMA
 	/** Use SAM3X DMAC if nonzero */
