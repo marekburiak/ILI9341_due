@@ -388,10 +388,10 @@ typedef enum {
 #define swap(a, b) { typeof(a) t = a; a = b; b = t; }
 #endif
 
-#if SPI_MODE_DMA | SPI_MODE_EXTENDED
-#define SCANLINE_PIXEL_COUNT 320 // 320 2-byte pixels
-#elif SPI_MODE_NORMAL
-#define SCANLINE_PIXEL_COUNT 16 // 320 1-word pixels
+#ifdef __SAM3X8E__
+#define SCANLINE_PIXEL_COUNT 320
+#elif defined __AVR__
+#define SCANLINE_PIXEL_COUNT 16
 #endif
 
 #if SPI_MODE_DMA | SPI_MODE_EXTENDED
@@ -424,8 +424,8 @@ private:
 #endif
 
 	void drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uint16_t color);
-	void drawFastVLine_noTrans(int16_t x, int16_t y, int16_t h, uint16_t color);
-	void drawFastHLine_noTrans(int16_t x, int16_t y, int16_t w, uint16_t color);
+	void drawFastVLine_noTrans(int16_t x, int16_t y, uint16_t h, uint16_t color);
+	void drawFastHLine_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t color);
 	void drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
 
 	uint8_t  _rst;
@@ -515,13 +515,13 @@ public:
 	void fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color);
 
 	void pushColor(uint16_t color);
-	void pushColors(uint16_t *colors, uint16_t offset, uint16_t len);
-	void pushColors565(uint8_t *colors, uint16_t offset, uint32_t len);
-	void pushColors565(const uint16_t *colors, uint16_t offset, uint32_t len);
+	void pushColors(const uint16_t *colors, uint16_t offset, uint32_t len);
+	/*void pushColors565(uint8_t *colors, uint16_t offset, uint32_t len);
+	void pushColors565(const uint16_t *colors, uint16_t offset, uint32_t len);*/
 	
 	void drawPixel(int16_t x, int16_t y, uint16_t color);
-	void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
-	void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+	void drawFastVLine(int16_t x, int16_t y, uint16_t h, uint16_t color);
+	void drawFastHLine(int16_t x, int16_t y, uint16_t w, uint16_t color);
 	void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 	
 	void setRotation(iliRotation r);
@@ -550,8 +550,12 @@ public:
 		return _height;
 	}
 
-	//uint8_t readdata(void);
-	uint8_t readcommand8(uint8_t reg, uint8_t index = 0);
+	uint8_t readcommand8(uint8_t c) {
+		writecommand_cont(0xD9);  // woo sekret command?
+		writedata8_last(0x10);
+		writecommand_cont(c);
+		return readdata8_last();
+	}
 
 	uint16_t readPixel(int16_t x, int16_t y);
 	// from Adafruit_GFX.h
@@ -1359,6 +1363,15 @@ private:
 			_scanline16[i] = color;
 		}
 	}
+
+	__attribute__((always_inline))
+		void fillScanline16(uint16_t color,uint16_t len) {
+
+		for (uint16_t i = 0; i < len; i++)
+		{
+			_scanline16[i] = color;
+		}
+	}
 	// Sets all pixels in the scanline buffer to the specified color
 	__attribute__((always_inline))
 		void fillScanline(uint16_t color) {
@@ -1741,7 +1754,137 @@ private:
 		//*buf = SPDR;
 	} 
 #elif defined __SAM3X8E__
-#if SPI_MODE_EXTENDED
+#if SPI_MODE_NORMAL
+	void spiTransfer(uint8_t _data) {
+		uint32_t ch = BOARD_PIN_TO_SPI_CHANNEL(BOARD_SPI_DEFAULT_SS);
+		uint32_t d = _data | SPI_PCS(ch);
+		d |= SPI_TDR_LASTXFER;
+
+		// SPI_Write(spi, _channel, _data);
+		while ((SPI0->SPI_SR & SPI_SR_TDRE) == 0)
+			;
+		SPI0->SPI_TDR = d;
+
+		// return SPI_Read(spi);
+		while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0)
+			;
+		SPI0->SPI_RDR;
+	}
+
+	void spiTransfer(uint16_t _data) {
+		uint32_t ch = BOARD_PIN_TO_SPI_CHANNEL(BOARD_SPI_DEFAULT_SS);
+
+		SPI0->SPI_CSR[ch] = (SPI0->SPI_CSR[ch] &= 0xFFFFFF0F) | 0x00000080;	//set 16 bit
+		uint32_t d = _data | SPI_PCS(ch);
+
+		d |= SPI_TDR_LASTXFER;
+
+		// SPI_Write(spi, _channel, _data);
+		while ((SPI0->SPI_SR & SPI_SR_TDRE) == 0)
+			;
+		SPI0->SPI_TDR = d;
+
+
+		while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0)
+			;
+		SPI0->SPI_RDR;
+		SPI0->SPI_CSR[ch] &= 0xFFFFFF0F; //restore 8bit
+	}
+
+	void spiTransfer(const uint8_t *_buf, size_t _count) {
+		if (_count == 0)
+			return;
+
+		if (_count == 1) {
+			spiTransfer(*_buf);
+			return;
+		}
+
+		uint32_t ch = BOARD_PIN_TO_SPI_CHANNEL(BOARD_SPI_DEFAULT_SS);
+
+		// Send the first byte
+		uint32_t d = *_buf;
+
+		while ((SPI0->SPI_SR & SPI_SR_TDRE) == 0)
+			;
+		SPI0->SPI_TDR = d | SPI_PCS(ch);
+
+		while (_count > 1) {
+			// Prepare next byte
+			d = *(_buf + 1);
+
+			if (_count == 2)
+				d |= SPI_TDR_LASTXFER;
+
+			// Read transferred byte and send next one straight away
+			while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0)
+				;
+			SPI0->SPI_RDR;
+			SPI0->SPI_TDR = d | SPI_PCS(ch);
+
+			// Save read byte
+
+			//*_buf = r;
+			_buf++;
+			_count--;
+		}
+
+
+		// Receive the last transferred byte
+		while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0)
+			;
+		SPI0->SPI_RDR;
+		//*_buf = r;
+	}
+
+	void spiTransfer(const uint16_t *_buf, size_t _count) {
+		if (_count == 0)
+			return;
+
+		if (_count == 1) {
+			spiTransfer(*_buf);
+			return;
+		}
+
+		uint32_t ch = BOARD_PIN_TO_SPI_CHANNEL(BOARD_SPI_DEFAULT_SS);
+
+		SPI0->SPI_CSR[ch] = (SPI0->SPI_CSR[ch] &= 0xFFFFFF0F) | 0x00000080;	//set 16 bit
+		// Send the first byte
+		uint32_t d = *_buf;
+
+		while ((SPI0->SPI_SR & SPI_SR_TDRE) == 0)
+			;
+		SPI0->SPI_TDR = d | SPI_PCS(ch);
+
+		while (_count > 1) {
+			// Prepare next byte
+			d = *(_buf + 1);
+
+			if (_count == 2)
+				d |= SPI_TDR_LASTXFER;
+
+			// Read transferred byte and send next one straight away
+			while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0)
+				;
+			SPI0->SPI_RDR;
+			SPI0->SPI_TDR = d | SPI_PCS(ch);
+
+			// Save read byte
+
+			//*_buf = r;
+			_buf++;
+			_count--;
+		}
+
+
+		// Receive the last transferred byte
+		while ((SPI0->SPI_SR & SPI_SR_RDRF) == 0)
+			;
+		SPI0->SPI_RDR;
+		//*_buf = r;
+		SPI0->SPI_CSR[ch] &= 0xFFFFFF0F; //restore 8bit
+	}
+#elif SPI_MODE_EXTENDED
 
 
 	void spiTransfer(byte _pin, const uint8_t *_buf, size_t _count, SPITransferMode _mode) {

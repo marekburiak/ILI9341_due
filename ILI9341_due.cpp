@@ -206,15 +206,6 @@ bool ILI9341_due::pinIsChipSelect(uint8_t cs)
 #endif
 }
 
-void ILI9341_due::setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
-{
-	beginTransaction();
-	enableCS();
-	setAddrAndRW_cont(x0, y0, x1, y1);
-	disableCS();
-	endTransaction();
-}
-
 void ILI9341_due::setSPIClockDivider(uint8_t divider)
 {
 	_spiClkDivider = divider;
@@ -259,6 +250,15 @@ void ILI9341_due::setSPIClockDivider(uint8_t divider)
 #endif
 }
 
+void ILI9341_due::setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+{
+	beginTransaction();
+	enableCS();
+	setAddrAndRW_cont(x0, y0, x1, y1);
+	disableCS();
+	endTransaction();
+}
+
 void ILI9341_due::pushColor(uint16_t color)
 {
 	beginTransaction();
@@ -268,53 +268,53 @@ void ILI9341_due::pushColor(uint16_t color)
 	endTransaction();
 }
 
-void ILI9341_due::pushColors(uint16_t *colors, uint16_t offset, uint16_t len) {
-	beginTransaction();
-	enableCS();
-	setDCForData();
-	colors = colors + offset * 2;
-#if SPI_MODE_EXTENDED
-	uint16_t i;
-	for (i = 0; i < len-1; i++) {
-		write16_cont(colors[i]);
-	}
-	write16_last(colors[i]);
-#else
-	for (uint16_t i = 0; i < (len << 1); i += 2) {
-		uint16_t color = *colors;
-		_scanline[i] = highByte(color);
-		_scanline[i + 1] = lowByte(color);
-		colors++;
-	}
-	writeScanline(len);
-	disableCS();
-#endif
-
-	endTransaction();
-}
+//void ILI9341_due::pushColors(uint16_t *colors, uint16_t offset, uint16_t len) {
+//	beginTransaction();
+//	enableCS();
+//	setDCForData();
+//	colors = colors + offset * 2;
+//#if SPI_MODE_EXTENDED
+//	uint16_t i;
+//	for (i = 0; i < len-1; i++) {
+//		write16_cont(colors[i]);
+//	}
+//	write16_last(colors[i]);
+//#else
+//	for (uint16_t i = 0; i < (len << 1); i += 2) {
+//		uint16_t color = *colors;
+//		_scanline[i] = highByte(color);
+//		_scanline[i + 1] = lowByte(color);
+//		colors++;
+//	}
+//	writeScanline(len);
+//	disableCS();
+//#endif
+//
+//	endTransaction();
+//}
 
 // pushes pixels stored in the colors array (one color is 2 bytes) 
 // in big endian (high byte first)
 // len should be the length of the array (so to push 320 pixels,
 // you have to have a 640-byte array and len should be 640)
-void ILI9341_due::pushColors565(uint8_t *colors, uint16_t offset, uint32_t len) {
-	beginTransaction();
-	enableCS();
-	setDCForData();
-	colors = colors + offset;
+//void ILI9341_due::pushColors565(uint8_t *colors, uint16_t offset, uint32_t len) {
+//	beginTransaction();
+//	enableCS();
+//	setDCForData();
+//	colors = colors + offset;
+//
+//	//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+//	//	for (uint16_t i = 0; i < len; i++) {
+//	//		write8_cont(colors[i]);
+//	//	}
+//	//#elif SPI_MODE_DMA
+//	write_cont(colors, len);
+//	//#endif
+//	disableCS();
+//	endTransaction();
+//}
 
-	//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-	//	for (uint16_t i = 0; i < len; i++) {
-	//		write8_cont(colors[i]);
-	//	}
-	//#elif SPI_MODE_DMA
-	write_cont(colors, len);
-	//#endif
-	disableCS();
-	endTransaction();
-}
-
-void ILI9341_due::pushColors565(const uint16_t *colors, uint16_t offset, uint32_t len) {
+void ILI9341_due::pushColors(const uint16_t *colors, uint16_t offset, uint32_t len) {
 	beginTransaction();
 	enableCS();
 	setDCForData();
@@ -339,120 +339,144 @@ void ILI9341_due::drawPixel(int16_t x, int16_t y, uint16_t color) {
 }
 
 void ILI9341_due::drawImage(const uint16_t *colors, uint8_t x, uint8_t y, uint8_t width, uint8_t height) {
+	
+	const uint32_t totalPixels = (uint32_t)width*(uint32_t)height;
+#if SPI_MODE_DMA
+	const uint32_t numLoops = totalPixels / (uint32_t)SCANLINE_PIXEL_COUNT;
 	beginTransaction();
 	enableCS();
 	setAddrAndRW_cont(x, y, x + width - 1, y + height - 1);
-#if SPI_MODE_DMA
-	for (uint16_t i = 0; i < (uint32_t)width*(uint32_t)height; i++)
+	setDCForData();
+	for (uint32_t l = 0; l<numLoops; l++)
 	{
-		_scanline16[i] = colors[i];
+		for (uint32_t i = 0; i < SCANLINE_PIXEL_COUNT; i++)
+		{
+			_scanline16[i] = colors[l*SCANLINE_PIXEL_COUNT + i];
+		}
+		writeScanline16(SCANLINE_PIXEL_COUNT);
 	}
-	pushColors565(_scanline16, 0, (uint32_t)width*(uint32_t)height);
-#else
-	pushColors565(colors, 0, (uint32_t)width*(uint32_t)height);
-#endif
+	uint16_t remainingPixels = totalPixels % SCANLINE_PIXEL_COUNT;
+	if (remainingPixels > 0){
+		for (uint32_t i = 0; i < remainingPixels; i++)
+		{
+			_scanline16[i] = colors[numLoops*SCANLINE_PIXEL_COUNT + i];
+		}
+		writeScanline16(remainingPixels);
+	}
+	disableCS();
 	endTransaction();
+#else
+	beginTransaction();
+	enableCS();
+	setAddrAndRW_cont(x, y, x + width - 1, y + height - 1);
+	setDCForData();
+	write_cont(colors, totalPixels);
+	disableCS();
+	endTransaction();
+#endif
 }
 
-void ILI9341_due::drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color)
+void ILI9341_due::drawFastVLine(int16_t x, int16_t y, uint16_t h, uint16_t color)
 {
 	beginTransaction();
 	drawFastVLine_noTrans(x, y, h, color);
 	endTransaction();
 }
 
-void ILI9341_due::drawFastVLine_noTrans(int16_t x, int16_t y, int16_t h, uint16_t color)
+void ILI9341_due::drawFastVLine_noTrans(int16_t x, int16_t y, uint16_t h, uint16_t color)
 {
 	// Rudimentary clipping
 	if ((x >= _width) || (y >= _height)) return;
 	if ((y + h - 1) >= _height) h = _height - y;
 
+	const uint32_t numLoops = (uint32_t)h / (uint32_t)SCANLINE_PIXEL_COUNT;
+	fillScanline16(color, min(h, SCANLINE_PIXEL_COUNT));
 	enableCS();
 	setAddrAndRW_cont(x, y, x, y + h - 1);
-#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 	setDCForData();
-	while (h-- > 1) {
-		write16_cont(color);
+	for (uint32_t l = 0; l<numLoops; l++)
+	{
+		writeScanline16(SCANLINE_PIXEL_COUNT);
 	}
-	write16_last(color);
-#elif SPI_MODE_DMA
-	fillScanline(color, h);
-	writeScanline(h);
+	uint16_t remainingPixels = h % SCANLINE_PIXEL_COUNT;
+	if (remainingPixels > 0)
+		writeScanline16(remainingPixels);
 	disableCS();
-#endif
 }
 
 void ILI9341_due::drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uint16_t color)
 {
 	// Rudimentary clipping
+//	if ((x >= _width) || (y >= _height)) return;
+//	if ((y + h - 1) >= _height) h = _height - y;
+//
+//	setAddrAndRW_cont(x, y, x, y + h - 1);
+//	setDCForData();
+//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+//	while (h-- > 0) {
+//		write16_cont(color);
+//	}
+//#elif SPI_MODE_DMA
+//	writeScanline(h);
+//#endif
+
 	if ((x >= _width) || (y >= _height)) return;
 	if ((y + h - 1) >= _height) h = _height - y;
 
+	const uint32_t numLoops = (uint32_t)h / (uint32_t)SCANLINE_PIXEL_COUNT;
+
 	setAddrAndRW_cont(x, y, x, y + h - 1);
 	setDCForData();
-#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-	while (h-- > 0) {
-		write16_cont(color);
+	for (uint32_t l = 0; l<numLoops; l++)
+	{
+		writeScanline16(SCANLINE_PIXEL_COUNT);
 	}
-#elif SPI_MODE_DMA
-	writeScanline(h);
-#endif
+	uint16_t remainingPixels = h % SCANLINE_PIXEL_COUNT;
+	if (remainingPixels > 0)
+		writeScanline16(remainingPixels);
 }
 
-void ILI9341_due::drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color)
+void ILI9341_due::drawFastHLine(int16_t x, int16_t y, uint16_t w, uint16_t color)
 {
 	beginTransaction();
 	drawFastHLine_noTrans(x, y, w, color);
 	endTransaction();
 }
 
-void ILI9341_due::drawFastHLine_noTrans(int16_t x, int16_t y, int16_t w, uint16_t color)
+void ILI9341_due::drawFastHLine_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t color)
 {
 	// Rudimentary clipping
 	if ((x >= _width) || (y >= _height)) return;
 	if ((x + w - 1) >= _width)  w = _width - x;
 
+	const uint32_t numLoops = (uint32_t)w / (uint32_t)SCANLINE_PIXEL_COUNT;
+	fillScanline16(color, min(w, SCANLINE_PIXEL_COUNT));
 	enableCS();
 	setAddrAndRW_cont(x, y, x + w - 1, y);
-#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 	setDCForData();
-	while (w-- > 1) {
-		write16_cont(color);
+	for (uint32_t l = 0; l<numLoops; l++)
+	{
+		writeScanline16(SCANLINE_PIXEL_COUNT);
 	}
-	write16_last(color);
-#elif SPI_MODE_DMA
-	fillScanline(color, w);
-	writeScanline(w);
+	uint16_t remainingPixels = w % SCANLINE_PIXEL_COUNT;
+	if (remainingPixels > 0)
+		writeScanline16(remainingPixels);
 	disableCS();
-#endif
 }
 
 void ILI9341_due::fillScreen(uint16_t color)
 {
-	//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-	//	beginTransaction();
-	//	fillRect_noTrans(0, 0, _width, _height, color);
-	//	endTransaction();
-	//
-	//#elif SPI_MODE_DMA
+	const uint32_t numLoops = (uint32_t)76800 / (uint32_t)SCANLINE_PIXEL_COUNT;
 	fillScanline16(color);
+
 	beginTransaction();
 	enableCS();
 	setAddrAndRW_cont(0, 0, _width - 1, _height - 1);
 	setDCForData();
-#if SPI_MODE_EXTENDED | SPI_MODE_DMA
-	for (uint16_t y = 0; y < _height; y++)
-	{
-		writeScanline16(_width);
-	}
-#elif SPI_MODE_NORMAL
-	const uint32_t pixelsToWrite = 76800;
-	//const uint16_t bytesToWrite = _width;	// DMA16
-	for (uint32_t y = 0; y < pixelsToWrite; y += SCANLINE_PIXEL_COUNT)
+	for (uint32_t l = 0; l<numLoops; l++)
 	{
 		writeScanline16(SCANLINE_PIXEL_COUNT);
 	}
-#endif
 	disableCS();
 	endTransaction();
 	//#endif
@@ -474,13 +498,14 @@ void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h,
 	if ((x >= _width) || (y >= _height) || (x + w - 1 < 0) || (y + h - 1 < 0)) return;
 	if ((x + w - 1) >= _width)  w = _width - x;
 	if ((y + h - 1) >= _height) h = _height - y;
-	enableCS();
-	setAddrAndRW_cont(x, y, x + w - 1, y + h - 1);
-	setDCForData();
 
 	fillScanline16(color);
 	const uint32_t totalPixels = (uint32_t)w*(uint32_t)h;
 	const uint32_t numLoops = totalPixels / (uint32_t)SCANLINE_PIXEL_COUNT;
+	
+	enableCS();
+	setAddrAndRW_cont(x, y, x + w - 1, y + h - 1);
+	setDCForData();	
 	for (uint32_t l = 0; l<numLoops; l++)
 	{
 		writeScanline16(SCANLINE_PIXEL_COUNT);
@@ -490,42 +515,6 @@ void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h,
 		writeScanline16(remainingPixels);
 	disableCS();
 }
-
-//void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
-//{
-//	//Serial << "x:" << x << " y:" << y << " w:" << x << " h:" << h << " width:" << _width << " height:" << _height <<endl;
-//	// rudimentary clipping (drawChar w/big text requires this)
-//	if ((x >= _width) || (y >= _height) || (x + w - 1 < 0) || (y + h - 1 < 0)) return;
-//	if ((x + w - 1) >= _width)  w = _width - x;
-//	if ((y + h - 1) >= _height) h = _height - y;
-//	enableCS();
-//	setAddrAndRW_cont(x, y, x + w - 1, y + h - 1);
-//	setDCForData();
-//#if SPI_MODE_DMA 
-//	const uint16_t maxNumLinesInScanlineBuffer = (SCANLINE_BUFFER_SIZE >> 1) / w;
-//	const uint16_t numPixelsInOneGo = w*maxNumLinesInScanlineBuffer;
-//
-//	fillScanline(color, numPixelsInOneGo);
-//
-//	for (uint16_t p = 0; p < h / maxNumLinesInScanlineBuffer; p++)
-//	{
-//		writeScanline(numPixelsInOneGo);
-//	}
-//	writeScanline((w*h) % numPixelsInOneGo);
-//	disableCS();
-//#elif SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-//	// TODO: this can result in a very long transaction time
-//	// should break this into multiple transactions, even though
-//	// it'll cost more overhead, so we don't stall other SPI libs
-//
-//	for (y = h; y > 0; y--) {
-//		for (x = w; x > 0; x--) {
-//			write16_cont(color);
-//		}
-//	}
-//	disableCS();
-//#endif
-//}
 
 #define MADCTL_MY  0x80
 #define MADCTL_MX  0x40
@@ -573,16 +562,6 @@ void ILI9341_due::invertDisplay(boolean i)
 	endTransaction();
 }
 
-
-uint8_t ILI9341_due::readcommand8(uint8_t c, uint8_t index) {
-	beginTransaction();
-	writecommand_cont(0xD9);  // woo sekret command?
-	writedata8_last(0x10 + index);
-	writecommand_cont(c);
-	uint8_t command = readdata8_last();
-	endTransaction();
-	return command;
-}
 
 // Reads one pixel/color from the TFT's GRAM
 uint16_t ILI9341_due::readPixel(int16_t x, int16_t y)
@@ -746,9 +725,9 @@ void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 		int ir2 = (radius - thickness) * (radius - thickness);
 		int or2 = radius * radius;
 		//Serial << "ymin: " << ymin << " ymax: " << ymax << endl;
-#if SPI_MODE_DMA
-		fillScanline(color, radius << 1);
-#endif
+
+		fillScanline16(color, SCANLINE_PIXEL_COUNT);
+
 		enableCS();
 		for (int x = xmin; x <= xmax; x++) {
 			bool y1StartFound = false, y2StartFound = false;
