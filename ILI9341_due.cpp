@@ -334,7 +334,7 @@ void ILI9341_due::pushColors(const uint16_t *colors, uint16_t offset, uint32_t l
 
 void ILI9341_due::drawPixel(int16_t x, int16_t y, uint16_t color) {
 	beginTransaction();
-	drawPixel_noTrans(x, y, color);
+	drawPixel_last(x, y, color);
 	endTransaction();
 }
 
@@ -971,7 +971,7 @@ void ILI9341_due::drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color)
 	int16_t ddF_y = -2 * r;
 	int16_t x = 0;
 	int16_t y = r;
-
+	enableCS();
 	drawPixel_cont(x0, y0 + r, color);
 	drawPixel_cont(x0, y0 - r, color);
 	drawPixel_cont(x0 + r, y0, color);
@@ -1009,7 +1009,7 @@ void ILI9341_due::drawCircleHelper(int16_t x0, int16_t y0,
 	int16_t ddF_y = -2 * r;
 	int16_t x = 0;
 	int16_t y = r;
-
+	enableCS();
 	while (x < y) {
 		if (f >= 0) {
 			y--;
@@ -1105,7 +1105,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0,
 			drawFastHLine_noTrans(x1, y0, x0 - x1 + 1, color);
 		}
 		else {
-			drawPixel_noTrans(x0, y0, color);
+			drawPixel_last(x0, y0, color);
 		}
 		return;
 	}
@@ -1157,7 +1157,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0,
 					writeVLine_cont_noCS_noFill(y0, xbegin, len + 1, color);
 				}
 				else {
-					writePixel_cont_noCS(y0, x0, color);
+					writePixel_cont(y0, x0, color);
 				}
 				xbegin = x0 + 1;
 				y0 += ystep;
@@ -1178,7 +1178,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0,
 					writeHLine_cont_noCS_noFill(xbegin, y0, len + 1, color);
 				}
 				else {
-					writePixel_cont_noCS(x0, y0, color);
+					writePixel_cont(x0, y0, color);
 				}
 				xbegin = x0 + 1;
 				y0 += ystep;
@@ -1373,7 +1373,7 @@ void ILI9341_due::drawBitmap(int16_t x, int16_t y,
 		{
 			if (pgm_read_byte(bitmap + j * byteWidth + i / 8) & (128 >> (i & 7))) {
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-				drawPixel_noTrans(x + i, y + j, color);
+				drawPixel_last(x + i, y + j, color);
 #elif SPI_MODE_DMA
 				_scanline[i << 1] = _hiByte;
 				_scanline[(i << 1) + 1] = _loByte;
@@ -1459,7 +1459,7 @@ void ILI9341_due::drawChar(int16_t x, int16_t y, unsigned char c,
 						xoff += 3;
 					}
 					else if ((line & 0x10) == 0x10) {
-						writePixel_cont_noCS(x + xoff, y + yoff, fgcolor);
+						writePixel_cont(x + xoff, y + yoff, fgcolor);
 						line <<= 2;
 						xoff += 2;
 					}

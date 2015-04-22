@@ -458,6 +458,7 @@ private:
 	uint32_t  _cs, _dc, _dcpinmask;
 #else
 	volatile uint8_t *_dcport, *_csport;
+	volatile uint8_t _dcport2;
 	uint8_t  _cs, _dc, _cspinmask, _dcpinmask, _backupSPCR;
 #endif
 
@@ -1201,16 +1202,16 @@ private:
 	//}
 
 	// Writes n-bytes from the scanline buffer via DMA and disabled CS
-	inline __attribute__((always_inline))
-		void writeScanline_last(size_t n) {
-#if SPI_MODE_EXTENDED
-		SPI.transfer(_cs, _scanline, n << 1, SPI_LAST);
-#elif SPI_MODE_DMA
-		dmaSend(_scanline, n << 1);	// each pixel is 2 bytes
-		//dmaSend(_scanline, n);	// DMA16
-		disableCS();
-#endif
-	}
+//	inline __attribute__((always_inline))
+//		void writeScanline_last(size_t n) {
+//#if SPI_MODE_EXTENDED
+//		SPI.transfer(_cs, _scanline, n << 1, SPI_LAST);
+//#elif SPI_MODE_DMA
+//		dmaSend(_scanline, n << 1);	// each pixel is 2 bytes
+//		//dmaSend(_scanline, n);	// DMA16
+//		disableCS();
+//#endif
+//	}
 
 	//#endif
 
@@ -1606,32 +1607,9 @@ private:
 	//		do { writedata16_cont(color); } while (--h > 0);
 	//}
 
-	// Writes a sequence that will render a pixel
-	// CS must be enabled prior to calling this method
-	// Advantage over writePixel_cont is that CS line is not set on every call
-	inline __attribute__((always_inline))
-		void writePixel_cont_noCS(int16_t x, int16_t y, uint16_t color)
-	{
-		setDCForCommand();
-		write8_cont(ILI9341_CASET); // Column addr set
-		setDCForData();
-		write16_cont(x);   // XSTART
-		write16_cont(x);   // XEND
-		setDCForCommand();
-		write8_cont(ILI9341_PASET); // Row addr set
-		setDCForData();
-		write16_cont(y);   // XSTART
-		write16_cont(y);   // XEND
-		setDCForCommand();
-		write8_cont(ILI9341_RAMWR);
-		setDCForData();
-		write16_cont(color);
-	}
-
 	inline __attribute__((always_inline))
 		void writePixel_cont(int16_t x, int16_t y, uint16_t color)
 	{
-		enableCS();
 		setDCForCommand();
 		write8_cont(ILI9341_CASET); // Column addr set
 		setDCForData();
@@ -1652,12 +1630,14 @@ private:
 	inline __attribute__((always_inline))
 		void writePixel_last(int16_t x, int16_t y, uint16_t color)
 	{
-		enableCS();
 		setAddrAndRW_cont(x, y, x, y);
 		setDCForData();
 		write16_last(color);
 	}
 
+#if __SAM8XE__
+	inline __attribute__((always_inline))
+#endif
 	void drawPixel_cont(int16_t x, int16_t y, uint16_t color) {
 
 		if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height)) return;
@@ -1665,7 +1645,7 @@ private:
 	}
 
 	inline __attribute__((always_inline))
-		void drawPixel_noTrans(int16_t x, int16_t y, uint16_t color) {
+		void drawPixel_last(int16_t x, int16_t y, uint16_t color) {
 
 		if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height)) return;
 		writePixel_last(x, y, color);
