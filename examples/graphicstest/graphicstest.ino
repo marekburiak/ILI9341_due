@@ -17,16 +17,16 @@ MIT license, all text above must be included in any redistribution
 //#include <SPI.h>
 
 #include <ILI9341_due.h>
-
+#include "SystemFont5x7.h"
 // For the Adafruit shield, these are the default.
 #define TFT_DC 9
 #define TFT_CS 10
 
 // Use hardware SPI (on Uno, #13, #12, #11) and the above for CS/DC
-ILI9341_due tft = ILI9341_due(TFT_CS, TFT_DC);
+ILI9341_due tft = ILI9341_due(TFT_CS, TFT_DC, 8);
 
 void setup() {
-	Serial.begin(9600);
+	Serial.begin(57600);
 	while (!Serial); // wait for Arduino Serial Monitor
 	Serial.println("ILI9341 Test!");
 
@@ -119,6 +119,7 @@ unsigned long testFillScreen() {
 unsigned long testText() {
 	tft.fillScreen(ILI9341_BLACK);
 	unsigned long start = micros();
+	tft.setFont(SystemFont5x7);
 	tft.cursorTo(0, 0);
 	tft.setTextColor(ILI9341_WHITE);  tft.setTextScale(1);
 	tft.println("Hello World!");
