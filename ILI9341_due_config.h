@@ -42,8 +42,8 @@ Copyright (c) 2014  Marek Buriak
 // this can be changed with setArcParams function at runtime
 #define ARC_ANGLE_MAX 360		
 // rotational offset in degrees defining position of value 0 (-90 will put it at the top of circle)
-// this can be changed with setArcParams function at runtime
-#define ARC_ANGLE_OFFSET -90	
+// this can be changed with setAngleOffset function at runtime
+#define ANGLE_OFFSET -90	
 
 
 #endif

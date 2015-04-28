@@ -95,7 +95,7 @@ ILI9341_due::ILI9341_due(uint8_t cs, uint8_t dc, uint8_t rst)
 #endif
 #ifdef FEATURE_ARC_ENABLED
 	_arcAngleMax = ARC_ANGLE_MAX;
-	_arcAngleOffset = ARC_ANGLE_OFFSET;
+	_angleOffset = ANGLE_OFFSET;
 #endif
 #ifdef ILI_USE_SPI_TRANSACTION
 	_isInTransaction = false;
@@ -346,7 +346,7 @@ void ILI9341_due::drawImage(const uint16_t *colors, uint16_t x, uint16_t y, uint
 	setAddrAndRW_cont(x, y, x + width - 1, y + height - 1);
 	setDCForData();
 #if SPI_MODE_DMA
-	const uint32_t numLoops = totalPixels / (uint32_t)SCANLINE_PIXEL_COUNT;	
+	const uint32_t numLoops = totalPixels / (uint32_t)SCANLINE_PIXEL_COUNT;
 	for (uint32_t l = 0; l < numLoops; l++)
 	{
 		for (uint32_t i = 0; i < SCANLINE_PIXEL_COUNT; i++)
@@ -439,7 +439,7 @@ void ILI9341_due::drawFastHLine_noTrans(int16_t x, int16_t y, uint16_t w, uint16
 	if ((x >= _width) || (y >= _height)) return;
 	if ((x + w - 1) >= _width)  w = _width - x;
 
-	
+
 	fillScanline16(color, min(w, SCANLINE_PIXEL_COUNT));
 	enableCS();
 	setAddrAndRW_cont(x, y, x + w - 1, y);
@@ -940,8 +940,6 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "glcdfont.c"
-
 // Draw a circle outline
 void ILI9341_due::drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color)
 {
@@ -954,10 +952,10 @@ void ILI9341_due::drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color)
 	beginTransaction();
 	enableCS();
 
-	drawPixel_cont(x0, y0 + r, color);
-	drawPixel_cont(x0, y0 - r, color);
-	drawPixel_cont(x0 + r, y0, color);
-	drawPixel_cont(x0 - r, y0, color);
+	drawPixel_cont(x0, y0 + r, ILI9341_RED);
+	drawPixel_cont(x0, y0 - r, ILI9341_GREEN);
+	drawPixel_cont(x0 + r, y0, ILI9341_YELLOW);
+	drawPixel_cont(x0 - r, y0, ILI9341_BLUE);
 
 	while (x < y) {
 		if (f >= 0) {
@@ -1070,17 +1068,38 @@ void ILI9341_due::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
 	disableCS();
 }
 
-void ILI9341_due::drawLine(int16_t x0, int16_t y0,
-	int16_t x1, int16_t y1, uint16_t color)
+void ILI9341_due::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color)
 {
 	beginTransaction();
 	drawLine_noTrans(x0, y0, x1, y1, color);
 	endTransaction();
 }
 
+void ILI9341_due::drawLineByAngle(int16_t x, int16_t y, int16_t angle, uint16_t length, uint16_t color)
+{
+	beginTransaction();
+	drawLine_noTrans(
+		x,
+		y,
+		x + length*cosDegrees(angle + _angleOffset),
+		y + length*sinDegrees(angle + _angleOffset), color);
+	endTransaction();
+}
+
+
+void ILI9341_due::drawLineByAngle(int16_t x, int16_t y, int16_t angle, uint16_t start, uint16_t length, uint16_t color)
+{
+	beginTransaction();
+	drawLine_noTrans(
+		x + start*cosDegrees(angle + _angleOffset),
+		y + start*sinDegrees(angle + _angleOffset),
+		x + (start + length)*cosDegrees(angle + _angleOffset),
+		y + (start + length)*sinDegrees(angle + _angleOffset), color);
+	endTransaction();
+}
+
 // Bresenham's algorithm - thx wikpedia
-void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0,
-	int16_t x1, int16_t y1, uint16_t color)
+void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color)
 {
 	beginTransaction();
 	if (y0 == y1) {
@@ -1182,7 +1201,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0,
 				y0 += ystep;
 				err += dx;
 			}
-		}
+	}
 		if (x0 > xbegin + 1) {
 #ifdef __SAM3X8E__
 			writeHLine_cont_noCS_noFill(xbegin, y0, x0 - xbegin);
@@ -1190,7 +1209,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0,
 			writeHLine_cont_noCS_noScanline(xbegin, y0, x0 - xbegin, color);
 #endif
 		}
-	}
+}
 	disableCS();
 	endTransaction();
 }
@@ -1383,14 +1402,14 @@ void ILI9341_due::drawBitmap(int16_t x, int16_t y,
 #elif defined __SAM3X8E__
 				_scanline16[i] = bgcolor;
 #endif
-			}
 		}
+	}
 #ifdef __SAM3X8E__
 		setAddrAndRW_cont(x + i, y + j, x + w - 1, y + j);
 		setDCForData();
 		writeScanline16(w);
 #endif
-	}
+}
 	disableCS();
 	endTransaction();
 }
@@ -1444,10 +1463,14 @@ void ILI9341_due::setPowerLevel(pwrLevel p)
 }
 
 
-void ILI9341_due::setArcParams(float arcAngleMax, int arcAngleOffset)
+void ILI9341_due::setArcParams(float arcAngleMax)
 {
 	_arcAngleMax = arcAngleMax;
-	_arcAngleOffset = arcAngleOffset;
+}
+
+void ILI9341_due::setAngleOffset(int16_t angleOffset)
+{
+	_angleOffset = angleOffset;
 }
 
 //uint8_t ILI9341_due::spiread(void) {
@@ -1955,12 +1978,14 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 	}
 #endif
 
-//#if SPI_MODE_DMA
-//	if (_textScale > 1)
-//		fillScanline16(_fontColor, numPixelsInOnePoint);	//pre-fill the scanline, we will be drawing different lenghts of it
-//#endif
+	//#if SPI_MODE_DMA
+	//	if (_textScale > 1)
+	//		fillScanline16(_fontColor, numPixelsInOnePoint);	//pre-fill the scanline, we will be drawing different lenghts of it
+	//#endif
 
 	enableCS();
+	if (_textScale == 1)
+		setRowAddr(_y, _y + charHeight - 1);
 
 	for (uint16_t j = 0; j < charWidth; j++) /* each column */
 	{
@@ -1969,9 +1994,12 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 		numRenderBits = 8;
 		if (_x >= 0 && _x < _width)
 		{
+			setColumnAddr(_x, _x + _textScale - 1);
+
 			if (_textScale == 1)
 			{
-				setAddrAndRW_cont(_x, _y, _x, _y + charHeight - 1);
+				//setAddrAndRW_cont(_x, _y, _x, _y + charHeight - 1);
+				setRW();
 				setDCForData();
 			}
 
@@ -2007,16 +2035,18 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 					{
 						if (_textScale == 1)
 						{
-#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+#ifdef __AVR__
 							write16_cont(_fontBgColor);
-#elif SPI_MODE_DMA
+#elif defined __SAM3X8E__
 							_scanline16[lineId++] = _fontBgColor;
 #endif
 						}
 						else
 						{
 							// set a rectangle area
-							setAddrAndRW_cont(_x, py, _x + _textScale - 1, py + _textScale - 1);
+							//setAddrAndRW_cont(_x, py, _x + _textScale - 1, py + _textScale - 1);
+							setRowAddr(py, py + _textScale - 1);
+							setRW();
 							//Serial << cx << " " << cy + (i * 8 + bitId)*_textScale << " " << _textScale <<endl2;
 							setDCForData();
 #ifdef __AVR__
@@ -2034,16 +2064,18 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 					{
 						if (_textScale == 1)
 						{
-#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
+#ifdef __AVR__
 							write16_cont(_fontColor);
-#elif SPI_MODE_DMA
+#elif defined __SAM3X8E__
 							_scanline16[lineId++] = _fontColor;
 #endif
 						}
 						else
 						{
 							// set a rectangle area
-							setAddrAndRW_cont(_x, py, _x + _textScale - 1, py + _textScale - 1);
+							//setAddrAndRW_cont(_x, py, _x + _textScale - 1, py + _textScale - 1);
+							setRowAddr(py, py + _textScale - 1);
+							setRW();
 							setDCForData();
 #ifdef __AVR__
 							pixelsInOnePointToDraw = numPixelsInOnePoint;
@@ -2057,29 +2089,29 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 						}
 					}
 					data >>= 1;
-				}
+					}
 
-#ifdef __AVR__
+				//#ifdef __AVR__
 				//if (_textScale == 1 && (lineId == SCANLINE_PIXEL_COUNT - 1 || i == charHeightInBytes - 1))	// we have either filled the buffer or are rendering the bottom portion of the char
 				//{
 				//	writeScanline16(numRenderBits);	// max 8
 				//	lineId = 0;
 				//}
-#endif
+				//#endif
 
 				//delay(50);
-			}
-		}
+					}
+				}
 		//Serial << endl;
-#if SPI_MODE_DMA
+#ifdef __SAM3X8E__
 		if (_textScale == 1)
 		{
-			writeScanline16(charHeight);	// height in px * 2 bytes per px
+			writeScanline16(charHeight);
 		}
 #endif
 		_x += _textScale;
 
-	}
+			}
 	disableCS();	// to put CS line back up
 
 	//_x = cx;
@@ -2088,7 +2120,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 
 
 	//Serial << "letterSpacing " << _letterSpacing <<" x: " << _x <<endl;
-}
+		}
 
 void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight)
 {
@@ -2122,8 +2154,11 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 		lineEnd = 0;
 		numRenderBits = 8;
 
+
 		if (_x >= 0 && _x < _width)
 		{
+			setColumnAddr(_x, _x + _textScale - 1);
+
 			for (uint8_t i = 0; i < charHeightInBytes; i++)	/* each vertical byte */
 			{
 				uint16_t page = i*charWidth; // page must be 16 bit to prevent overflow
@@ -2162,7 +2197,8 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 						else
 						{
 							const uint32_t totalPixels = (lineEnd - lineStart + _textScale) * _textScale;
-							setAddrAndRW_cont(_x, _y + lineStart, _x + _textScale - 1, _y + lineEnd + _textScale - 1);
+							setRowAddr(_y + lineStart, _y + lineEnd + _textScale - 1);
+							setRW();
 							setDCForData();
 							writeScanlineLooped(totalPixels);
 
@@ -2189,7 +2225,8 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 				if (lineEnd == (charHeight - 1) * _textScale)	// we have a line that goes all the way to the bottom
 				{
 					const uint32_t totalPixels = uint32_t(lineEnd - lineStart + _textScale)*(uint32_t)_textScale;
-					setAddrAndRW_cont(_x, _y + lineStart, _x + _textScale - 1, _y + lineEnd + _textScale - 1);
+					setRowAddr(_y + lineStart, _y + lineEnd + _textScale - 1);
+					setRW();
 					setDCForData();
 					writeScanlineLooped(totalPixels);
 

@@ -38,6 +38,8 @@ setTextSize -> setTextScale
 setFontLetterSpacing -> setTextLetterSpacing
 getFontLetterSpacing -> getTextLetterSpacing
 ILI9341_due_gText(&tft) -> gTextArea
+setArcParams -> setArcParams + setAngleOffset
+drawLineByAngle
 
 new:
 setTextLineSpacing
@@ -417,7 +419,7 @@ private:
 
 #ifdef FEATURE_ARC_ENABLED
 	float _arcAngleMax;
-	int _arcAngleOffset;
+	int16_t _angleOffset;
 
 	void drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float startAngle, float endAngle, uint16_t color);
 #endif
@@ -534,9 +536,9 @@ public:
 	void setPowerLevel(pwrLevel p);
 	void setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 	void setSPIClockDivider(uint8_t divider);
-
+	void setAngleOffset(int16_t angleOffset);
 #ifdef FEATURE_ARC_ENABLED
-	void setArcParams(float arcAngleMax, int arcAngleOffset);
+	void setArcParams(float arcAngleMax);
 #endif
 	// Pass 8-bit (each) R,G,B, get back 16-bit packed color
 	static uint16_t color565(uint8_t r, uint8_t g, uint8_t b) {
@@ -572,6 +574,9 @@ public:
 	void drawImage(const uint16_t *colors, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 	uint8_t getRotation(void);
 	void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
+	void drawLineByAngle(int16_t x, int16_t y, int16_t angle, uint16_t length, uint16_t color);
+	void drawLineByAngle(int16_t x, int16_t y, int16_t angle, uint16_t start, uint16_t length, uint16_t color);
+
 	void screenshotToConsole();
 	void printHex8(uint8_t *data, uint8_t length);
 	void printHex16(uint16_t *data, uint8_t length);
@@ -749,7 +754,7 @@ public:
 		if (start == 0 && end == _arcAngleMax)
 			drawArcOffsetted(cx, cy, radius, thickness, 0, _arcAngleMax, color);
 		else
-			drawArcOffsetted(cx, cy, radius, thickness, start + (_arcAngleOffset / (float)360)*_arcAngleMax, end + (_arcAngleOffset / (float)360)*_arcAngleMax, color);
+			drawArcOffsetted(cx, cy, radius, thickness, start + (_angleOffset / (float)360)*_arcAngleMax, end + (_angleOffset / (float)360)*_arcAngleMax, color);
 		endTransaction();
 	}
 
@@ -770,16 +775,16 @@ public:
 
 	float cosDegrees(float angle)
 	{
-		float radians = angle / (float)360 * 2 * PI;
+		//float radians = angle / (float)360 * 2 * PI;
 		//Serial << "COS_LOOKUP angle:" << (float)angle << " radians:" << radians << " cos:" << cos(radians) << " return: " << cos(radians) * (double)65535 << endl;
-		return cos(radians);
+		return cos(angle * DEG_TO_RAD);
 	}
 
 	float sinDegrees(float angle)
 	{
-		float radians = angle / (float)360 * 2 * PI;
+		//float radians = angle / (float)360 * 2 * PI;
 		//Serial << "SIN_LOOKUP angle:" << (float)angle << " radians:" << radians << " sin:" << sin(radians) << " return: " << sin(radians) * (double)65535 << endl;
-		return sin(radians);
+		return sin(angle * DEG_TO_RAD);
 	}
 #endif
 
