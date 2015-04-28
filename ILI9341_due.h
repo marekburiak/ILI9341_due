@@ -569,7 +569,7 @@ public:
 	void drawRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h, int16_t radius, uint16_t color);
 	void fillRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h, int16_t radius, uint16_t color);
 	void drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bgcolor);
-	void drawImage(const uint16_t *colors, uint8_t x, uint8_t y, uint8_t width, uint8_t height);
+	void drawImage(const uint16_t *colors, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 	uint8_t getRotation(void);
 	void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
 	void screenshotToConsole();
@@ -957,8 +957,8 @@ private:
 		setDCForCommand();
 		write8_cont(ILI9341_PASET); // Row addr set
 		setDCForData();
-		write16_cont(y0);   // XSTART
-		write16_cont(y1);   // XEND
+		write16_cont(y0);   // YSTART
+		write16_cont(y1);   // YEND
 		setDCForCommand();
 		write8_cont(ILI9341_RAMWR); // RAM write
 	}
@@ -974,8 +974,39 @@ private:
 		setDCForCommand();
 		write8_cont(ILI9341_PASET); // Row addr set
 		setDCForData();
-		write16_cont(y0);   // XSTART
-		write16_cont(y1);   // XEND
+		write16_cont(y0);   // YSTART
+		write16_cont(y1);   // YEND
+		setDCForCommand();
+		write8_cont(ILI9341_RAMWR); // RAM write
+	}
+
+#ifdef __SAM3X8E__
+	inline __attribute__((always_inline))
+#endif
+		void setColumnAddr(uint16_t x0, uint16_t x1)
+	{
+		setDCForCommand();
+		write8_cont(ILI9341_CASET); // Column addr set
+		setDCForData();
+		write16_cont(x0);   // XSTART
+		write16_cont(x1);   // XEND
+	}
+
+#ifdef __SAM3X8E__
+	inline __attribute__((always_inline))
+#endif
+		void setRowAddr(uint16_t y0, uint16_t y1)
+	{
+		setDCForCommand();
+		write8_cont(ILI9341_PASET); // Row addr set
+		setDCForData();
+		write16_cont(y0);   // YSTART
+		write16_cont(y1);   // YEND
+	}
+
+	inline __attribute__((always_inline))
+		void setRW()	// RAM Write
+	{
 		setDCForCommand();
 		write8_cont(ILI9341_RAMWR); // RAM write
 	}
@@ -1083,7 +1114,7 @@ private:
 	// Enables CS, sets DC and writes n-bytes from the buffer via DMA
 	// Does not disable CS
 	/*inline __attribute__((always_inline))
-	void writedata_cont(const uint8_t* buf , size_t n) {
+	void writedata_cont(const uint8_t* buf , uint32_t n) {
 	enableCS();
 	setDCForData();
 	dmaSend(buf, n);
@@ -1091,7 +1122,7 @@ private:
 
 	// Enables CS, sets DC, writes n-bytes from the buffer via DMA, disables CS
 	/*inline __attribute__((always_inline))
-	void writedata_last(const uint8_t* buf , size_t n) {
+	void writedata_last(const uint8_t* buf , uint32_t n) {
 	setDCForData();
 	enableCS();
 	dmaSend(buf, n);
@@ -1101,7 +1132,7 @@ private:
 	// Writes n-bytes from the buffer via DMA
 	// CS and DC have to be set prior to calling this method
 	//	inline __attribute__((always_inline))
-	//		void write_cont(const uint8_t* buf, size_t n) {
+	//		void write_cont(const uint8_t* buf, uint32_t n) {
 	//#if SPI_MODE_NORMAL
 	//		spiTransfer(buf, n);
 	//#elif SPI_MODE_EXTENDED
@@ -1112,7 +1143,7 @@ private:
 	//	}
 
 	inline __attribute__((always_inline))
-		void write_cont(uint16_t* buf, size_t n) {
+		void write_cont(uint16_t* buf, uint32_t n) {
 #if SPI_MODE_NORMAL
 		spiTransfer(buf, n);
 #elif SPI_MODE_EXTENDED
@@ -1123,7 +1154,7 @@ private:
 	}
 
 	inline __attribute__((always_inline))
-		void write_cont(const uint16_t* buf, size_t n) {
+		void write_cont(const uint16_t* buf, uint32_t n) {
 #if SPI_MODE_NORMAL
 		spiTransfer(buf, n);
 #elif SPI_MODE_EXTENDED
@@ -1134,7 +1165,7 @@ private:
 	}
 
 	inline __attribute__((always_inline))
-		void read_cont(uint8_t* buf, size_t n) {
+		void read_cont(uint8_t* buf, uint32_t n) {
 #if SPI_MODE_DMA
 		dmaReceive(buf, n);
 #endif
@@ -1143,7 +1174,7 @@ private:
 	// Writes n-bytes from the buffer via DMA and disables CS
 	// DC has to be set prior to calling this method
 	/*inline __attribute__((always_inline))
-	void write_last(const uint8_t* buf , size_t n) {
+	void write_last(const uint8_t* buf , uint32_t n) {
 	dmaSend(buf, n << 1);
 	disableCS();
 	}*/
@@ -1175,7 +1206,7 @@ private:
 	// Writes n-bytes from the scanline buffer via DMA
 	// Does not disable CS
 	inline __attribute__((always_inline))
-		void writeScanline(size_t n) {
+		void writeScanline(uint32_t n) {
 		/*setDCForData();
 		enableCS();*/
 #if SPI_MODE_NORMAL
@@ -1190,7 +1221,7 @@ private:
 	}
 
 	inline __attribute__((always_inline))
-		void writeScanline16(size_t n) {
+		void writeScanline16(uint32_t n) {
 		/*setDCForData();
 		enableCS();*/
 #if SPI_MODE_NORMAL
@@ -1204,16 +1235,28 @@ private:
 		//dmaSend(_scanline, n); // DMA16
 	}
 
+	inline __attribute__((always_inline))
+		void writeScanlineLooped(uint32_t n) {
+		const uint32_t numLoops = n / (uint32_t)SCANLINE_PIXEL_COUNT;
+		for (uint32_t l = 0; l < numLoops; l++)
+		{
+			writeScanline16(SCANLINE_PIXEL_COUNT);
+		}
+		uint16_t remainingPixels = n % SCANLINE_PIXEL_COUNT;
+		if (remainingPixels > 0)
+			writeScanline16(remainingPixels);
+	}
+
 	// writes n-bytes from the scanline buffer via DMA
 	// Does not enable CS nor sets DS nor disables CS
 	//inline __attribute__((always_inline))
-	//	void writeScanline_cont_noCS_noDC(size_t n) {
+	//	void writeScanline_cont_noCS_noDC(uint32_t n) {
 	//		dmaSend(_scanline, n << 1);	// each pixel is 2 bytes
 	//}
 
 	// Writes n-bytes from the scanline buffer via DMA and disabled CS
 	//	inline __attribute__((always_inline))
-	//		void writeScanline_last(size_t n) {
+	//		void writeScanline_last(uint32_t n) {
 	//#if SPI_MODE_EXTENDED
 	//		SPI.transfer(_cs, _scanline, n << 1, SPI_LAST);
 	//#elif SPI_MODE_DMA
@@ -1355,7 +1398,7 @@ private:
 	//	//memcpy( ((uint8_t*)arr)+sizeof(arr[0]), arr, sizeof(arr)-sizeof(arr[0]) ); // this hack does not seem to work on Due
 	//}
 
-	//void fillScanline(uint8_t color, size_t seedCopyCount) __attribute__((always_inline)) {
+	//void fillScanline(uint8_t color, uint32_t seedCopyCount) __attribute__((always_inline)) {
 	//	//for(uint16_t i=0; i<seedCopyCount; i++)
 	//	//{
 	//	//	_scanline[i] = color;
@@ -1433,7 +1476,7 @@ private:
 
 	// Sets first n pixels in scanline buffer to the specified color
 	__attribute__((always_inline))
-		void fillScanline(uint16_t color, size_t n){
+		void fillScanline(uint16_t color, uint32_t n){
 		_hiByte = highByte(color);
 		_loByte = lowByte(color);
 		for (uint16_t i = 0; i < (n << 1); i += 2)
@@ -1455,7 +1498,7 @@ private:
 	}
 
 	//inline __attribute__((always_inline))
-	//	void *memcpy_forward(uint8_t *dst, const uint8_t *src, size_t n)
+	//	void *memcpy_forward(uint8_t *dst, const uint8_t *src, uint32_t n)
 	//{
 	//	uint8_t *pdst;
 	//	const uint8_t *psrc;
@@ -1572,7 +1615,7 @@ private:
 		setDCForData();
 		writeScanline16(w);
 #endif
-}
+	}
 
 	__attribute__((always_inline))
 		void writeHLine_cont_noCS_noScanline(int16_t x, int16_t y, int16_t w, uint16_t color)
@@ -1698,7 +1741,7 @@ private:
 	}
 #ifdef __AVR__
 	inline __attribute__((always_inline))
-		void spiTransfer(const uint8_t *buf, size_t count) {
+		void spiTransfer(const uint8_t *buf, uint32_t count) {
 		SPDR = *buf;
 		while (--count > 0) {
 			uint8_t out = *(buf + 1);
@@ -1712,7 +1755,7 @@ private:
 	}
 
 	inline __attribute__((always_inline))
-		void spiTransfer(uint16_t *buf, size_t count) {
+		void spiTransfer(uint16_t *buf, uint32_t count) {
 		uint16_t pixel = *buf;
 		SPDR = highByte(pixel);
 		while (!(SPSR & _BV(SPIF)));
@@ -1730,7 +1773,7 @@ private:
 		//*buf = SPDR;
 	}
 
-	void spiTransfer(const uint16_t *buf, size_t count) {
+	void spiTransfer(const uint16_t *buf, uint32_t count) {
 		uint16_t pixel = pgm_read_word(buf);
 		SPDR = highByte(pixel);
 		while (!(SPSR & _BV(SPIF)));
@@ -1785,7 +1828,7 @@ private:
 		SPI0->SPI_CSR[ch] &= 0xFFFFFF0F; //restore 8bit
 	}
 
-	void spiTransfer(const uint8_t *_buf, size_t _count) {
+	void spiTransfer(const uint8_t *_buf, uint32_t _count) {
 		if (_count == 0)
 			return;
 
@@ -1831,7 +1874,7 @@ private:
 		//*_buf = r;
 	}
 
-	void spiTransfer(const uint16_t *_buf, size_t _count) {
+	void spiTransfer(const uint16_t *_buf, uint32_t _count) {
 		if (_count == 0)
 			return;
 
@@ -1881,7 +1924,7 @@ private:
 #elif SPI_MODE_EXTENDED
 
 
-	void spiTransfer(byte _pin, const uint8_t *_buf, size_t _count, SPITransferMode _mode) {
+	void spiTransfer(byte _pin, const uint8_t *_buf, uint32_t _count, SPITransferMode _mode) {
 		if (_count == 0)
 			return;
 
@@ -1947,7 +1990,7 @@ private:
 		SPI0->SPI_CSR[ch] &= 0xFFFFFF0F; //restore 8bit
 	}
 
-	void spiTransfer(byte _pin, const uint16_t *_buf, size_t _count, SPITransferMode _mode) {
+	void spiTransfer(byte _pin, const uint16_t *_buf, uint32_t _count, SPITransferMode _mode) {
 		if (_count == 0)
 			return;
 
@@ -2197,7 +2240,7 @@ private:
 	}
 	//------------------------------------------------------------------------------
 	/** SPI receive multiple bytes */
-	uint8_t dmaReceive(uint8_t* buf, size_t n) {
+	uint8_t dmaReceive(uint8_t* buf, uint32_t n) {
 		Spi* pSpi = SPI0;
 		int rtn = 0;
 #if ILI_USE_SAM3X_DMAC
@@ -2218,7 +2261,7 @@ private:
 		}
 		if (pSpi->SPI_SR & SPI_SR_OVRES) rtn |= 1;
 #else  // ILI_USE_SAM3X_DMAC
-		for (size_t i = 0; i < n; i++) {
+		for (uint32_t i = 0; i < n; i++) {
 			pSpi->SPI_TDR = 0XFF;
 			while ((pSpi->SPI_SR & SPI_SR_RDRF) == 0) {}
 			buf[i] = pSpi->SPI_RDR;
@@ -2238,7 +2281,7 @@ private:
 		dmaSpiTransfer(w);
 	}
 	//------------------------------------------------------------------------------
-	void dmaSend(const uint8_t* buf, size_t n) {
+	void dmaSend(const uint8_t* buf, uint32_t n) {
 		Spi* pSpi = SPI0;
 		spiDmaTX(buf, n);
 		while (!dmac_channel_transfer_done(ILI_SPI_DMAC_TX_CH)) {}
@@ -2247,7 +2290,7 @@ private:
 		pSpi->SPI_RDR;
 	}
 
-	void dmaSend(const uint16_t* buf, size_t n) {
+	void dmaSend(const uint16_t* buf, uint32_t n) {
 		Spi* pSpi = SPI0;
 		pSpi->SPI_CSR[ILI_SPI_CHIP_SEL] = SPI_CSR_SCBR(_spiClkDivider) | SPI_CSR_NCPHA | SPI_CSR_BITS_16_BIT;
 		spiDmaTX16(buf, n);
@@ -2259,7 +2302,7 @@ private:
 	}
 #endif
 #endif
-	};
+};
 
 
 
