@@ -110,7 +110,7 @@ ILI9341_due::ILI9341_due(uint8_t cs, uint8_t dc, uint8_t rst)
 	_textScale = 1;
 #endif
 	_isFirstChar = true;
-	setArea(0, 0, _width - 1, _height - 1);
+	setTextArea(0, 0, _width - 1, _height - 1);
 #endif
 }
 
@@ -1619,17 +1619,17 @@ void ILI9341_due::printHex32(uint32_t *data, uint8_t length) // prints 8-bit dat
 
 #ifdef FEATURE_GTEXT_ENABLED
 
-void ILI9341_due::clearArea()
+void ILI9341_due::clearTextArea()
 {
 	fillRect(_area.x1, _area.y1, _area.x2 - _area.x1 + 1, _area.y2 - _area.y1 + 1, _fontBgColor);
 }
 
-void ILI9341_due::clearArea(uint16_t color)
+void ILI9341_due::clearTextArea(uint16_t color)
 {
 	fillRect(_area.x1, _area.y1, _area.x2 - _area.x1 + 1, _area.y2 - _area.y1 + 1, color);
 }
 
-bool ILI9341_due::setArea(int16_t x, int16_t y, int16_t columns, int16_t rows, gTextFont font) //, textMode mode)
+bool ILI9341_due::setTextArea(int16_t x, int16_t y, int16_t columns, int16_t rows, gTextFont font) //, textMode mode)
 {
 	//textMode mode = DEFAULT_SCROLLDIR;
 	uint16_t x2, y2;
@@ -1639,10 +1639,10 @@ bool ILI9341_due::setArea(int16_t x, int16_t y, int16_t columns, int16_t rows, g
 	x2 = x + columns * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1) - 1;
 	y2 = y + rows * (fontHeight() + 1) - 1;
 
-	return setArea(x, y, x2, y2); //, mode);
+	return setTextArea(x, y, x2, y2); //, mode);
 }
 
-bool ILI9341_due::setArea(gTextArea area) //, textMode mode)
+bool ILI9341_due::setTextArea(gTextArea area) //, textMode mode)
 {
 	_area.x1 = area.x1;
 	_area.y1 = area.y1;
@@ -1652,7 +1652,7 @@ bool ILI9341_due::setArea(gTextArea area) //, textMode mode)
 	_y = area.y1;
 }
 
-bool ILI9341_due::setArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2) //, textMode mode)
+bool ILI9341_due::setTextArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2) //, textMode mode)
 {
 	_area.x1 = x1;
 	_area.y1 = y1;
@@ -1662,7 +1662,7 @@ bool ILI9341_due::setArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2) //, te
 	_y = y1;
 }
 
-bool ILI9341_due::setAreaWH(int16_t x, int16_t y, int16_t w, int16_t h) //, textMode mode)
+bool ILI9341_due::setTextAreaWH(int16_t x, int16_t y, int16_t w, int16_t h) //, textMode mode)
 {
 	_area.x1 = x;
 	_area.y1 = y;

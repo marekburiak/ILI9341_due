@@ -30,7 +30,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with ILI9341_due.  If not, see <http://www.gnu.org/licenses/>.
 
 selectFont -> setFont
-defineArea -> setArea
+defineArea -> setTextArea
 new clearArea
 setFontColor -> setGTextColor
 setCursor -> cursorToXY
@@ -428,6 +428,9 @@ private:
 	void drawFastVLine_noTrans(int16_t x, int16_t y, uint16_t h, uint16_t color);
 	void drawFastHLine_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t color);
 	void drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
+	void printHex8(uint8_t *data, uint8_t length);
+	void printHex16(uint16_t *data, uint8_t length);
+	void printHex32(uint32_t *data, uint8_t length);
 
 	uint8_t  _rst;
 	uint8_t _hiByte, _loByte;
@@ -493,6 +496,11 @@ private:
 	bool _needScroll;
 	bool _wrap;
 
+
+	void fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color);
+	void drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, uint16_t color);
+	void fillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, int16_t delta, uint16_t color);
+
 	void specialChar(uint8_t c);
 	void drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight);
 	void drawTransparentChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight);
@@ -515,7 +523,6 @@ public:
 	bool begin(void);
 	void fillScreen(uint16_t color);
 	void fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color);
-	void fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color);
 
 	void pushColor(uint16_t color);
 	void pushColors(const uint16_t *colors, uint16_t offset, uint32_t len);
@@ -537,35 +544,12 @@ public:
 	void setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
 	void setSPIClockDivider(uint8_t divider);
 	void setAngleOffset(int16_t angleOffset);
-#ifdef FEATURE_ARC_ENABLED
 	void setArcParams(float arcAngleMax);
-#endif
-	// Pass 8-bit (each) R,G,B, get back 16-bit packed color
-	static uint16_t color565(uint8_t r, uint8_t g, uint8_t b) {
-		return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
-	}
-
-	int16_t width() {
-		return _width;
-	}
-
-	int16_t height() {
-		return _height;
-	}
-
-	uint8_t readcommand8(uint8_t c) {
-		writecommand_cont(0xD9);  // woo sekret command?
-		writedata8_last(0x10);
-		writecommand_cont(c);
-		return readdata8_last();
-	}
 
 	uint16_t readPixel(int16_t x, int16_t y);
 	// from Adafruit_GFX.h
 	void drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
-	void drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, uint16_t color);
 	void fillCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
-	void fillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, int16_t delta, uint16_t color);
 	void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color);
 	void fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color);
 	void drawRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h, int16_t radius, uint16_t color);
@@ -578,16 +562,14 @@ public:
 	void drawLineByAngle(int16_t x, int16_t y, int16_t angle, uint16_t start, uint16_t length, uint16_t color);
 
 	void screenshotToConsole();
-	void printHex8(uint8_t *data, uint8_t length);
-	void printHex16(uint16_t *data, uint8_t length);
-	void printHex32(uint32_t *data, uint8_t length);
+	
 #ifdef FEATURE_GTEXT_ENABLED
-	bool setArea(gTextArea area);
-	bool setArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2); //, textMode mode=DEFAULT_SCROLLDIR);
-	bool setAreaWH(int16_t x, int16_t y, int16_t w, int16_t h); //, textMode mode=DEFAULT_SCROLLDIR);
-	bool setArea(int16_t x1, int16_t y1, int16_t columns, int16_t rows, gTextFont font); //, textMode mode=DEFAULT_SCROLLDIR);
-	void clearArea();
-	void clearArea(uint16_t color);
+	bool setTextArea(gTextArea area);
+	bool setTextArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2); //, textMode mode=DEFAULT_SCROLLDIR);
+	bool setTextAreaWH(int16_t x, int16_t y, int16_t w, int16_t h); //, textMode mode=DEFAULT_SCROLLDIR);
+	bool setTextArea(int16_t x1, int16_t y1, int16_t columns, int16_t rows, gTextFont font); //, textMode mode=DEFAULT_SCROLLDIR);
+	void clearTextArea();
+	void clearTextArea(uint16_t color);
 
 	// Font Functions
 	void setFont(gTextFont font);
@@ -689,14 +671,30 @@ public:
 	};
 
 	__attribute__((always_inline))
-		uint16_t scaledFontHeight()	{
-		return (uint16_t)(pgm_read_byte(_font + GTEXT_FONT_HEIGHT)) * (uint16_t)_textScale;
-	};
-
-	__attribute__((always_inline))
 		uint8_t fontHeight(gTextFont font) {
 		return pgm_read_byte(font + GTEXT_FONT_HEIGHT);
 	};
+
+	uint8_t readcommand8(uint8_t c) {
+		writecommand_cont(0xD9);  // woo sekret command?
+		writedata8_last(0x10);
+		writecommand_cont(c);
+		return readdata8_last();
+	}
+
+	// Pass 8-bit (each) R,G,B, get back 16-bit packed color
+	static uint16_t color565(uint8_t r, uint8_t g, uint8_t b) {
+		return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+	}
+
+	int16_t width() {
+		return _width;
+	}
+
+	int16_t height() {
+		return _height;
+	}
+
 
 #ifdef FEATURE_GTEXT_PRINT_ENABLED
 	virtual size_t write(uint8_t);
@@ -789,6 +787,12 @@ public:
 #endif
 
 private:
+
+	__attribute__((always_inline))
+		uint16_t scaledFontHeight()	{
+		return (uint16_t)(pgm_read_byte(_font + GTEXT_FONT_HEIGHT)) * (uint16_t)_textScale;
+	};
+
 
 	__attribute__((always_inline))
 		void beginTransaction() {

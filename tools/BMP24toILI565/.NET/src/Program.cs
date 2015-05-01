@@ -148,8 +148,8 @@ namespace BMP24toILI565
                             rgb24file.Read(inRGB, 0, 3);
 
                             UInt16 iliColor = to565(inRGB[2], inRGB[1], inRGB[0]);
-                            outRGB[0] = (byte)(iliColor >> 8);
-                            outRGB[1] = (byte)(iliColor & 0xFF);
+                            outRGB[0] = (byte)(iliColor & 0xFF);
+                            outRGB[1] = (byte)(iliColor >> 8); 
                             rgb16file.Write(outRGB, 0, 2);
                         }
                     }

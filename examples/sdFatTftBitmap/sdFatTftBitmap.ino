@@ -18,25 +18,25 @@ https://github.com/marekburiak/ILI9341_due/tree/master/tools
 #include <SPI.h>
 #include <SdFat.h>
 #include <SdFatUtil.h>
-#include <ILI_SdSpi.h>
-#include <ILI_SdFatConfig.h>
-#include <ILI9341_due_gText.h>
+#include <ILI9341_due_config.h>
 #include <ILI9341_due.h>
 
-// CS and DC for the LCD
-#define LCD_CS 10	// Chip Select for LCD
-#define LCD_DC 9	// Command/Data for LCD
+#define TFT_RST 8	// uncomment if you have ILI9340
+#define TFT_DC 9	// Command/Data for LCD
+#define TFT_CS 10	// Chip Select for LCD
 
-#define SD_CS 7		// Chip Select for SD card
+#define SD_CS 4		// Chip Select for SD card
 
-#define BUFFPIXELCOUNT 320	// size of the buffer in pixels
+#define BUFFPIXELCOUNT 160	// size of the buffer in pixels
 #define SD_SPI_SPEED SPI_HALF_SPEED	// SD card SPI speed, try SPI_FULL_SPEED
 
 SdFat sd; // set filesystem
 SdFile bmpFile; // set filesystem
 //ArduinoOutStream cout(Serial);
 
-ILI9341_due tft(LCD_CS, LCD_DC);
+//ILI9341_due tft = ILI9341_due(TFT_CS, TFT_DC);		//ILI9341
+ILI9341_due tft = ILI9341_due(TFT_CS, TFT_DC, TFT_RST);	//ILI9340
+
 
 // store error strings in flash to save RAM
 #define error(s) sd.errorHalt_P(PSTR(s))
@@ -58,17 +58,16 @@ void setup()
 
 void loop()
 {
-	tft.setRotation(iliRotation270);	// landscape
+	tft.setRotation(iliRotation270);
 	bmpDraw("giraffe.565", 0, 0);
 	delay(2000);
-	bmpDraw("SOLDHO~1.565", 0, 0);
+	bmpDraw("soldHouse.565", 0, 0);
 	delay(2000);
-	bmpDraw("GLOOMY~1.565", 0, 0);
+	bmpDraw("gloomyTears.565", 0, 0);
 	delay(2000);
-	bmpDraw("MOTIVA~1.565", 0, 0);
+	bmpDraw("motivation.565", 0, 0);
 	delay(2000);
-
-	tft.setRotation(iliRotation0);	// landscape
+	tft.setRotation(iliRotation180);
 	bmpDraw("smokeP.565", 0, 0);
 	delay(2000);
 	bmpDraw("origP.565", 0, 0);
@@ -150,7 +149,7 @@ void bmpDraw(char* filename, int x, int y) {
 				h = bmpHeight;
 				if ((x + w - 1) >= tft.width())  w = tft.width() - x;
 				if ((y + h - 1) >= tft.height()) h = tft.height() - y;
-
+			
 				// Set TFT address window to clipped image bounds
 				tft.setAddrWindow(x, y, x + w - 1, y + h - 1);
 
@@ -158,7 +157,7 @@ void bmpDraw(char* filename, int x, int y) {
 				{
 					goodBmp = true; // Supported BMP format -- proceed!
 
-					uint8_t buffer[2 * BUFFPIXELCOUNT]; // pixel buffer (contains already formatted data for ILI9341 display)
+					uint16_t buffer[BUFFPIXELCOUNT]; // pixel buffer (contains already formatted data for ILI9341 display)
 
 					bmpFile.seekSet(54);	//skip header
 					uint32_t totalPixels = (uint32_t)bmpWidth*(uint32_t)bmpHeight;
@@ -167,7 +166,7 @@ void bmpDraw(char* filename, int x, int y) {
 						// read pixels into the buffer
 						bmpFile.read(buffer, 2 * BUFFPIXELCOUNT);
 						// push them to the diplay
-						tft.pushColors565(buffer, 0, 2 * BUFFPIXELCOUNT);
+						tft.pushColors(buffer, 0, BUFFPIXELCOUNT);
 					}
 
 					// render any remaining pixels that did not fully fit the buffer
@@ -175,71 +174,71 @@ void bmpDraw(char* filename, int x, int y) {
 					if (remainingPixels > 0)
 					{
 						bmpFile.read(buffer, 2 * remainingPixels);
-						tft.pushColors565(buffer, 0, 2 * remainingPixels);
+						tft.pushColors(buffer, 0, remainingPixels);
 					}
 
 				}
-				else if (bmpDepth == 24)	// standard 24bit bmp
-				{
-					goodBmp = true; // Supported BMP format -- proceed!
-					uint16_t bufferSize = min(w, BUFFPIXELCOUNT);
-					uint8_t  sdbuffer[3 * bufferSize]; // pixel in buffer (R+G+B per pixel)
-					uint16_t lcdbuffer[bufferSize];  // pixel out buffer (16-bit per pixel)
+				//else if (bmpDepth == 24)	// standard 24bit bmp
+				//{
+				//	goodBmp = true; // Supported BMP format -- proceed!
+				//	uint16_t bufferSize = min(w, BUFFPIXELCOUNT);
+				//	uint8_t  sdbuffer[3 * bufferSize]; // pixel in buffer (R+G+B per pixel)
+				//	uint16_t lcdbuffer[bufferSize];  // pixel out buffer (16-bit per pixel)
 
-					// BMP rows are padded (if needed) to 4-byte boundary
-					rowSize = (bmpWidth * 3 + 3) & ~3;
+				//	// BMP rows are padded (if needed) to 4-byte boundary
+				//	rowSize = (bmpWidth * 3 + 3) & ~3;
 
-					for (row = 0; row < h; row++) { // For each scanline...
-						// Seek to start of scan line.  It might seem labor-
-						// intensive to be doing this on every line, but this
-						// method covers a lot of gritty details like cropping
-						// and scanline padding.  Also, the seek only takes
-						// place if the file position actually needs to change
-						// (avoids a lot of cluster math in SD library).
+				//	for (row = 0; row < h; row++) { // For each scanline...
+				//		// Seek to start of scan line.  It might seem labor-
+				//		// intensive to be doing this on every line, but this
+				//		// method covers a lot of gritty details like cropping
+				//		// and scanline padding.  Also, the seek only takes
+				//		// place if the file position actually needs to change
+				//		// (avoids a lot of cluster math in SD library).
 
-						if (flip) // Bitmap is stored bottom-to-top order (normal BMP)
-							pos = bmpImageoffset + (bmpHeight - 1 - row) * rowSize;
-						else     // Bitmap is stored top-to-bottom
-							pos = bmpImageoffset + row * rowSize;
-						if (bmpFile.curPosition() != pos) { // Need seek?
-							bmpFile.seekSet(pos);
-						}
+				//		if (flip) // Bitmap is stored bottom-to-top order (normal BMP)
+				//			pos = bmpImageoffset + (bmpHeight - 1 - row) * rowSize;
+				//		else     // Bitmap is stored top-to-bottom
+				//			pos = bmpImageoffset + row * rowSize;
+				//		if (bmpFile.curPosition() != pos) { // Need seek?
+				//			bmpFile.seekSet(pos);
+				//		}
 
-						for (col = 0; col < w; col += bufferSize)
-						{
-							// read pixels into the buffer
-							bmpFile.read(sdbuffer, 3 * bufferSize);
+				//		for (col = 0; col < w; col += bufferSize)
+				//		{
+				//			// read pixels into the buffer
+				//			bmpFile.read(sdbuffer, 3 * bufferSize);
 
-							// convert color
-							for (int p = 0; p < bufferSize; p++)
-							{
-								b = sdbuffer[3 * p];
-								g = sdbuffer[3 * p + 1];
-								r = sdbuffer[3 * p + 2];
-								lcdbuffer[p] = tft.color565(r, g, b);
-							}
-							// push buffer to TFT
-							tft.pushColors(lcdbuffer, 0, bufferSize);
-						}
+				//			// convert color
+				//			for (int p = 0; p < bufferSize; p++)
+				//			{
+				//				b = sdbuffer[3 * p];
+				//				g = sdbuffer[3 * p + 1];
+				//				r = sdbuffer[3 * p + 2];
+				//				lcdbuffer[p] = tft.color565(r, g, b);
+				//			}
+				//			// push buffer to TFT
+				//			tft.pushColors(lcdbuffer, 0, bufferSize);
+				//		}
 
-						// render any remaining pixels that did not fully fit the buffer
-						uint16_t remainingPixels = w % bufferSize;
-						if (remainingPixels > 0)
-						{
-							bmpFile.read(sdbuffer, 3 * remainingPixels);
+				//		// render any remaining pixels that did not fully fit the buffer
+				//		uint16_t remainingPixels = w % bufferSize;
+				//		if (remainingPixels > 0)
+				//		{
+				//			bmpFile.read(sdbuffer, 3 * remainingPixels);
 
-							for (int p = 0; p < remainingPixels; p++)
-							{
-								b = sdbuffer[3 * p];
-								g = sdbuffer[3 * p + 1];
-								r = sdbuffer[3 * p + 2];
-								lcdbuffer[p] = tft.color565(r, g, b);
-							}
+				//			for (int p = 0; p < remainingPixels; p++)
+				//			{
+				//				b = sdbuffer[3 * p];
+				//				g = sdbuffer[3 * p + 1];
+				//				r = sdbuffer[3 * p + 2];
+				//				lcdbuffer[p] = tft.color565(r, g, b);
+				//			}
 
-							tft.pushColors(lcdbuffer, 0, remainingPixels);
-						}
-					}
-				}
+				//			tft.pushColors(lcdbuffer, 0, remainingPixels);
+				//		}
+				//	}
+				//}
 				else
 				{
 					progmemPrint(PSTR("Unsupported Bit Depth."));

@@ -14,7 +14,7 @@ UINT16  bmpDepth;              // Bit depth (currently must be 24)
 UINT32 bmpImageoffset;        // Start of image data in file
 UINT32 rowSize;               // Not always = bmpWidth; may have padding
 boolean  goodBmp = false;       // Set to true on valid header parse
-boolean  flip    = true;        // BMP is stored bottom-to-top
+boolean  flip = true;        // BMP is stored bottom-to-top
 UINT16 w, h, row, col;
 UINT8  r, g, b;
 UINT32 pos = 0, startTime;
@@ -55,7 +55,7 @@ UINT32 read32(FILE *file) {
 	return dword;
 }
 
-inline UINT16 to565(UINT8 r, UINT8 g, UINT8 b) 
+inline UINT16 to565(UINT8 r, UINT8 g, UINT8 b)
 {
 	return ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
 	//return ((red >> 3) << 11) | ((green >> 2) << 5) | (blue >> 3);
@@ -76,7 +76,7 @@ int convertImage(char* filename)
 
 		fseek(rgb24file, 0, SEEK_SET);
 
-		if(read16(rgb24file) != 0x4D42)  // BMP signature
+		if (read16(rgb24file) != 0x4D42)  // BMP signature
 		{
 			printf("Not a BMP file.\n");
 			return -1;
@@ -88,10 +88,10 @@ int convertImage(char* filename)
 		printf("Image Offset: %d\n", bmpImageoffset);
 		// Read DIB header
 		printf("Header size: %d\n", read32(rgb24file));
-		bmpWidth  = read32(rgb24file);
+		bmpWidth = read32(rgb24file);
 		bmpHeight = read32(rgb24file);
 
-		if(read16(rgb24file) != 1) // # planes -- must be '1'
+		if (read16(rgb24file) != 1) // # planes -- must be '1'
 		{
 			printf("Number of planes must be 1\n");
 			return -1;
@@ -100,13 +100,13 @@ int convertImage(char* filename)
 		bmpDepth = read16(rgb24file); // bits per pixel
 		printf("Bit Depth: %d\n", bmpDepth);
 
-		if(bmpDepth != 24)
-		{ 
+		if (bmpDepth != 24)
+		{
 			printf("Image is not in 24bit\n");
 			return -1;
 		}
 
-		if(read32(rgb24file) != 0)  // 0 = uncompressed
+		if (read32(rgb24file) != 0)  // 0 = uncompressed
 		{
 			printf("BMP must be in uncompressed format\n");
 			return -1;
@@ -117,12 +117,12 @@ int convertImage(char* filename)
 
 		char outFilename[255];
 		sprintf(outFilename, "%s", filename);
-		sprintf(outFilename+strlen(filename)-3, "565");
+		sprintf(outFilename + strlen(filename) - 3, "565");
 
 		printf("%s created\n", outFilename);
 		rgb16file = fopen(outFilename, "wb");
 
-		if(rgb16file == NULL)
+		if (rgb16file == NULL)
 		{
 			printf("Could not create file %s\n", outFilename);
 			return -1;
@@ -141,33 +141,33 @@ int convertImage(char* filename)
 
 		// If bmpHeight is negative, image is in top-down order.
 		// This is not canon but has been observed in the wild.
-		if(bmpHeight < 0) {
+		if (bmpHeight < 0) {
 			bmpHeight = -bmpHeight;
-			flip      = false;
+			flip = false;
 		}
 
 		UINT8 inRGB[3], outRGB[2];
 
-		for (row=0; row<bmpHeight; row++) { // For each scanline...
+		for (row = 0; row < bmpHeight; row++) { // For each scanline...
 
-			if(flip) // Bitmap is stored bottom-to-top order (normal BMP)
+			if (flip) // Bitmap is stored bottom-to-top order (normal BMP)
 				pos = bmpImageoffset + (bmpHeight - 1 - row) * rowSize;
 			else     // Bitmap is stored top-to-bottom
 				pos = bmpImageoffset + row * rowSize;
 
 			fseek(rgb24file, pos, SEEK_SET);
 
-			for(UINT16 c=0; c<3*bmpWidth; c+=3)
+			for (UINT16 c = 0; c < 3 * bmpWidth; c += 3)
 			{
 				fread(inRGB, 1, 3, rgb24file);
 				UINT16 iliColor = to565(inRGB[2], inRGB[1], inRGB[0]);
-				outRGB[0] = iliColor >> 8;
 				outRGB[1] = iliColor & 0xFF;
+				outRGB[0] = iliColor >> 8;
 				fwrite(outRGB, 1, 2, rgb16file);
 			}
 		}
 	}
-	catch(...)
+	catch (...)
 	{
 		printf("Error converting file\n");
 	}
@@ -179,25 +179,26 @@ int main(int argc, char *argv[])
 {
 	if (argc == 1)
 	{
-		if ((dir = opendir (".")) != NULL) {
+		if ((dir = opendir(".")) != NULL) {
 			/* print all the files and directories within directory */
 			int bmpFilesFound = 0;
 			while ((ent = readdir(dir)) != NULL) {
-				if(strncmp(ent->d_name + ent->d_namlen - 4, ".bmp", 4) == 0)
+				if (strncmp(ent->d_name + ent->d_namlen - 4, ".bmp", 4) == 0)
 				{
 					convertImage(ent->d_name);
 					bmpFilesFound++;
 				}
 			}
-			closedir (dir);
-			if(bmpFilesFound == 0)
+			closedir(dir);
+			if (bmpFilesFound == 0)
 			{
 				printf("\n");
 				printf("No .bmp files found.\n");
 			}
-		} else {
+		}
+		else {
 			/* could not open directory */
-			perror ("");
+			perror("");
 			return EXIT_FAILURE;
 		}
 	}
