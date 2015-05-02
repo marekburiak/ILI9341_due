@@ -187,20 +187,24 @@ namespace ILIScreenshotViewer
 
         private void serialPort1_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            string data = serialPort1.ReadLine();
-            if (loadImageFromData && data != string.Empty)
-            {
-                loadImageFromData = false;
-                data = data.TrimEnd('\r');
-                this.Invoke(new Action<string>(d => { textBox1.AppendText("Loading Image...\r\n"); textBox1.ScrollToCaret(); }), new object[] { data });
-                this.Invoke(new Action<string>(d => { loadImage(d); }), new object[] { data });
+            try{
+                string data = serialPort1.ReadLine();
+                if (loadImageFromData && data != string.Empty)
+                {
+                    loadImageFromData = false;
+                    data = data.TrimEnd('\r');
+                    this.Invoke(new Action<string>(d => { textBox1.AppendText("Loading Image...\r\n"); textBox1.ScrollToCaret(); }), new object[] { data });
+                    this.Invoke(new Action<string>(d => { loadImage(d); }), new object[] { data });
+                }
+                else if (data.Contains("= PIXEL DATA START ="))
+                    loadImageFromData = true;
+                else if (data.Contains("= PIXEL DATA END ="))
+                { }
+                else
+                    this.Invoke(new Action<string>(d => { textBox1.AppendText(d + "\r\n"); textBox1.ScrollToCaret(); }), new object[] { data });
             }
-            else if (data.Contains("= PIXEL DATA START ="))
-                loadImageFromData = true;
-            else if (data.Contains("= PIXEL DATA END ="))
-            { }
-            else
-                this.Invoke(new Action<string>(d => { textBox1.AppendText(d + "\r\n"); textBox1.ScrollToCaret(); }), new object[] { data });
+            catch
+            {}
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
