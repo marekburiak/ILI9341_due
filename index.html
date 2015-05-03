@@ -27,6 +27,8 @@
             </section>
         </header>
     </div>
+    
+
 
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
@@ -81,6 +83,12 @@
             <p>This is used to set the SPI clock frequency, which at 2 means 84/2=42MHz (the max). If you are getting glitches on the screen or it just does not work try to use a higher divider to bring the frequency down (e.g. 11 to run it at 8-ish MHz). I was using 20cm dupont cables to connect TFT with Due and haven't had any issues running it with the divider set to 2.</p>
 
             <p>If you want to ask me a question or just contact me, feel free to do so in the <a href="http://forum.arduino.cc/index.php?topic=265806.0">Arduino Forum</a>.</p>
+
+            <h3>ILI9341 functions</h3>
+
+            <div id="iliFunctions">
+
+            </div>
 
             <h3>Rendering custom fonts with ILI9341_due_gText</h3>
 
@@ -179,8 +187,10 @@ tft.setSPIClockDivider(ILI9341_SPI_CLKDIVIDER); // restore the frequency</code><
             <div style="text-align: center">
                 <img src="images\avr.jpg" />
             </div>
-            <p>The only mode available for AVR is SPI_MODE_NORMAL so you need to include SPI.h in your sketch. The library is faster than the original Adafruit one but do not expect DMA-like speed increase. It is comparable to some other tweaked Adafruit libraries out there and you get things like gText and arcs.
-            Not all library examples will work. It is because of smaller ROM/RAM space available on AVRs.</p>
+            <p>
+                The only mode available for AVR is SPI_MODE_NORMAL so you need to include SPI.h in your sketch. The library is faster than the original Adafruit one but do not expect DMA-like speed increase. It is comparable to some other tweaked Adafruit libraries out there and you get things like gText and arcs.
+                Not all library examples will work. It is because of smaller ROM/RAM space available on AVRs.
+            </p>
             <p>
                 In order to decrease ROM/RAM requirements, you can comment out 2 features in ILI9341_due.h:
                 <pre lang="Arduino"><code>// commenting out/disabling the ARC feature will exclude the drawArc function. It is going to save a few ROM bytes.
@@ -236,6 +246,90 @@ MIT license, all text above must be included in any redistribution
             <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
         </footer>
     </div>
+
+    <div class="function">
+        <div class="functionHeader">
+            drawLine
+        </div>
+        <div class="functionDescription">
+            Draws a line defined by start and end points.
+        </div>
+        <div class="functionExample">
+            <div class="functionExampleDescription">
+
+            </div>
+            <div class="functionExampleCode">
+
+            </div>
+        </div>
+        <div class="functionImage">
+            <img src="images\func_drawLine.png" />
+        </div>
+    </div>
+
+    <script type="text/javascript">
+    function addIliFunction(functionName, functionDescription, functionDeclarationCode, functionExampleDesc, functionExampleCode, functionExampleImage) {
+        var funcs = document.getElementById("iliFunctions");
+        var funcElem = document.createElement("div");
+        funcElem.className = "function";
+
+        var funcHeader = document.createElement("div");
+        funcHeader.className = "functionHeader";
+        funcHeader.appendChild(document.createTextNode(functionName));
+        
+        var funcContent = document.createElement("div");
+        funcContent.className = "functionContent";
+
+        var funcDesc = document.createElement("div");
+        funcDesc.className = "functionDescription";
+        funcDesc.appendChild(document.createTextNode(functionDescription));
+
+        var funcDeclaration = document.createElement("div");
+        funcDeclaration.className = "functionCode";
+        funcDeclaration.appendChild(document.createTextNode(functionDeclarationCode));
+
+        var funcExample = document.createElement("div");
+        funcExample.className = "functionExample";
+        var funcExampleTitle = document.createElement("div");
+        funcExampleTitle.className = "functionExampleTitle";
+        funcExampleTitle.appendChild(document.createTextNode("Example:"));
+
+        var funcExampleDesc = document.createElement("div");
+        funcExampleDesc.className = "functionExampleDescription";
+        funcExampleDesc.appendChild(document.createTextNode(functionExampleDesc));
+        var funcExampleCode = document.createElement("div");
+        funcExampleCode.className = "functionCode";
+        funcExampleCode.appendChild(document.createTextNode(functionExampleCode));
+        var funcExampleImage = document.createElement("div");
+        funcExampleImage.className = "functionExampleImage";
+        var funcExampleImageImg = document.createElement("img");
+        if(typeof functionExampleImage !== "undefined")
+            funcExampleImageImg.setAttribute("src", ".\\images\\" + functionExampleImage);
+        else
+            funcExampleImageImg.setAttribute("src", ".\\images\\func_" + functionName + ".png");
+        funcExampleImage.appendChild(funcExampleImageImg);
+
+        funcExample.appendChild(funcExampleTitle);
+        funcExample.appendChild(funcExampleDesc);
+        funcExample.appendChild(funcExampleCode);
+        funcExample.appendChild(funcExampleImage);
+
+        
+        funcContent.appendChild(funcDesc);
+        funcContent.appendChild(funcDeclaration);
+        funcContent.appendChild(funcExample);
+
+        funcElem.appendChild(funcHeader);
+        funcElem.appendChild(funcContent);
+        funcs.appendChild(funcElem);
+    }
+
+    addIliFunction("drawLine",
+        "Draws a line defined by start and end points.",
+        "void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);",
+        "A line from point (100,100) to point (150,120)",
+        "tft.drawLine(100, 100, 150, 120, ILI9341_WHITE);");
+    </script>
 
 
 
