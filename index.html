@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <meta name="description" content="ILI9341_due : Arduino Due library for interfacing with ILI9341 SPI TFTs">
 
+    <script src="javascripts\lodash.js" type="text/javascript"></script>
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
     <title>ILI9341_due</title>
@@ -27,7 +28,7 @@
             </section>
         </header>
     </div>
-    
+
 
 
     <!-- MAIN CONTENT -->
@@ -268,67 +269,172 @@ MIT license, all text above must be included in any redistribution
     </div>
 
     <script type="text/javascript">
-    function addIliFunction(functionName, functionDescription, functionDeclarationCode, functionExampleDesc, functionExampleCode, functionExampleImage) {
-        var funcs = document.getElementById("iliFunctions");
-        var funcElem = document.createElement("div");
-        funcElem.className = "function";
+        function addIliFunction(functionName, functionDescription, functionDeclarationCode, functionExampleDesc, functionExampleCode, functionExampleImage) {
+            var funcs = document.getElementById("iliFunctions");
+            var funcElem = document.createElement("div");
+            funcElem.className = "function";
 
-        var funcHeader = document.createElement("div");
-        funcHeader.className = "functionHeader";
-        funcHeader.appendChild(document.createTextNode(functionName));
-        
-        var funcContent = document.createElement("div");
-        funcContent.className = "functionContent";
+            var funcHeader = document.createElement("div");
+            funcHeader.className = "functionHeader";
+            funcHeader.appendChild(document.createTextNode(functionName));
 
-        var funcDesc = document.createElement("div");
-        funcDesc.className = "functionDescription";
-        funcDesc.appendChild(document.createTextNode(functionDescription));
+            var funcContent = document.createElement("div");
+            funcContent.className = "functionContent";
 
-        var funcDeclaration = document.createElement("div");
-        funcDeclaration.className = "functionCode";
-        funcDeclaration.appendChild(document.createTextNode(functionDeclarationCode));
+            var funcDesc = document.createElement("div");
+            funcDesc.className = "functionDescription";
+            funcDesc.appendChild(document.createTextNode(functionDescription));
 
-        var funcExample = document.createElement("div");
-        funcExample.className = "functionExample";
-        var funcExampleTitle = document.createElement("div");
-        funcExampleTitle.className = "functionExampleTitle";
-        funcExampleTitle.appendChild(document.createTextNode("Example:"));
+            var funcDeclaration = document.createElement("div");
+            funcDeclaration.className = "functionCode";
+            if (_.isArray(functionDeclarationCode)) {
+                _.forEach(functionDeclarationCode, function (functionDeclaration) {
 
-        var funcExampleDesc = document.createElement("div");
-        funcExampleDesc.className = "functionExampleDescription";
-        funcExampleDesc.appendChild(document.createTextNode(functionExampleDesc));
-        var funcExampleCode = document.createElement("div");
-        funcExampleCode.className = "functionCode";
-        funcExampleCode.appendChild(document.createTextNode(functionExampleCode));
-        var funcExampleImage = document.createElement("div");
-        funcExampleImage.className = "functionExampleImage";
-        var funcExampleImageImg = document.createElement("img");
-        if(typeof functionExampleImage !== "undefined")
-            funcExampleImageImg.setAttribute("src", ".\\images\\" + functionExampleImage);
-        else
-            funcExampleImageImg.setAttribute("src", ".\\images\\func_" + functionName + ".png");
-        funcExampleImage.appendChild(funcExampleImageImg);
+                    var funcDeclarationOne = document.createElement("div");
+                    funcDeclarationOne.appendChild(document.createTextNode(functionDeclaration));
+                    funcDeclaration.appendChild(funcDeclarationOne);
+                })
+            }
+            else {
+                funcDeclaration.appendChild(document.createTextNode(functionDeclarationCode));
+            }
 
-        funcExample.appendChild(funcExampleTitle);
-        funcExample.appendChild(funcExampleDesc);
-        funcExample.appendChild(funcExampleCode);
-        funcExample.appendChild(funcExampleImage);
+            var funcExample = document.createElement("div");
+            funcExample.className = "functionExample";
+            var funcExampleTitle = document.createElement("div");
+            funcExampleTitle.className = "functionExampleTitle";
+            funcExampleTitle.appendChild(document.createTextNode("Example:"));
 
-        
-        funcContent.appendChild(funcDesc);
-        funcContent.appendChild(funcDeclaration);
-        funcContent.appendChild(funcExample);
+            var funcExampleDesc = document.createElement("div");
+            funcExampleDesc.className = "functionExampleDescription";
+            funcExampleDesc.appendChild(document.createTextNode(functionExampleDesc));
+            var funcExampleCode = document.createElement("div");
+            funcExampleCode.className = "functionCode";
+            if (_.isArray(functionExampleCode)) {
+                _.forEach(functionExampleCode, function (functionExample) {
 
-        funcElem.appendChild(funcHeader);
-        funcElem.appendChild(funcContent);
-        funcs.appendChild(funcElem);
-    }
+                    var funcExampleOne = document.createElement("div");
+                    funcExampleOne.appendChild(document.createTextNode(functionExample));
+                    funcExampleCode.appendChild(funcExampleOne);
+                })
+            }
+            else {
+                funcExampleCode.appendChild(document.createTextNode(functionExampleCode));
+            }
+            var funcExampleImage = document.createElement("div");
+            funcExampleImage.className = "functionExampleImage";
+            var funcExampleImageImg = document.createElement("img");
+            if (typeof functionExampleImage !== "undefined")
+                funcExampleImageImg.setAttribute("src", ".\\images\\" + functionExampleImage);
+            else
+                funcExampleImageImg.setAttribute("src", ".\\images\\func_" + functionName + ".png");
+            funcExampleImage.appendChild(funcExampleImageImg);
 
-    addIliFunction("drawLine",
-        "Draws a line defined by start and end points.",
-        "void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);",
-        "A line from point (100,100) to point (150,120)",
-        "tft.drawLine(100, 100, 150, 120, ILI9341_WHITE);");
+            funcExample.appendChild(funcExampleTitle);
+            funcExample.appendChild(funcExampleDesc);
+            funcExample.appendChild(funcExampleCode);
+            funcExample.appendChild(funcExampleImage);
+
+
+            funcContent.appendChild(funcDesc);
+            funcContent.appendChild(funcDeclaration);
+            funcContent.appendChild(funcExample);
+
+            funcElem.appendChild(funcHeader);
+            funcElem.appendChild(funcContent);
+            funcs.appendChild(funcElem);
+        }
+
+        addIliFunction("fillScreen",
+         "Fills/clears the whole screen with a specified color.",
+        "void fillScreen(uint16_t color);",
+        "A screen filled with blue color.",
+        "tft.fillScreen(ILI9341_BLUE);");
+
+        addIliFunction("drawPixel",
+         "Draws a pixel at the specified position.",
+         "void drawPixel(int16_t x, int16_t y, uint16_t color);",
+         "A pixel at position (100,100).",
+         "tft.drawPixel(100, 100, ILI9341_WHITE);");
+
+        addIliFunction("drawLine",
+            "Draws a line defined by a start point and an end point.",
+            "void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);",
+            "A line from point (100,100) to point (150,120)",
+            "tft.drawLine(100, 100, 150, 120, ILI9341_WHITE);");
+
+        addIliFunction("drawLineByAngle",
+       "Draws a line defined by a start point and an angle. An offset from the start point can be defined.",
+       ["void drawLineByAngle(int16_t x, int16_t y, int16_t angle, uint16_t length, uint16_t color);",
+       "void drawLineByAngle(int16_t x, int16_t y, int16_t angle, uint16_t start, uint16_t length, uint16_t color);"],
+       "A white line from point (100,100) at 45 degree angle and 50px length. A red line from point (100,100) at 90 degree angle starting 10px from the start point and length of 50px.",
+       ["tft.drawLineByAngle(100, 100, 45, 50, ILI9341_WHITE);",
+       "tft.drawLineByAngle(100, 100, 90, 10, 50, ILI9341_RED);"]);
+
+        addIliFunction("drawFastHLine",
+           "Draws a horizontal line. Performance optimized version of drawLine.",
+           "void drawFastHLine(int16_t x, int16_t y, uint16_t w, uint16_t color);",
+           "A horizontal line from point (100,100) of 50px length.",
+           "tft.drawFastHLine(100, 100, 50, ILI9341_WHITE);");
+
+        addIliFunction("drawFastVLine",
+          "Draws a vertical line. Performance optimized version of drawLine.",
+          "void drawFastVLine(int16_t x, int16_t y, uint16_t h, uint16_t color);",
+          "A vertical line from point (100,100) of 50px length.",
+          "tft.drawFastVLine(100, 100, 50, ILI9341_WHITE);");
+
+        addIliFunction("drawRect",
+          "Draws a rectangle from the specified position and of specified width and height.",
+          "void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);",
+          "A rectangle from point (100,100) of 50px width and 20px height.",
+          "tft.drawRect(100, 100, 50, 20, ILI9341_WHITE);");
+
+        addIliFunction("fillRect",
+         "Draws a filled rectangle from the specified position and of specified width and height.",
+         "void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);",
+         "A filled rectangle from point (100,100) of 50px width and 20px height.",
+         "tft.fillRect(100, 100, 50, 20, ILI9341_WHITE);");
+
+        addIliFunction("drawRoundRect",
+          "Draws a rectangle with rounded edges of specified radius from the specified position and of specified width and height.",
+          "void drawRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h, int16_t radius, uint16_t color);",
+          "A rounded rectangle from point (100,100) of 50px width, 20px height and rounded edges of 7px radius.",
+          "tft.drawRoundRect(100, 100, 50, 20, 7, ILI9341_WHITE);");
+
+        addIliFunction("fillRoundRect",
+         "Draws a filled rectangle with rounded edges of specified radius from the specified position and of specified width and height.",
+         "void fillRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h, int16_t radius, uint16_t color);",
+         "A filled rounded rectangle from point (100,100) of 50px width, 20px height and rounded edges of 7px radius.",
+         "tft.fillRoundRect(100, 100, 50, 20, 7, ILI9341_WHITE);");
+
+        addIliFunction("drawCircle",
+         "Draws a circle at specified position and of specified radius.",
+         "void drawCircle(int16_t x, int16_t y, int16_t r, uint16_t color);",
+         "A circle with center at (100,100) and 20px radius.",
+         "tft.drawCircle(100, 100, 20, ILI9341_WHITE);");
+
+        addIliFunction("fillCircle",
+          "Draws a circle at specified position and of specified radius.",
+         "void fillCircle(int16_t x, int16_t y, int16_t r, uint16_t color);",
+         "A circle with center at (100,100) and 20px radius.",
+         "tft.fillCircle(100, 100, 20, ILI9341_WHITE);");
+
+        addIliFunction("drawTriangle",
+         "Draws a triangle specified by 3 points.",
+        "void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color);",
+        "A triangle defined by points (100,100) (80,130) (120,120).",
+        "tft.drawTriangle(100, 100, 80, 130, 120, 120, ILI9341_WHITE);");
+
+        addIliFunction("fillTriangle",
+         "Draws a filled triangle specified by 3 points.",
+        "void fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color);",
+        "A filled triangle defined by points (100,100) (80,130) (120,120).",
+        "tft.fillTriangle(100, 100, 80, 130, 120, 120, ILI9341_WHITE);");
+
+
+
+
+
     </script>
 
 
