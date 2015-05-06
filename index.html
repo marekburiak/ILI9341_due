@@ -431,6 +431,28 @@ MIT license, all text above must be included in any redistribution
         "A filled triangle defined by points (100,100) (80,130) (120,120).",
         "tft.fillTriangle(100, 100, 80, 130, 120, 120, ILI9341_WHITE);");
 
+        addIliFunction("drawBitmap",
+        "Draws a monochrome image from a byte array. Background color can be specified.",
+       ["void drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);",
+       "void drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color, uint16_t bgcolor);"],
+       "Arduino logo with solid and transparent background (arrayMonochromeBitmap example sketch).",
+       ['const uint8_t arduLogo[] PROGMEM = {"      // width 40, height 32',
+        '  B00000000, B00000000, B00000000, B00000000, B01111110,"',
+        '  ...',
+        "   B10001010, B00101111, B00011100, B11100100, B01001110",
+        "};",
+        '  ...',
+       "tft.drawBitmap(arduLogo, 160, 100, 40, 32, ILI9341_DARKCYAN);	// 'transparent' background",
+       "tft.drawBitmap(arduLogo, 110, 100, 40, 32, ILI9341_WHITE, ILI9341_DARKCYAN);"]);
+
+        addIliFunction("drawImage",
+         "Draws an image from an array generated with BMP24toILI565Array tool.",
+        "void drawImage(const uint16_t *colors, uint16_t x, uint16_t y, uint16_t width, uint16_t height);",
+        "3 icons displayed from 3 arrays (arrayTftBitmap example sketch).",
+        ['#include "info.h"', '#include "alert.h"', '#include "close.h"', "...",
+        "tft.drawImage(info, 100, 100, infoWidth, infoHeight);",
+        "tft.drawImage(alert, 140, 100, alertWidth, alertHeight);",
+        "tft.drawImage(close, 180, 100, closeWidth, closeHeight);"]);
 
 
 
