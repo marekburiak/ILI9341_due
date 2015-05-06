@@ -25,7 +25,7 @@ namespace ILIScreenshotViewer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("cbSerialPorts")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string Port {
             get {
                 return ((string)(this["Port"]));
@@ -37,7 +37,7 @@ namespace ILIScreenshotViewer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("cbBaudRates")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string BaudRate {
             get {
                 return ((string)(this["BaudRate"]));

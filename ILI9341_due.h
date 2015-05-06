@@ -547,14 +547,14 @@ public:
 	void setArcParams(float arcAngleMax);
 
 	uint16_t readPixel(int16_t x, int16_t y);
-	// from Adafruit_GFX.h
-	void drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
-	void fillCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
+	void drawCircle(int16_t x, int16_t y, int16_t r, uint16_t color);
+	void fillCircle(int16_t x, int16_t y, int16_t r, uint16_t color);
 	void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color);
 	void fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color);
-	void drawRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h, int16_t radius, uint16_t color);
-	void fillRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h, int16_t radius, uint16_t color);
-	void drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, uint16_t color, uint16_t bgcolor);
+	void drawRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t radius, uint16_t color);
+	void fillRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t radius, uint16_t color);
+	void drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+	void drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color, uint16_t bgcolor);
 	void drawImage(const uint16_t *colors, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
 	uint8_t getRotation(void);
 	void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);

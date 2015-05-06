@@ -17,7 +17,7 @@ Copyright (c) 2014  Marek Buriak
 
 // set the clock divider
 #if defined __SAM3X8E__
-#define ILI9341_SPI_CLKDIVIDER 1	// for Due
+#define ILI9341_SPI_CLKDIVIDER 10	// for Due
 #elif defined __AVR__
 #define ILI9341_SPI_CLKDIVIDER SPI_CLOCK_DIV2	// for Uno, Mega,...
 #endif

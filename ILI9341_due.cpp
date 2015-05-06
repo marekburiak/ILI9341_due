@@ -334,7 +334,9 @@ void ILI9341_due::pushColors(const uint16_t *colors, uint16_t offset, uint32_t l
 
 void ILI9341_due::drawPixel(int16_t x, int16_t y, uint16_t color) {
 	beginTransaction();
+	enableCS();
 	drawPixel_last(x, y, color);
+	disableCS();
 	endTransaction();
 }
 
@@ -952,10 +954,10 @@ void ILI9341_due::drawCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color)
 	beginTransaction();
 	enableCS();
 
-	drawPixel_cont(x0, y0 + r, ILI9341_RED);
-	drawPixel_cont(x0, y0 - r, ILI9341_GREEN);
-	drawPixel_cont(x0 + r, y0, ILI9341_YELLOW);
-	drawPixel_cont(x0 - r, y0, ILI9341_BLUE);
+	drawPixel_cont(x0, y0 + r, color);
+	drawPixel_cont(x0, y0 - r, color);
+	drawPixel_cont(x0 + r, y0, color);
+	drawPixel_cont(x0 - r, y0, color);
 
 	while (x < y) {
 		if (f >= 0) {
@@ -1201,7 +1203,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y
 				y0 += ystep;
 				err += dx;
 			}
-	}
+		}
 		if (x0 > xbegin + 1) {
 #ifdef __SAM3X8E__
 			writeHLine_cont_noCS_noFill(xbegin, y0, x0 - xbegin);
@@ -1209,7 +1211,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y
 			writeHLine_cont_noCS_noScanline(xbegin, y0, x0 - xbegin, color);
 #endif
 		}
-}
+	}
 	disableCS();
 	endTransaction();
 }
@@ -1240,8 +1242,7 @@ void ILI9341_due::drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t 
 }
 
 // Draw a rounded rectangle
-void ILI9341_due::drawRoundRect(int16_t x, int16_t y, int16_t w,
-	int16_t h, int16_t r, uint16_t color)
+void ILI9341_due::drawRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, uint16_t color)
 {
 	beginTransaction();
 
@@ -1263,8 +1264,7 @@ void ILI9341_due::drawRoundRect(int16_t x, int16_t y, int16_t w,
 }
 
 // Fill a rounded rectangle
-void ILI9341_due::fillRoundRect(int16_t x, int16_t y, int16_t w,
-	int16_t h, int16_t r, uint16_t color)
+void ILI9341_due::fillRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t r, uint16_t color)
 {
 	beginTransaction();
 	// smarter version
@@ -1374,13 +1374,10 @@ void ILI9341_due::fillTriangle(int16_t x0, int16_t y0,
 }
 
 // draws monochrome (single color) bitmaps
-void ILI9341_due::drawBitmap(int16_t x, int16_t y,
-	const uint8_t *bitmap, int16_t w, int16_t h,
-	uint16_t color, uint16_t bgcolor)
+void ILI9341_due::drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y,
+	int16_t w, int16_t h, uint16_t color)
 {
 	int16_t i, j, byteWidth = (w + 7) / 8;
-
-	fillScanline16(color, w);
 
 	beginTransaction();
 	enableCS();
@@ -1389,7 +1386,28 @@ void ILI9341_due::drawBitmap(int16_t x, int16_t y,
 		for (i = 0; i < w; i++)
 		{
 			if (pgm_read_byte(bitmap + j * byteWidth + i / 8) & (128 >> (i & 7))) {
-#if defined __AVR___
+				drawPixel_cont(x + i, y + j, color);
+			}
+		}
+	}
+	disableCS();
+	endTransaction();
+}
+
+// draws monochrome (single color) bitmaps
+void ILI9341_due::drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y,
+	int16_t w, int16_t h, uint16_t color, uint16_t bgcolor)
+{
+	uint16_t i, j, byteWidth = (w + 7) / 8;
+
+	beginTransaction();
+	enableCS();
+	for (j = 0; j < h; j++)
+	{
+		for (i = 0; i < w; i++)
+		{
+			if (pgm_read_byte(bitmap + j * byteWidth + i / 8) & (128 >> (i & 7))) {
+#if defined __AVR__
 				drawPixel_cont(x + i, y + j, color);
 #elif defined __SAM3X8E__
 				_scanline16[i] = color;
@@ -1397,19 +1415,19 @@ void ILI9341_due::drawBitmap(int16_t x, int16_t y,
 			}
 			else
 			{
-#if defined __AVR___
+#if defined __AVR__
 				drawPixel_cont(x + i, y + j, bgcolor);
 #elif defined __SAM3X8E__
 				_scanline16[i] = bgcolor;
 #endif
+			}
 		}
-	}
 #ifdef __SAM3X8E__
-		setAddrAndRW_cont(x + i, y + j, x + w - 1, y + j);
+		setAddrAndRW_cont(x, y + j, x + w - 1, y + j);
 		setDCForData();
 		writeScanline16(w);
 #endif
-}
+	}
 	disableCS();
 	endTransaction();
 }
@@ -2058,8 +2076,8 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 							fillScanline16(_fontBgColor, numPixelsInOnePoint);
 							writeScanlineLooped(numPixelsInOnePoint);
 #endif
+							}
 						}
-					}
 					else
 					{
 						if (_textScale == 1)
@@ -2086,10 +2104,10 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 							fillScanline16(_fontColor, numPixelsInOnePoint);
 							writeScanlineLooped(numPixelsInOnePoint);
 #endif
-						}
+					}
 					}
 					data >>= 1;
-					}
+				}
 
 				//#ifdef __AVR__
 				//if (_textScale == 1 && (lineId == SCANLINE_PIXEL_COUNT - 1 || i == charHeightInBytes - 1))	// we have either filled the buffer or are rendering the bottom portion of the char
@@ -2100,8 +2118,8 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 				//#endif
 
 				//delay(50);
-					}
-				}
+			}
+			}
 		//Serial << endl;
 #ifdef __SAM3X8E__
 		if (_textScale == 1)
@@ -2111,7 +2129,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 #endif
 		_x += _textScale;
 
-			}
+		}
 	disableCS();	// to put CS line back up
 
 	//_x = cx;
@@ -2120,7 +2138,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 
 
 	//Serial << "letterSpacing " << _letterSpacing <<" x: " << _x <<endl;
-		}
+}
 
 void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight)
 {
