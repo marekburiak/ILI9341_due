@@ -364,6 +364,14 @@ Full-Width Styles
     background: #212121;
 }
 
+.italic {
+    font-style:italic;
+}
+
+.bold {
+    font-weight: bold;
+}
+
 .function {
     border: 2px solid darkgray;
     width: 100%;

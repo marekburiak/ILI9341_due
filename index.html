@@ -283,7 +283,7 @@ MIT license, all text above must be included in any redistribution
 
             var funcDesc = document.createElement("div");
             funcDesc.className = "functionDescription";
-            funcDesc.appendChild(document.createTextNode(functionDescription));
+            funcDesc.innerHTML = functionDescription;
 
             var funcDeclaration = document.createElement("div");
             funcDeclaration.className = "functionCode";
@@ -459,13 +459,42 @@ MIT license, all text above must be included in any redistribution
         "tft.drawImage(alert, 140, 100, alertWidth, alertHeight);",
         "tft.drawImage(close, 180, 100, closeWidth, closeHeight);"], true);
 
+        addIliFunction("invertDisplay",
+        "Inverts display colors. Black becomes white, blue becomes yellow, etc.",
+       "void invertDisplay(boolean i);",
+       "Invert display colors.",
+       "tft.invertDisplay(true);", true);
+
         addIliFunction("setRotation",
-         "Sets the display orientation. The argument can either be an enum value: iliRotation0, iliRotation90, iliRotation180, iliRotation270 or a numeric value 0 (iliRotation0), 1 (iliRotation90), 2 (iliRotation180), 3 (iliRotation270).",
+         "Sets the display orientation. The argument can either be an enum value: <span class='italic'>iliRotation0</span>, <span class='italic'>iliRotation90</span>,  <span class='italic'>iliRotation180</span>,  <span class='italic'>iliRotation270</span> or a numeric value  <span class='italic'>0</span> (same as iliRotation0),  <span class='italic'>1</span> (same as iliRotation90),  <span class='italic'>2</span> (same as iliRotation180),  <span class='italic'>3</span> (same as iliRotation270).",
         "void setRotation(iliRotation r);",
         "Set rotation to landscape.",
-        "tft.setRotation(iliRotation270);");
+        "tft.setRotation(iliRotation270);", false);
 
+        addIliFunction("display",
+         "Turns pixel display on/off. With pixel display off the screen turns white. In the off mode, the output from Frame Memory " +
+         "is disabled and blank page inserted. This command makes no change of contents of frame memory.",
+        "void display(boolean d);",
+        "Turn pixel display off.",
+        "tft.display(false);", false);
 
+        addIliFunction("idle",
+         "Turns display idle mode on/off. In the idle mode, color depth is reduced. The primary and the secondary colors using MSB of each R, G and B in the Frame Memory, 8 color depth data is displayed.",
+        "void idle(boolean i);",
+        "Put display into idle mode.",
+        "tft.idle(true);", false);
+
+        addIliFunction("sleep",
+         "Turns display sleep mode on/off. In the sleep mode the LCD module enters the minimum power consumption mode. The DC/DC converter is stopped, internal oscillator is stopped and panel scanning is stopped.",
+        "void sleep(boolean s);",
+        "Put display into sleep mode.",
+        "tft.sleep(true);", false);
+
+        addIliFunction("setPowerLevel",
+         "Sets LCD power level. Argument can be:<br/><span class='italic'>pwrLevelNormal</span> - normal mode<br/><span class='italic'>pwrLevelIdle</span> - idle mode - same as calling idle(true)<br/><span class='italic'>pwrLevelSleep</span> - sleep mode - same as calling sleep(true).",
+        "void setPowerLevel(pwrLevel p);",
+        "Put display into sleep mode.",
+        "tft.setPowerLevel(pwrLevelSleep);", false);
 
     </script>
 
