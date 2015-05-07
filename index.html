@@ -269,7 +269,7 @@ MIT license, all text above must be included in any redistribution
     </div>
 
     <script type="text/javascript">
-        function addIliFunction(functionName, functionDescription, functionDeclarationCode, functionExampleDesc, functionExampleCode, functionExampleImage) {
+        function addIliFunction(functionName, functionDescription, functionDeclarationCode, functionExampleDesc, functionExampleCode, includeImage, functionExampleImage) {
             var funcs = document.getElementById("iliFunctions");
             var funcElem = document.createElement("div");
             funcElem.className = "function";
@@ -321,19 +321,24 @@ MIT license, all text above must be included in any redistribution
             else {
                 funcExampleCode.appendChild(document.createTextNode(functionExampleCode));
             }
-            var funcExampleImage = document.createElement("div");
-            funcExampleImage.className = "functionExampleImage";
-            var funcExampleImageImg = document.createElement("img");
-            if (typeof functionExampleImage !== "undefined")
-                funcExampleImageImg.setAttribute("src", ".\\images\\" + functionExampleImage);
-            else
-                funcExampleImageImg.setAttribute("src", ".\\images\\func_" + functionName + ".png");
-            funcExampleImage.appendChild(funcExampleImageImg);
+
+            if (includeImage) {
+                var funcExampleImage = document.createElement("div");
+                funcExampleImage.className = "functionExampleImage";
+                var funcExampleImageImg = document.createElement("img");
+                if (typeof functionExampleImage !== "undefined")
+                    funcExampleImageImg.setAttribute("src", ".\\images\\" + functionExampleImage);
+                else
+                    funcExampleImageImg.setAttribute("src", ".\\images\\func_" + functionName + ".png");
+
+                funcExampleImage.appendChild(funcExampleImageImg);
+            }
 
             funcExample.appendChild(funcExampleTitle);
             funcExample.appendChild(funcExampleDesc);
             funcExample.appendChild(funcExampleCode);
-            funcExample.appendChild(funcExampleImage);
+            if (includeImage)
+                funcExample.appendChild(funcExampleImage);
 
 
             funcContent.appendChild(funcDesc);
@@ -349,19 +354,19 @@ MIT license, all text above must be included in any redistribution
          "Fills/clears the whole screen with a specified color.",
         "void fillScreen(uint16_t color);",
         "A screen filled with blue color.",
-        "tft.fillScreen(ILI9341_BLUE);");
+        "tft.fillScreen(ILI9341_BLUE);", true);
 
         addIliFunction("drawPixel",
          "Draws a pixel at the specified position.",
          "void drawPixel(int16_t x, int16_t y, uint16_t color);",
          "A pixel at position (100,100).",
-         "tft.drawPixel(100, 100, ILI9341_WHITE);");
+         "tft.drawPixel(100, 100, ILI9341_WHITE);", true);
 
         addIliFunction("drawLine",
             "Draws a line defined by a start point and an end point.",
             "void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);",
             "A line from point (100,100) to point (150,120)",
-            "tft.drawLine(100, 100, 150, 120, ILI9341_WHITE);");
+            "tft.drawLine(100, 100, 150, 120, ILI9341_WHITE);", true);
 
         addIliFunction("drawLineByAngle",
        "Draws a line defined by a start point and an angle. An offset from the start point can be defined.",
@@ -369,67 +374,67 @@ MIT license, all text above must be included in any redistribution
        "void drawLineByAngle(int16_t x, int16_t y, int16_t angle, uint16_t start, uint16_t length, uint16_t color);"],
        "A white line from point (100,100) at 45 degree angle and 50px length. A red line from point (100,100) at 90 degree angle starting 10px from the start point and length of 50px.",
        ["tft.drawLineByAngle(100, 100, 45, 50, ILI9341_WHITE);",
-       "tft.drawLineByAngle(100, 100, 90, 10, 50, ILI9341_RED);"]);
+       "tft.drawLineByAngle(100, 100, 90, 10, 50, ILI9341_RED);"], true);
 
         addIliFunction("drawFastHLine",
            "Draws a horizontal line. Performance optimized version of drawLine.",
            "void drawFastHLine(int16_t x, int16_t y, uint16_t w, uint16_t color);",
            "A horizontal line from point (100,100) of 50px length.",
-           "tft.drawFastHLine(100, 100, 50, ILI9341_WHITE);");
+           "tft.drawFastHLine(100, 100, 50, ILI9341_WHITE);", true);
 
         addIliFunction("drawFastVLine",
           "Draws a vertical line. Performance optimized version of drawLine.",
           "void drawFastVLine(int16_t x, int16_t y, uint16_t h, uint16_t color);",
           "A vertical line from point (100,100) of 50px length.",
-          "tft.drawFastVLine(100, 100, 50, ILI9341_WHITE);");
+          "tft.drawFastVLine(100, 100, 50, ILI9341_WHITE);", true);
 
         addIliFunction("drawRect",
           "Draws a rectangle from the specified position and of specified width and height.",
           "void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);",
           "A rectangle from point (100,100) of 50px width and 20px height.",
-          "tft.drawRect(100, 100, 50, 20, ILI9341_WHITE);");
+          "tft.drawRect(100, 100, 50, 20, ILI9341_WHITE);", true);
 
         addIliFunction("fillRect",
          "Draws a filled rectangle from the specified position and of specified width and height.",
          "void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);",
          "A filled rectangle from point (100,100) of 50px width and 20px height.",
-         "tft.fillRect(100, 100, 50, 20, ILI9341_WHITE);");
+         "tft.fillRect(100, 100, 50, 20, ILI9341_WHITE);", true);
 
         addIliFunction("drawRoundRect",
           "Draws a rectangle with rounded edges of specified radius from the specified position and of specified width and height.",
           "void drawRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h, int16_t radius, uint16_t color);",
           "A rounded rectangle from point (100,100) of 50px width, 20px height and rounded edges of 7px radius.",
-          "tft.drawRoundRect(100, 100, 50, 20, 7, ILI9341_WHITE);");
+          "tft.drawRoundRect(100, 100, 50, 20, 7, ILI9341_WHITE);", true);
 
         addIliFunction("fillRoundRect",
          "Draws a filled rectangle with rounded edges of specified radius from the specified position and of specified width and height.",
          "void fillRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h, int16_t radius, uint16_t color);",
          "A filled rounded rectangle from point (100,100) of 50px width, 20px height and rounded edges of 7px radius.",
-         "tft.fillRoundRect(100, 100, 50, 20, 7, ILI9341_WHITE);");
+         "tft.fillRoundRect(100, 100, 50, 20, 7, ILI9341_WHITE);", true);
 
         addIliFunction("drawCircle",
          "Draws a circle at specified position and of specified radius.",
          "void drawCircle(int16_t x, int16_t y, int16_t r, uint16_t color);",
          "A circle with center at (100,100) and 20px radius.",
-         "tft.drawCircle(100, 100, 20, ILI9341_WHITE);");
+         "tft.drawCircle(100, 100, 20, ILI9341_WHITE);", true);
 
         addIliFunction("fillCircle",
           "Draws a circle at specified position and of specified radius.",
          "void fillCircle(int16_t x, int16_t y, int16_t r, uint16_t color);",
          "A circle with center at (100,100) and 20px radius.",
-         "tft.fillCircle(100, 100, 20, ILI9341_WHITE);");
+         "tft.fillCircle(100, 100, 20, ILI9341_WHITE);", true);
 
         addIliFunction("drawTriangle",
          "Draws a triangle specified by 3 points.",
         "void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color);",
         "A triangle defined by points (100,100) (80,130) (120,120).",
-        "tft.drawTriangle(100, 100, 80, 130, 120, 120, ILI9341_WHITE);");
+        "tft.drawTriangle(100, 100, 80, 130, 120, 120, ILI9341_WHITE);", true);
 
         addIliFunction("fillTriangle",
          "Draws a filled triangle specified by 3 points.",
         "void fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color);",
         "A filled triangle defined by points (100,100) (80,130) (120,120).",
-        "tft.fillTriangle(100, 100, 80, 130, 120, 120, ILI9341_WHITE);");
+        "tft.fillTriangle(100, 100, 80, 130, 120, 120, ILI9341_WHITE);", true);
 
         addIliFunction("drawBitmap",
         "Draws a monochrome image from a byte array. Background color can be specified.",
@@ -443,7 +448,7 @@ MIT license, all text above must be included in any redistribution
         "};",
         '  ...',
        "tft.drawBitmap(arduLogo, 160, 100, 40, 32, ILI9341_DARKCYAN);	// 'transparent' background",
-       "tft.drawBitmap(arduLogo, 110, 100, 40, 32, ILI9341_WHITE, ILI9341_DARKCYAN);"]);
+       "tft.drawBitmap(arduLogo, 110, 100, 40, 32, ILI9341_WHITE, ILI9341_DARKCYAN);"], true);
 
         addIliFunction("drawImage",
          "Draws an image from an array generated with BMP24toILI565Array tool.",
@@ -452,8 +457,13 @@ MIT license, all text above must be included in any redistribution
         ['#include "info.h"', '#include "alert.h"', '#include "close.h"', "...",
         "tft.drawImage(info, 100, 100, infoWidth, infoHeight);",
         "tft.drawImage(alert, 140, 100, alertWidth, alertHeight);",
-        "tft.drawImage(close, 180, 100, closeWidth, closeHeight);"]);
+        "tft.drawImage(close, 180, 100, closeWidth, closeHeight);"], true);
 
+        addIliFunction("setRotation",
+         "Sets the display orientation. The argument can either be an enum value: iliRotation0, iliRotation90, iliRotation180, iliRotation270 or a numeric value 0 (iliRotation0), 1 (iliRotation90), 2 (iliRotation180), 3 (iliRotation270).",
+        "void setRotation(iliRotation r);",
+        "Set rotation to landscape.",
+        "tft.setRotation(iliRotation270);");
 
 
 
