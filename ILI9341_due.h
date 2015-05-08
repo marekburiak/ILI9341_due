@@ -538,7 +538,6 @@ public:
 	void setRotation(iliRotation r);
 	void invertDisplay(boolean i);
 	void display(boolean d);
-	void normalModeOn();
 	void sleep(boolean s);
 	void idle(boolean i);
 	void setPowerLevel(pwrLevel p);
