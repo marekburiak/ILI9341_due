@@ -199,7 +199,12 @@ ul, ol, dl {
 }
 
 ul {
-    list-style: inside;
+    list-style: disc;
+    padding-left: 20px;
+}
+
+ul li ul {
+    list-style: circle;
     padding-left: 20px;
 }
 
@@ -375,15 +380,18 @@ Full-Width Styles
 .function {
     border: 2px solid darkgray;
     width: 100%;
-    box-shadow: 0 0 10px rgba(0,0,0,.1);
+    
     overflow: hidden;
     line-height: 1.5em;
+    margin-bottom: 10px;
 }
 
 .functionHeader {
     background-color: darkgray;
     color: white;
     padding: 10px;
+    font-size: 25px;
+    box-shadow: 0 0 10px rgba(169,169,169,1);
 }
 
 .functionContent {
@@ -392,6 +400,14 @@ Full-Width Styles
 
 .functionDescription {
  
+}
+
+.functionArgumentsTitle {
+    font-weight: bold;
+}
+
+.functionArguments {
+    
 }
 
 .functionExample {
@@ -405,6 +421,7 @@ Full-Width Styles
 .functionCode {
     width: 96%;
     padding: 0.8em;
+    margin-top: 0.8em;
     background-color: white;
     box-shadow: 0 0 10px rgba(0,0,0,.1);
     overflow: auto;
