@@ -40,6 +40,7 @@ getFontLetterSpacing -> getTextLetterSpacing
 ILI9341_due_gText(&tft) -> gTextArea
 setArcParams -> setArcParams + setAngleOffset
 drawLineByAngle
+drawArc -> fillArc
 
 new:
 setTextLineSpacing
@@ -421,7 +422,7 @@ private:
 	float _arcAngleMax;
 	int16_t _angleOffset;
 
-	void drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float startAngle, float endAngle, uint16_t color);
+	void fillArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float startAngle, float endAngle, uint16_t color);
 #endif
 
 	void drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uint16_t color);
@@ -555,7 +556,7 @@ public:
 	void fillRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t radius, uint16_t color);
 	void drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
 	void drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color, uint16_t bgcolor);
-	void drawImage(const uint16_t *colors, uint16_t x, uint16_t y, uint16_t width, uint16_t height);
+	void drawImage(const uint16_t *colors, uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 	uint8_t getRotation(void);
 	void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
 	void drawLineByAngle(int16_t x, int16_t y, int16_t angle, uint16_t length, uint16_t color);
@@ -746,13 +747,13 @@ public:
 
 #ifdef FEATURE_ARC_ENABLED
 	inline __attribute__((always_inline))
-		void drawArc(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float start, float end, uint16_t color)
+		void fillArc(uint16_t x, uint16_t y, uint16_t radius, uint16_t thickness, float start, float end, uint16_t color)
 	{
 		beginTransaction();
 		if (start == 0 && end == _arcAngleMax)
-			drawArcOffsetted(cx, cy, radius, thickness, 0, _arcAngleMax, color);
+			fillArcOffsetted(x, y, radius, thickness, 0, _arcAngleMax, color);
 		else
-			drawArcOffsetted(cx, cy, radius, thickness, start + (_angleOffset / (float)360)*_arcAngleMax, end + (_angleOffset / (float)360)*_arcAngleMax, color);
+			fillArcOffsetted(x, y, radius, thickness, start + (_angleOffset / (float)360)*_arcAngleMax, end + (_angleOffset / (float)360)*_arcAngleMax, color);
 		endTransaction();
 	}
 

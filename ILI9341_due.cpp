@@ -340,12 +340,12 @@ void ILI9341_due::drawPixel(int16_t x, int16_t y, uint16_t color) {
 	endTransaction();
 }
 
-void ILI9341_due::drawImage(const uint16_t *colors, uint16_t x, uint16_t y, uint16_t width, uint16_t height) {
+void ILI9341_due::drawImage(const uint16_t *colors, uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
 
-	const uint32_t totalPixels = (uint32_t)width*(uint32_t)height;
+	const uint32_t totalPixels = (uint32_t)w*(uint32_t)h;
 	beginTransaction();
 	enableCS();
-	setAddrAndRW_cont(x, y, x + width - 1, y + height - 1);
+	setAddrAndRW_cont(x, y, x + w - 1, y + h - 1);
 	setDCForData();
 #if SPI_MODE_DMA
 	const uint32_t numLoops = totalPixels / (uint32_t)SCANLINE_PIXEL_COUNT;
@@ -616,7 +616,7 @@ uint16_t ILI9341_due::readPixel(int16_t x, int16_t y)
 
 #ifdef FEATURE_ARC_ENABLED
 // DrawArc function thanks to Jnmattern and his Arc_2.0 (https://github.com/Jnmattern)
-void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float start, float end, uint16_t color) {
+void ILI9341_due::fillArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float start, float end, uint16_t color) {
 	int16_t xmin = 65535, xmax = -32767, ymin = 32767, ymax = -32767;
 	float cosStart, sinStart, cosEnd, sinEnd;
 	float r, t;
@@ -635,8 +635,8 @@ void ILI9341_due::drawArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 	//if (endAngle == 0) endAngle = 360;
 
 	if (startAngle > endAngle) {
-		drawArcOffsetted(cx, cy, radius, thickness, ((startAngle) / (float)360) * _arcAngleMax, _arcAngleMax, color);
-		drawArcOffsetted(cx, cy, radius, thickness, 0, ((endAngle) / (float)360) * _arcAngleMax, color);
+		fillArcOffsetted(cx, cy, radius, thickness, ((startAngle) / (float)360) * _arcAngleMax, _arcAngleMax, color);
+		fillArcOffsetted(cx, cy, radius, thickness, 0, ((endAngle) / (float)360) * _arcAngleMax, color);
 	}
 	else {
 		// Calculate bounding box for the arc to be drawn
