@@ -629,12 +629,28 @@ MIT license, all text above must be included in any redistribution
         addIliFunction("setAngleOffset",
         "Sets the offset in degrees from the default position (set by ARC_ANGLE_OFFSET in ILI9341_due_config.h) where the arc will start (representing arc angle of 0 degrees). If you imagine a compass then the default starting position is at the North point (the arc will start from the top). Setting the offset to 90 degrees will move the starting point 90 degress clockwise so to the East point (the arc will start from the right side), etc.",
         "void setAngleOffset(int16_t angleOffset);",
-        "<ul><li><em>angleOffset</em> - clokwise offset in degrees from the default start point (North point). Can be a negative number which will offset angle's 0 degree position counter-clockwise from the default start point.",
+        "<ul><li><em>angleOffset</em> - clokwise offset in degrees from the default start point (North point). Can be a negative number which will offset angle's 0 degree position counter-clockwise from the default start point.</li></ul>",
         "Set the red arc angle start point to West.<br/>Set the yellow arc angle start point to 45 degrees clockwise from North.<br/>Set the blue arc angle start point to default.",
         "tft.setAngleOffset(-90);<br/>tft.drawArc(100, 150, 50, 10, 0, 25, ILI9341_RED);</br>" +
         "tft.setAngleOffset(45);<br/>tft.drawArc(100, 200, 50, 10, 0, 25, ILI9341_YELLOW);</br>" +
         "tft.setAngleOffset(0);<br/>tft.drawArc(100, 100, 50, 10, 0, 25, ILI9341_BLUE);", true);
 
+        addIliFunction("setArcParams",
+        "Sets parameters for drawing arcs. For now it has only one param to set.",
+        "void setArcParams(float arcAngleMax);",
+        "<ul><li><em>arcAngleMax</em> - sets the max value corresponding to 360 degrees. By default it is set to value defined by ARC_ANGLE_MAX in ILI9341_due_config.h which is 360. You can set it to any float value, so for example if you set it to 1.0 (which will represent the max angle of 360) then calling fillArc with startAngle of 0 and endAngle of 0.5 then you will get a half circle.</li></ul>",
+        "Set the max angle to 100 so we can draw arcs using percentages. Then draw an arc with 'angle' of 25% which will draw quarter of a circle.",
+        "tft.setArcParams(100);<br/>tft.drawArc(100, 150, 50, 10, 0, 25, ILI9341_WHITE);", true);
+
+        addIliFunction("setAddrWindow",
+        "Sets the drawing window for pushPixel and pushPixels.",
+        "void setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);",
+         "<ul><li><em>x0</em> - x-coordinate of the upper left corner of the drawing window</li>" +
+        "<li><em>y0</em> - y-coordinate of the upper left corner of the drawing window</li>" +
+        "<li><em>x1</em> - x-coordinate of the bottom right corner of the drawing window</li>" +
+        "<li><em>y1</em> - y-coordinate of the bottom right corner of the drawing window</li></ul>",
+        "Set the drawing window to draw between point (100,100) and (120, 130).",
+        "tft.setAddrWindow(100, 100, 120, 130);", true);
 
 
     </script>
