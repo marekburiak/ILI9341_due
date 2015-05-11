@@ -573,6 +573,53 @@ MIT license, all text above must be included in any redistribution
         "Invert display colors.",
         "tft.invertDisplay(true);", true);
 
+        addIliFunction("setAddrWindow",
+        "Sets the drawing window for pushPixel and pushPixels operations.",
+        "void setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);",
+         "<ul><li><em>x0</em> - x-coordinate of the upper left corner of the drawing window</li>" +
+        "<li><em>y0</em> - y-coordinate of the upper left corner of the drawing window</li>" +
+        "<li><em>x1</em> - x-coordinate of the bottom right corner of the drawing window</li>" +
+        "<li><em>y1</em> - y-coordinate of the bottom right corner of the drawing window</li></ul>",
+        "Set the drawing window to draw between point (100,100) and (120, 130).",
+        "tft.setAddrWindow(100, 100, 120, 130);", true);
+
+        addIliFunction("pushColor",
+        "Sends one 'pixel' to TFT. <em>setAddrWindow</em> needs to be called prior to calling <em>pushColor</em> to set the drawing region. If you want to draw just one pixel then it is easier to use the <em>drawPixel</em> function. If you want to draw more pixels within a rectangular area then combination of <em>setAddrWindow</em> and <em>pushColor</em> is a more efficient/faster than calling <em>drawPixel</em> multiple times. You set your drawing window with <em>setAddrWindow</em> once and then you call <em>pushPixel</em> multiple times to draw the pixels in left-to-right top-to-bottom order.",
+        "void pushColor(uint16_t color);",
+        "<ul><li><em>color</em> - pixel color to draw</li></ul>",
+        "Draw a dashed line, 20px long. 3 pixels white, 2 pixels black, 3 pixels white, 2 pixels black,...",
+        "tft.setAddrWindow(100, 100, 100+4*5, 100);  // set the drawing window to a 20px wide line which we will draw into</br>" +
+        "for(byte x=0; x < 4; x++) {  // draw 5 pixels (3 white, 2 black) four times</br>" +
+        "&nbsp;&nbsp;&nbsp;tft.pushColor(ILI9341_WHITE);</br>" +
+        "&nbsp;&nbsp;&nbsp;tft.pushColor(ILI9341_WHITE);</br>" +
+        "&nbsp;&nbsp;&nbsp;tft.pushColor(ILI9341_WHITE);</br>" +
+        "&nbsp;&nbsp;&nbsp;tft.pushColor(ILI9341_BLACK);</br>" +
+        "&nbsp;&nbsp;&nbsp;tft.pushColor(ILI9341_BLACK);</br>" +
+        "}", true);
+
+        addIliFunction("pushColors",
+        "Sends 'pixels' stored in an array to TFT. Similar to <em>pushColor</em> but instead of passing in one pixel, you pass in an array of pixels. <em>setAddrWindow</em> needs to be called prior to calling <em>pushColors</em> to set the drawing region. Using an array/buffer of pixels is even more efficient than calling <em>pushColor</em> mutiple times.",
+        "void pushColors(const uint16_t *colors, uint16_t offset, uint32_t len);",
+        "<ul><li><em>colors</em> - a pointer to an array (in progmem for AVR) of pixels/colors</li>" +
+        "<li><em>offset</em> - offset from the beginning of the array</li>" +
+        "<li><em>len</em> - number of pixels to draw from the array</li></ul>",
+        "Draw a dashed line, 20px long. 3 pixels white, 2 pixels black, 3 pixels white, 2 pixels black,...",
+        "const PROGMEM  uint16_t pixels[]  = { 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0x0000};  // 3 white pixels, 2 black ones</br>" +
+        "...</br>" +
+        "tft.setAddrWindow(100, 100, 100+4*5, 100);  // set the drawing window to a 20px wide line which we will draw into</br>" +
+        "for(byte x=0; x < 4; x++) {  // draw the pixel array four times</br>" +
+        "&nbsp;&nbsp;&nbsp;tft.pushColors(pixels, 0, 5);</br>" +
+        "}", true);
+
+        addIliFunction("readPixel",
+        "Reads pixel color from TFT.",
+        "uint16_t readPixel(int16_t x, int16_t y);",
+        "<ul><li><em>x</em> - x-coordinate of the pixel to read the color from</li>" +
+        "<li><em>y</em> - y-coordinate of the pixel to read the color from</li></ul>" + 
+        "<em>Returns</em> - color of the pixel",
+        "Read color of a pixel at position (100,100).",
+        "uint16_t color = tft.readPixel(100, 100);", false);
+
         addIliFunction("setRotation",
         "Sets display orientation.",
         "void setRotation(iliRotation r);",
@@ -642,16 +689,12 @@ MIT license, all text above must be included in any redistribution
         "Set the max angle to 100 so we can draw arcs using percentages. Then draw an arc with 'angle' of 25% which will draw quarter of a circle.",
         "tft.setArcParams(100);<br/>tft.drawArc(100, 150, 50, 10, 0, 25, ILI9341_WHITE);", true);
 
-        addIliFunction("setAddrWindow",
-        "Sets the drawing window for pushPixel and pushPixels.",
-        "void setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);",
-         "<ul><li><em>x0</em> - x-coordinate of the upper left corner of the drawing window</li>" +
-        "<li><em>y0</em> - y-coordinate of the upper left corner of the drawing window</li>" +
-        "<li><em>x1</em> - x-coordinate of the bottom right corner of the drawing window</li>" +
-        "<li><em>y1</em> - y-coordinate of the bottom right corner of the drawing window</li></ul>",
-        "Set the drawing window to draw between point (100,100) and (120, 130).",
-        "tft.setAddrWindow(100, 100, 120, 130);", true);
-
+        addIliFunction("screenshotToConsole",
+        "Takes a screenshot of the whole display and outputs it to the console in a form of text. That text string can be then pasted in the ILIScreenshotViewer which will convert it back to an image. Image can then be saved in bmp, jpg or png format.",
+        "void screenshotToConsole();",
+        "<ul><li><em>arcAngleMax</em> - sets the max value corresponding to 360 degrees. By default it is set to value defined by ARC_ANGLE_MAX in ILI9341_due_config.h which is 360. You can set it to any float value, so for example if you set it to 1.0 (which will represent the max angle of 360) then calling fillArc with startAngle of 0 and endAngle of 0.5 then you will get a half circle.</li></ul>",
+        "Set the max angle to 100 so we can draw arcs using percentages. Then draw an arc with 'angle' of 25% which will draw quarter of a circle.",
+        "tft.setArcParams(100);<br/>tft.drawArc(100, 150, 50, 10, 0, 25, ILI9341_WHITE);", true);
 
     </script>
 
