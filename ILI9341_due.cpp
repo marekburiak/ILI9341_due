@@ -317,18 +317,46 @@ void ILI9341_due::pushColor(uint16_t color)
 void ILI9341_due::pushColors(const uint16_t *colors, uint16_t offset, uint32_t len) {
 	beginTransaction();
 	enableCS();
+	pushColors_noTrans_noCS(colors, offset, len);
+	disableCS();
+	endTransaction();
+}
+
+void ILI9341_due::pushColors(uint16_t *colors, uint16_t offset, uint32_t len) {
+	beginTransaction();
+	enableCS();
+	setDCForData();
+	colors = colors + offset;
+	write_cont(colors, len);
+	disableCS();
+	endTransaction();
+}
+
+void ILI9341_due::pushColors_noTrans_noCS(const uint16_t *colors, uint16_t offset, uint32_t len) {
 	setDCForData();
 	colors = colors + offset;
 
-	//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-	//	for (uint16_t i = 0; i < len; i++) {
-	//		write8_cont(colors[i]);
-	//	}
-	//#elif SPI_MODE_DMA
+#if SPI_MODE_DMA
+	const uint32_t numLoops = len / (uint32_t)SCANLINE_PIXEL_COUNT;
+	for (uint32_t l = 0; l < numLoops; l++)
+	{
+		for (uint32_t i = 0; i < SCANLINE_PIXEL_COUNT; i++)
+		{
+			_scanline16[i] = colors[l*SCANLINE_PIXEL_COUNT + i];
+		}
+		writeScanline16(SCANLINE_PIXEL_COUNT);
+	}
+	uint16_t remainingPixels = len % SCANLINE_PIXEL_COUNT;
+	if (remainingPixels > 0){
+		for (uint32_t i = 0; i < remainingPixels; i++)
+		{
+			_scanline16[i] = colors[numLoops*SCANLINE_PIXEL_COUNT + i];
+		}
+		writeScanline16(remainingPixels);
+	}
+#else
 	write_cont(colors, len);
-	//#endif
-	disableCS();
-	endTransaction();
+#endif
 }
 
 
@@ -341,36 +369,13 @@ void ILI9341_due::drawPixel(int16_t x, int16_t y, uint16_t color) {
 }
 
 void ILI9341_due::drawImage(const uint16_t *colors, uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
-
 	const uint32_t totalPixels = (uint32_t)w*(uint32_t)h;
 	beginTransaction();
 	enableCS();
 	setAddrAndRW_cont(x, y, x + w - 1, y + h - 1);
-	setDCForData();
-#if SPI_MODE_DMA
-	const uint32_t numLoops = totalPixels / (uint32_t)SCANLINE_PIXEL_COUNT;
-	for (uint32_t l = 0; l < numLoops; l++)
-	{
-		for (uint32_t i = 0; i < SCANLINE_PIXEL_COUNT; i++)
-		{
-			_scanline16[i] = colors[l*SCANLINE_PIXEL_COUNT + i];
-		}
-		writeScanline16(SCANLINE_PIXEL_COUNT);
-	}
-	uint16_t remainingPixels = totalPixels % SCANLINE_PIXEL_COUNT;
-	if (remainingPixels > 0){
-		for (uint32_t i = 0; i < remainingPixels; i++)
-		{
-			_scanline16[i] = colors[numLoops*SCANLINE_PIXEL_COUNT + i];
-		}
-		writeScanline16(remainingPixels);
-	}
-#else
-	write_cont(colors, totalPixels);
-#endif
+	pushColors_noTrans_noCS(colors, 0, totalPixels);
 	disableCS();
 	endTransaction();
-
 }
 
 void ILI9341_due::drawFastVLine(int16_t x, int16_t y, uint16_t h, uint16_t color)

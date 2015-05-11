@@ -429,6 +429,7 @@ private:
 	void drawFastVLine_noTrans(int16_t x, int16_t y, uint16_t h, uint16_t color);
 	void drawFastHLine_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t color);
 	void drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
+	void pushColors_noTrans_noCS(const uint16_t *colors, uint16_t offset, uint32_t len);
 	void printHex8(uint8_t *data, uint8_t length);
 	void printHex16(uint16_t *data, uint8_t length);
 	void printHex32(uint32_t *data, uint8_t length);
@@ -527,6 +528,8 @@ public:
 
 	void pushColor(uint16_t color);
 	void pushColors(const uint16_t *colors, uint16_t offset, uint32_t len);
+	void pushColors(uint16_t *colors, uint16_t offset, uint32_t len);
+	
 	/*void pushColors565(uint8_t *colors, uint16_t offset, uint32_t len);
 	void pushColors565(const uint16_t *colors, uint16_t offset, uint32_t len);*/
 
