@@ -248,25 +248,25 @@ MIT license, all text above must be included in any redistribution
         </footer>
     </div>
 
-    <div class="function">
-        <div class="functionHeader">
-            drawLine
-        </div>
-        <div class="functionDescription">
-            Draws a line defined by start and end points.
-        </div>
-        <div class="functionExample">
-            <div class="functionExampleDescription">
-
+    <!--<div class="function">
+        <div class="functionHeader">sleep</div>
+        <div class="functionContent">
+            <div class="functionDescription">Turns display sleep mode on/off. In the sleep mode the LCD module enters the minimum power consumption mode. The DC/DC converter is stopped, internal oscillator is stopped and panel scanning is stopped.</div>
+            <div class="functionCode">void sleep(boolean s);</div>
+            <div class="functionArgumentsTitle">Arguments:</div>
+            <div class="functionArguments">
+                <ul>
+                    <li><em>s</em> - if <em>true</em> TFT will be put into sleep mode, if <em>false</em> TFT will be restored to normal mode (if it was in sleep mode)</li>
+                </ul>
             </div>
-            <div class="functionExampleCode">
-
+            <div class="functionExample">
+                <div class="functionExampleTitle">Example:</div>
+                <div class="functionExampleDescription">Put LCD into sleep mode.</div>
+                <div class="functionCode">tft.sleep(true);</div>
+                <div class="functionExampleImage"><img src=".\images\func_sleep.png"></div>
             </div>
         </div>
-        <div class="functionImage">
-            <img src="images\func_drawLine.png" />
-        </div>
-    </div>
+    </div>-->
 
     <script type="text/javascript">
         function addIliFunction(functionName, functionDescription, functionDeclarationCode, functionArguments, functionExampleDesc, functionExampleCode, includeImage, functionExampleImage) {
@@ -300,13 +300,15 @@ MIT license, all text above must be included in any redistribution
             //    funcDeclaration.appendChild(document.createTextNode(functionDeclarationCode));
             //}
 
-            var funcArgumentsTitle = document.createElement("div");
-            funcArgumentsTitle.className = "functionArgumentsTitle";
-            funcArgumentsTitle.innerHTML = "Arguments:";
+            if (functionArguments !== "") {
+                var funcArgumentsTitle = document.createElement("div");
+                funcArgumentsTitle.className = "functionArgumentsTitle";
+                funcArgumentsTitle.innerHTML = "Arguments:";
 
-            var funcArguments = document.createElement("div");
-            funcArguments.className = "functionArguments";
-            funcArguments.innerHTML = functionArguments;
+                var funcArguments = document.createElement("div");
+                funcArguments.className = "functionArguments";
+                funcArguments.innerHTML = functionArguments;
+            }
 
             var funcExample = document.createElement("div");
             funcExample.className = "functionExample";
@@ -347,14 +349,16 @@ MIT license, all text above must be included in any redistribution
             funcExample.appendChild(funcExampleTitle);
             funcExample.appendChild(funcExampleDesc);
             funcExample.appendChild(funcExampleCode);
-            if (includeImage)
+            if (typeof funcExampleImage !== "undefined")
                 funcExample.appendChild(funcExampleImage);
 
 
             funcContent.appendChild(funcDesc);
             funcContent.appendChild(funcDeclaration);
-            funcContent.appendChild(funcArgumentsTitle);
-            funcContent.appendChild(funcArguments);
+            if (typeof funcArguments !== "undefined") {
+                funcContent.appendChild(funcArgumentsTitle);
+                funcContent.appendChild(funcArguments);
+            }
             funcContent.appendChild(funcExample);
 
             funcElem.appendChild(funcHeader);
@@ -372,8 +376,8 @@ MIT license, all text above must be included in any redistribution
         addIliFunction("drawPixel",
         "Draws a pixel.",
         "void drawPixel(int16_t x, int16_t y, uint16_t color);",
-        "<ul><li><em>x</em> - x-coordinate</li>" + 
-        "<li><em>y</em> - y-coordinate</li>" + 
+        "<ul><li><em>x</em> - x-coordinate</li>" +
+        "<li><em>y</em> - y-coordinate</li>" +
         "<li><em>color</em> - pixel color</li></ul>",
         "A white pixel at position (100,100).",
         "tft.drawPixel(100, 100, ILI9341_WHITE);", true);
@@ -382,9 +386,9 @@ MIT license, all text above must be included in any redistribution
         "Draws a line.",
         "void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);",
         "<ul><li><em>x0</em> - x-coordinate of the starting point</li>" +
-        "<li><em>y0</em> - y-coordinate of the starting point</li>" + 
-        "<li><em>x1</em> - x-coordinate of the ending point</li>" + 
-        "<li><em>y1</em> - y-coordinate of the ending point</li>" + 
+        "<li><em>y0</em> - y-coordinate of the starting point</li>" +
+        "<li><em>x1</em> - x-coordinate of the ending point</li>" +
+        "<li><em>y1</em> - y-coordinate of the ending point</li>" +
         "<li><em>color</em> - line color</li></ul>",
         "A white line from point (100,100) to point (150,120)",
         "tft.drawLine(100, 100, 150, 120, ILI9341_WHITE);", true);
@@ -394,10 +398,10 @@ MIT license, all text above must be included in any redistribution
         "void drawLineByAngle(int16_t x, int16_t y, int16_t angle, uint16_t length, uint16_t color);</br>" +
         "void drawLineByAngle(int16_t x, int16_t y, int16_t angle, uint16_t start, uint16_t length, uint16_t color);",
         "<ul><li><em>x</em> - x-coordinate of the starting point</li>" +
-        "<li><em>y</em> - y-coordinate of the starting point</li>" + 
-        "<li><em>angle</em> - line angle</li>" + 
-        "<li><em>start</em> - offset from the starting point (optional)</li>" + 
-        "<li><em>lenght</em> - line lenght</li>" + 
+        "<li><em>y</em> - y-coordinate of the starting point</li>" +
+        "<li><em>angle</em> - line angle</li>" +
+        "<li><em>start</em> - offset from the starting point (optional)</li>" +
+        "<li><em>lenght</em> - line lenght</li>" +
         "<li><em>color</em> - line color</li></ul>",
         "A white line from point (100,100) at 45 degree angle and of 50px length. A red line from point (100,100) at 90 degree angle starting 10px from the start point and with length of 50px.",
         "tft.drawLineByAngle(100, 100, 45, 50, ILI9341_WHITE);</br>" +
@@ -407,8 +411,8 @@ MIT license, all text above must be included in any redistribution
         "Draws a horizontal line. Performance optimized version of drawLine for drawing horizontal lines.",
         "void drawFastHLine(int16_t x, int16_t y, uint16_t w, uint16_t color);",
         "<ul><li><em>x</em> - x-coordinate of the starting point</li>" +
-        "<li><em>y</em> - y-coordinate of the starting point</li>" + 
-        "<li><em>w</em> - line width (line is drawn from left to right)</li>" + 
+        "<li><em>y</em> - y-coordinate of the starting point</li>" +
+        "<li><em>w</em> - line width (line is drawn from left to right)</li>" +
         "<li><em>color</em> - line color</li></ul>",
         "A white horizontal line from point (100,100) of 50px length.",
         "tft.drawFastHLine(100, 100, 50, ILI9341_WHITE);", true);
@@ -417,8 +421,8 @@ MIT license, all text above must be included in any redistribution
         "Draws a vertical line. Performance optimized version of drawLine for drawing vertical lines.",
         "void drawFastVLine(int16_t x, int16_t y, uint16_t h, uint16_t color);",
         "<ul><li><em>x</em> - x-coordinate of the starting point</li>" +
-        "<li><em>y</em> - y-coordinate of the starting point</li>" + 
-        "<li><em>h</em> - line height (line is drawn from top to bottom)</li>" + 
+        "<li><em>y</em> - y-coordinate of the starting point</li>" +
+        "<li><em>h</em> - line height (line is drawn from top to bottom)</li>" +
         "<li><em>color</em> - line color</li></ul>",
         "A white vertical line from point (100,100) of 50px length.",
         "tft.drawFastVLine(100, 100, 50, ILI9341_WHITE);", true);
@@ -426,10 +430,10 @@ MIT license, all text above must be included in any redistribution
         addIliFunction("drawRect",
         "Draws a rectangle.",
         "void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);",
-        "<ul><li><em>x</em> - x-coordinate of the rectangle's top left corner</li>" +
-        "<li><em>y</em> - y-coordinate of the rectangle's top left corner</li>" + 
-        "<li><em>w</em> - rectangle width</li>" + 
-        "<li><em>h</em> - rectangle height</li>" + 
+        "<ul><li><em>x</em> - x-coordinate of the rectangle top left corner</li>" +
+        "<li><em>y</em> - y-coordinate of the rectangle top left corner</li>" +
+        "<li><em>w</em> - rectangle width</li>" +
+        "<li><em>h</em> - rectangle height</li>" +
         "<li><em>color</em> - rectangle color</li></ul>",
         "A white rectangle from point (100,100) of 50px width and of 20px height.",
         "tft.drawRect(100, 100, 50, 20, ILI9341_WHITE);", true);
@@ -437,10 +441,10 @@ MIT license, all text above must be included in any redistribution
         addIliFunction("fillRect",
          "Draws a filled rectangle.",
          "void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);",
-         "<ul><li><em>x</em> - x-coordinate of the rectangle's top left corner</li>" +
-        "<li><em>y</em> - y-coordinate of the rectangle's top left corner</li>" + 
-        "<li><em>w</em> - rectangle width</li>" + 
-        "<li><em>h</em> - rectangle height</li>" + 
+         "<ul><li><em>x</em> - x-coordinate of the rectangle top left corner</li>" +
+        "<li><em>y</em> - y-coordinate of the rectangle top left corner</li>" +
+        "<li><em>w</em> - rectangle width</li>" +
+        "<li><em>h</em> - rectangle height</li>" +
         "<li><em>color</em> - rectangle fill color</li></ul>",
          "A white filled rectangle from point (100,100) of 50px width and of 20px height.",
          "tft.fillRect(100, 100, 50, 20, ILI9341_WHITE);", true);
@@ -448,11 +452,11 @@ MIT license, all text above must be included in any redistribution
         addIliFunction("drawRoundRect",
         "Draws a rectangle with rounded edges.",
         "void drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t radius, uint16_t color);",
-        "<ul><li><em>x</em> - x-coordinate of the rectangle's top left corner</li>" +
-        "<li><em>y</em> - y-coordinate of the rectangle's top left corner</li>" + 
-        "<li><em>w</em> - rectangle width</li>" + 
-        "<li><em>h</em> - rectangle height</li>" + 
-        "<li><em>radius</em> - corner radius</li>" + 
+        "<ul><li><em>x</em> - x-coordinate of the rectangle top left corner</li>" +
+        "<li><em>y</em> - y-coordinate of the rectangle top left corner</li>" +
+        "<li><em>w</em> - rectangle width</li>" +
+        "<li><em>h</em> - rectangle height</li>" +
+        "<li><em>radius</em> - corner radius</li>" +
         "<li><em>color</em> - rectangle color</li></ul>",
         "A white rounded rectangle from point (100,100) of 50px width, 20px height and rounded edges of 7px radius.",
         "tft.drawRoundRect(100, 100, 50, 20, 7, ILI9341_WHITE);", true);
@@ -460,11 +464,11 @@ MIT license, all text above must be included in any redistribution
         addIliFunction("fillRoundRect",
          "Draws a filled rectangle with rounded edges of specified radius from the specified position and of specified width and height.",
          "void fillRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t radius, uint16_t color);",
-         "<ul><li><em>x</em> - x-coordinate of the rectangle's top left corner</li>" +
-        "<li><em>y</em> - y-coordinate of the rectangle's top left corner</li>" + 
-        "<li><em>w</em> - rectangle width</li>" + 
-        "<li><em>h</em> - rectangle height</li>" + 
-        "<li><em>radius</em> - corner radius</li>" + 
+         "<ul><li><em>x</em> - x-coordinate of the rectangle top left corner</li>" +
+        "<li><em>y</em> - y-coordinate of the rectangle top left corner</li>" +
+        "<li><em>w</em> - rectangle width</li>" +
+        "<li><em>h</em> - rectangle height</li>" +
+        "<li><em>radius</em> - corner radius</li>" +
         "<li><em>color</em> - rectangle fill color</li></ul>",
          "A white filled rounded rectangle from point (100,100) of 50px width, 20px height and rounded edges of 7px radius.",
          "tft.fillRoundRect(100, 100, 50, 20, 7, ILI9341_WHITE);", true);
@@ -472,9 +476,9 @@ MIT license, all text above must be included in any redistribution
         addIliFunction("drawCircle",
          "Draws a circle.",
          "void drawCircle(int16_t x, int16_t y, int16_t r, uint16_t color);",
-         "<ul><li><em>x</em> - x-coordinate of the circle's center</li>" +
-        "<li><em>y</em> - y-coordinate of the circle's center</li>" + 
-        "<li><em>r</em> - circle radius</li>" + 
+         "<ul><li><em>x</em> - x-coordinate of the circle center</li>" +
+        "<li><em>y</em> - y-coordinate of the circle center</li>" +
+        "<li><em>r</em> - circle radius</li>" +
         "<li><em>color</em> - circle color</li></ul>",
          "A white circle with center at (100,100) and 20px radius.",
          "tft.drawCircle(100, 100, 20, ILI9341_WHITE);", true);
@@ -482,9 +486,9 @@ MIT license, all text above must be included in any redistribution
         addIliFunction("fillCircle",
           "Draws a filled circle.",
          "void fillCircle(int16_t x, int16_t y, int16_t r, uint16_t color);",
-         "<ul><li><em>x</em> - x-coordinate of the circle's center</li>" +
-        "<li><em>y</em> - y-coordinate of the circle's center</li>" + 
-        "<li><em>r</em> - circle radius</li>" + 
+         "<ul><li><em>x</em> - x-coordinate of the circle center</li>" +
+        "<li><em>y</em> - y-coordinate of the circle center</li>" +
+        "<li><em>r</em> - circle radius</li>" +
         "<li><em>color</em> - circle fill color</li></ul>",
          "A white filled circle with center at (100,100) and 20px radius.",
          "tft.fillCircle(100, 100, 20, ILI9341_WHITE);", true);
@@ -492,14 +496,14 @@ MIT license, all text above must be included in any redistribution
         addIliFunction("fillArc",
          "Draws a filled arc. Can also be used to draw a pie.",
          "void fillArc(uint16_t x, uint16_t y, uint16_t radius, uint16_t thickness, float start, float end, uint16_t color);",
-         "<ul><li><em>x</em> - x-coordinate of the arc's center</li>" +
-        "<li><em>y</em> - y-coordinate of the arc's center</li>" + 
-        "<li><em>radius</em> - arc radius</li>" + 
-        "<li><em>thickness</em> - arc inward thickness</li>" + 
-        "<li><em>start</em> - arc start angle</li>" + 
-        "<li><em>end</em> - arc end angle</li>" + 
+         "<ul><li><em>x</em> - x-coordinate of the arc center</li>" +
+        "<li><em>y</em> - y-coordinate of the arc center</li>" +
+        "<li><em>radius</em> - arc radius</li>" +
+        "<li><em>thickness</em> - arc inward thickness</li>" +
+        "<li><em>start</em> - arc start angle</li>" +
+        "<li><em>end</em> - arc end angle</li>" +
         "<li><em>color</em> - arc fill color</li></ul>",
-         "A white arc with center at (100,100), 20px radius, 5px thickness, starting at 45 degrees and ending at 180 degrees.</br>" + 
+         "A white arc with center at (100,100), 20px radius, 5px thickness, starting at 45 degrees and ending at 180 degrees.</br>" +
          "A red pie with center at (100,150), 20px radius, starting at 45 degrees and ending at 180 degrees.",
          "tft.fillArc(100, 100, 20, 5, 45, 180, ILI9341_WHITE);</br>" +
          "tft.fillArc(100, 100, 20, 20, 45, 180, ILI9341_RED);"
@@ -508,12 +512,12 @@ MIT license, all text above must be included in any redistribution
         addIliFunction("drawTriangle",
          "Draws a triangle.",
         "void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color);",
-        "<ul><li><em>x0</em> - x-coordinate of triangle's 1st corner</li>" +
-        "<li><em>y0</em> - y-coordinate of the triangle's 1st corner</li>" + 
-        "<li><em>x1</em> - x-coordinate of triangle's 2nd corner</li>" + 
-        "<li><em>y1</em> - y-coordinate of the triangle's 2nd corner</li>" + 
-        "<li><em>x2</em> - x-coordinate of triangle's 3rd corner</li>" + 
-        "<li><em>y2</em> - y-coordinate of the triangle's 3rd corner</li>" + 
+        "<ul><li><em>x0</em> - x-coordinate of triangle 1st corner</li>" +
+        "<li><em>y0</em> - y-coordinate of the triangle 1st corner</li>" +
+        "<li><em>x1</em> - x-coordinate of triangle 2nd corner</li>" +
+        "<li><em>y1</em> - y-coordinate of the triangle 2nd corner</li>" +
+        "<li><em>x2</em> - x-coordinate of triangle 3rd corner</li>" +
+        "<li><em>y2</em> - y-coordinate of the triangle 3rd corner</li>" +
         "<li><em>color</em> - triangle color</li></ul>",
         "A triangle defined by points (100,100) (80,130) (120,120).",
         "tft.drawTriangle(100, 100, 80, 130, 120, 120, ILI9341_WHITE);", true);
@@ -521,12 +525,12 @@ MIT license, all text above must be included in any redistribution
         addIliFunction("fillTriangle",
          "Draws a filled triangle.",
         "void fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color);",
-        "<ul><li><em>x0</em> - x-coordinate of triangle's 1st corner</li>" +
-        "<li><em>y0</em> - y-coordinate of the triangle's 1st corner</li>" + 
-        "<li><em>x1</em> - x-coordinate of triangle's 2nd corner</li>" + 
-        "<li><em>y1</em> - y-coordinate of the triangle's 2nd corner</li>" + 
-        "<li><em>x2</em> - x-coordinate of triangle's 3rd corner</li>" + 
-        "<li><em>y2</em> - y-coordinate of the triangle's 3rd corner</li>" + 
+        "<ul><li><em>x0</em> - x-coordinate of triangle 1st corner</li>" +
+        "<li><em>y0</em> - y-coordinate of the triangle 1st corner</li>" +
+        "<li><em>x1</em> - x-coordinate of triangle 2nd corner</li>" +
+        "<li><em>y1</em> - y-coordinate of the triangle 2nd corner</li>" +
+        "<li><em>x2</em> - x-coordinate of triangle 3rd corner</li>" +
+        "<li><em>y2</em> - y-coordinate of the triangle 3rd corner</li>" +
         "<li><em>color</em> - triangle fill color</li></ul>",
         "A filled triangle defined by points (100,100) (80,130) (120,120).",
         "tft.fillTriangle(100, 100, 80, 130, 120, 120, ILI9341_WHITE);", true);
@@ -556,9 +560,9 @@ MIT license, all text above must be included in any redistribution
         "Draws an image from an array generated with BMP24toILI565Array tool.",
         "void drawImage(const uint16_t *colors, uint16_t x, uint16_t y, uint16_t w, uint16_t h);",
         "<ul><li><em>colors</em> - a pointer to an array (in progmem for AVR) holding pixel colors</li>" +
-        "<li><em>x</em> - x-coordinate of the image's top left corner</li>" + 
-        "<li><em>y</em> - y-coordinate of the images's top left corner</li>" + 
-        "<li><em>w</em> - image width, you can use the constant generated by BMP24toILI565Array tool which is called the same as the <em>colors</em> array with <em>Width</em> appended at the end (so if colors array name is <em>myImage</em> then the width of that image is in <em>myImageWidth</em> constant)</li>" + 
+        "<li><em>x</em> - x-coordinate of the image top left corner</li>" +
+        "<li><em>y</em> - y-coordinate of the image top left corner</li>" +
+        "<li><em>w</em> - image width, you can use the constant generated by BMP24toILI565Array tool which is called the same as the <em>colors</em> array with <em>Width</em> appended at the end (so if colors array name is <em>myImage</em> then the width of that image is in <em>myImageWidth</em> constant)</li>" +
         "<li><em>h</em> - image height, you can use the constant generated by BMP24toILI565Array tool which is called the same as the <em>colors</em> array with <em>Height</em> appended at the end (so if colors array name is <em>myImage</em> then the height of that image is in <em>myImageHeight</em> constant)</li></ul>",
         "3 icons from 3 arrays (arrayTftBitmap example sketch).",
         '#include "info.h<br/>#include "alert.h"<br/>#include "close.h"<br/>...<br/>' +
@@ -631,7 +635,7 @@ MIT license, all text above must be included in any redistribution
         "Reads pixel color from TFT.",
         "uint16_t readPixel(int16_t x, int16_t y);",
         "<ul><li><em>x</em> - x-coordinate of the pixel to read the color from</li>" +
-        "<li><em>y</em> - y-coordinate of the pixel to read the color from</li></ul>" + 
+        "<li><em>y</em> - y-coordinate of the pixel to read the color from</li></ul>" +
         "<em>Returns</em> - color of the pixel",
         "Read color of a pixel at position (100,100).",
         "uint16_t color = tft.readPixel(100, 100);", false);
@@ -705,12 +709,94 @@ MIT license, all text above must be included in any redistribution
         "Set the max angle to 100 so we can draw arcs using percentages. Then draw an arc with 'angle' of 25% which will draw quarter of a circle.",
         "tft.setArcParams(100);<br/>tft.drawArc(100, 150, 50, 10, 0, 25, ILI9341_WHITE);", true);
 
+        addIliFunction("setTextArea",
+        "Sets the area for drawing the text.",
+        "void setTextArea(gTextArea area);",
+        "<ul><li><em>area</em> - area for drawing the text</li></ul>",
+        "Draw strings into 2 separate areas.",
+        "gTextArea titleArea {10, 10, 110, 30};<br/>" +
+        "gTextArea descriptionArea {10, 30, 110, 50};<br/>" +
+        "...<br/>" +
+        "tft.setTextArea(titleArea);<br/>" +
+        'tft.print("My Title");<br/>' +
+        'tft.setTextArea(descriptionArea);<br/>' +
+        'tft.print("My Description");', true);
+
+        addIliFunction("setTextArea",
+        "Sets the area for drawing the text.",
+        "void setTextArea(int16_t x0, int16_t y0, int16_t x1, int16_t y1);",
+        "<ul><li><em>x0</em> - x-coordinate of area upper left corner</li>" +
+        "<li><em>y0</em> - y-coordinate of area upper left corner</li>" +
+        "<li><em>x1</em> - x-coordinate of area bottom right corner</li>" +
+        "<li><em>y1</em> - y-coordinate of area bottom right corner</li>" +
+        "</ul>",
+        "Draw strings into 2 separate areas.",
+        "tft.setTextArea(10, 10, 110, 30);<br/>" +
+        'tft.print("My Title");<br/>' +
+        'tft.setTextArea(10, 30, 110, 50);<br/>' +
+        'tft.print("My Description");', true, 'func_setTextAreaXYXY');
+
+        addIliFunction("setTextArea",
+        "Sets the area for drawing the text.",
+        "void setTextArea(int16_t x, int16_t y, int16_t columns, int16_t rows, gTextFont font);",
+        "<ul><li><em>x</em> - x-coordinate of area upper left corner</li>" +
+        "<li><em>y</em> - y-coordinate of area upper left corner</li>" +
+        "<li><em>columns</em> - area width in number of columns (the width of the widest character is used to calculate the area width)</li>" +
+        "<li><em>rows</em> - area height in number of rows (the font height is used to calculate area height</li>" +
+        "<li><em>font</em> - font to be used to calculate the area size</li>" +
+        "</ul>",
+        "Draw strings into 2 separate areas.",
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        'tft.setTextArea(10, 10, 8, 1, Arial_bold_14);<br/>' +
+        'tft.print("My Title");<br/>' +
+        'tft.setTextArea(0, 30, 14, 1, Arial_bold_14);<br/>' +
+        'tft.print("My Description");', true);
+
+        addIliFunction("setTextAreaWH",
+        "Sets the area for drawing the text.",
+        "void setTextAreaWH(int16_t x, int16_t y, int16_t w, int16_t h);",
+        "<ul><li><em>x</em> - x-coordinate of area upper left corner</li>" +
+        "<li><em>y</em> - y-coordinate of area upper left corner</li>" +
+        "<li><em>w</em> - area width</li>" +
+        "<li><em>h</em> - area height</li>" +
+        "</ul>",
+        "Draw strings into 2 separate areas.",
+        "tft.setTextAreaWH(10, 10, 100, 20);<br/>" +
+        'tft.print("My Title");<br/>' +
+        'tft.setTextAreaWH(0, 30, 100, 20);<br/>' +
+        'tft.print("My Description");', true);
+
         addIliFunction("screenshotToConsole",
-        "Takes a screenshot of the whole display and outputs it to the console in a form of text. That text string can be then pasted in the ILIScreenshotViewer which will convert it back to an image. Image can then be saved in bmp, jpg or png format.",
+        "Takes a screenshot of the whole display and outputs it to the console in the form of a text string that looks like this:<br/> " +
+        "<div class='functionCode'>==== PIXEL DATA START ====</br>" +
+        "0000000090606060001F000000011B606060002B0000000</br>" +
+        "11060606000350000000107606060003D00000000FF6060</br>" +
+        "60004500000000F86060600016000000001F60606000160</br>" +
+        "...                                     </br>" +
+        "0000000F26060600013000000002B606060001300000000</br>" +
+        "EC6060600011000000001B7C7E7C000E000000000C60606</br>" +
+        "06060002B000000011B606060001F00000001D1000050F0</br>" +
+        "==== PIXEL DATA END ====</div><br/>" +
+        "That text string (everything between PIXEL DATA START and PIXEL DATA END, so starting with 0000... and ending with ...50F0) can be then pasted in the ILIScreenshotViewer (from the Tools folder) which will convert it back to an image.<br/>" +
+        "Alternatively you can connect to Arduino from ILIScreenshotViewer and any time <em>screenshotToConsole</em> is called, ILIScreenshotViewer will automatically display the image so there is no need to copy/paste the text strings. Image can be saved in bmp, jpg or png format.<br/>" +
+        "If you are getting errors after you paste in the string or the image has artifacts then try to lower the SPI clock speed before calling <em>screenshotToConsole</em>.",
         "void screenshotToConsole();",
-        "<ul><li><em>arcAngleMax</em> - sets the max value corresponding to 360 degrees. By default it is set to value defined by ARC_ANGLE_MAX in ILI9341_due_config.h which is 360. You can set it to any float value, so for example if you set it to 1.0 (which will represent the max angle of 360) then calling fillArc with startAngle of 0 and endAngle of 0.5 then you will get a half circle.</li></ul>",
-        "Set the max angle to 100 so we can draw arcs using percentages. Then draw an arc with 'angle' of 25% which will draw quarter of a circle.",
-        "tft.setArcParams(100);<br/>tft.drawArc(100, 150, 50, 10, 0, 25, ILI9341_WHITE);", true);
+        "",
+        "Draw an icon and take a screenshot. Compile and upload the example. After that run ILIScreenshotViewer and connect the built-in console to Arduino. COM port is the same as for uploading sketches and Baud Rate should be set to 115200 (or whatever you set in <em>Serial.begin(xxx)</em>). After Arduino is reset (automatically or manually), a screenshot should appear in ILIScreenshotViewer. This example is from examples\\iliScreenshotViewer folder.",
+        '#include "alert.h"<br/>' +
+        'void setup() {<br/>' +
+        '&nbsp;&nbsp;&nbsp;Serial.begin(115200);</br>' +
+        '&nbsp;&nbsp;&nbsp;tft.begin();</br>' +
+        '&nbsp;&nbsp;&nbsp;tft.setRotation(iliRotation270);	// landscape</br>' +
+        '&nbsp;&nbsp;&nbsp;tft.fillScreen(ILI9341_BLUE);</br>' +
+        "&nbsp;&nbsp;&nbsp;tft.drawImage(alert, 140, 100, alertWidth, alertHeight);</br>" +
+        "&nbsp;&nbsp;&nbsp;// reduce the SPI clock speed if you get errors or image artifacts</br>" +
+        "&nbsp;&nbsp;&nbsp;//tft.setSPIClockDivider(10); // for Due<br/>" +
+        "&nbsp;&nbsp;&nbsp;//tft.setSPIClockDivider(SPI_CLOCK_DIV8); // for Uno, Mega,...<br/>" +
+        "&nbsp;&nbsp;&nbsp;tft.screenshotToConsole();<br/>" +
+        "}", true);
 
     </script>
 
