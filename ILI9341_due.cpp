@@ -1644,53 +1644,53 @@ void ILI9341_due::printHex32(uint32_t *data, uint8_t length) // prints 8-bit dat
 
 void ILI9341_due::clearTextArea()
 {
-	fillRect(_area.x1, _area.y1, _area.x2 - _area.x1 + 1, _area.y2 - _area.y1 + 1, _fontBgColor);
+	fillRect(_area.x0, _area.y0, _area.x1 - _area.x0 + 1, _area.y1 - _area.y0 + 1, _fontBgColor);
 }
 
 void ILI9341_due::clearTextArea(uint16_t color)
 {
-	fillRect(_area.x1, _area.y1, _area.x2 - _area.x1 + 1, _area.y2 - _area.y1 + 1, color);
+	fillRect(_area.x0, _area.y0, _area.x1 - _area.x0 + 1, _area.y1 - _area.y0 + 1, color);
 }
 
-bool ILI9341_due::setTextArea(int16_t x, int16_t y, int16_t columns, int16_t rows, gTextFont font) //, textMode mode)
+void ILI9341_due::setTextArea(gTextArea area) //, textMode mode)
+{
+	_area.x0 = area.x0;
+	_area.y0 = area.y0;
+	_area.x1 = area.x1;
+	_area.y1 = area.y1;
+	_x = area.x0;
+	_y = area.y0;
+}
+
+void ILI9341_due::setTextArea(int16_t x0, int16_t y0, int16_t x1, int16_t y1) //, textMode mode)
+{
+	_area.x0 = x0;
+	_area.y0 = y0;
+	_area.x1 = x1;
+	_area.y1 = y1;
+	_x = x0;
+	_y = y0;
+}
+
+void ILI9341_due::setTextArea(int16_t x, int16_t y, int16_t columns, int16_t rows, gTextFont font) //, textMode mode)
 {
 	//textMode mode = DEFAULT_SCROLLDIR;
-	uint16_t x2, y2;
+	uint16_t x1, y1;
 
 	setFont(font);
 
-	x2 = x + columns * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1) - 1;
-	y2 = y + rows * (fontHeight() + 1) - 1;
+	x1 = x + columns * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1) - 1;
+	y1 = y + rows * (fontHeight() + 1) - 1;
 
-	return setTextArea(x, y, x2, y2); //, mode);
+	setTextArea(x, y, x1, y1); //, mode);
 }
 
-bool ILI9341_due::setTextArea(gTextArea area) //, textMode mode)
+void ILI9341_due::setTextAreaWH(int16_t x, int16_t y, int16_t w, int16_t h) //, textMode mode)
 {
-	_area.x1 = area.x1;
-	_area.y1 = area.y1;
-	_area.x2 = area.x2;
-	_area.y2 = area.y2;
-	_x = area.x1;
-	_y = area.y1;
-}
-
-bool ILI9341_due::setTextArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2) //, textMode mode)
-{
-	_area.x1 = x1;
-	_area.y1 = y1;
-	_area.x2 = x2;
-	_area.y2 = y2;
-	_x = x1;
-	_y = y1;
-}
-
-bool ILI9341_due::setTextAreaWH(int16_t x, int16_t y, int16_t w, int16_t h) //, textMode mode)
-{
-	_area.x1 = x;
-	_area.y1 = y;
-	_area.x2 = x + w;
-	_area.y2 = y + h;
+	_area.x0 = x;
+	_area.y0 = y;
+	_area.x1 = x + w;
+	_area.y1 = y + h;
 	_x = x;
 	_y = y;
 }
@@ -1712,9 +1712,9 @@ void ILI9341_due::specialChar(uint8_t c)
 		*/
 
 
-		/*if (_fontMode == gTextFontModeSolid && _x < _area.x2)
-			fillRect(_x, _y, _area.x2 - _x, height, _fontBgColor);*/
-		//glcd_Device::SetPixels(_x, _y, _area.x2, _y+height, _fontColor == BLACK ? WHITE : BLACK);
+		/*if (_fontMode == gTextFontModeSolid && _x < _area.x1)
+			fillRect(_x, _y, _area.x1 - _x, height, _fontBgColor);*/
+		//glcd_Device::SetPixels(_x, _y, _area.x1, _y+height, _fontColor == BLACK ? WHITE : BLACK);
 
 		//		/*
 		//		* Check for scroll up vs scroll down (scrollup is normal)
@@ -1734,7 +1734,7 @@ void ILI9341_due::specialChar(uint8_t c)
 		//			* are atually 1 pixel taller when rendered.
 		//			* This extra pixel is along the bottom for a "gap" between the character below.
 		//			*/
-		//			if (_y + 2 * height >= _area.y2)
+		//			if (_y + 2 * height >= _area.y1)
 		//			{
 		//#ifndef GLCD_NODEFER_SCROLL
 		//				if (!_needScroll)
@@ -1748,14 +1748,14 @@ void ILI9341_due::specialChar(uint8_t c)
 		//				* forumula for pixels to scroll is:
 		//				*	(assumes "height" is one less than rendered height)
 		//				*
-		//				*		pixels = height - ((_area.y2 - _y)  - height) +1;
+		//				*		pixels = height - ((_area.y1 - _y)  - height) +1;
 		//				*
 		//				*		The forumala below is unchanged
 		//				*		But has been re-written/simplified in hopes of better code
 		//				*
 		//				*/
 		//
-		//				uint8_t pixels = 2 * height + _y - _area.y2 + 1;
+		//				uint8_t pixels = 2 * height + _y - _area.y1 + 1;
 		//
 		//				/*
 		//				* Scroll everything to make room
@@ -1781,10 +1781,10 @@ void ILI9341_due::specialChar(uint8_t c)
 		//				*
 		//				*
 		//				*/
-		//				//ScrollUp(_area.x1, _area.y1, _area.x2, _area.y2, pixels, _fontBgColor);
+		//				//ScrollUp(_area.x0, _area.y0, _area.x1, _area.y1, pixels, _fontBgColor);
 		//
-		//				_x = _area.x1;
-		//				_y = _area.y2 - height;
+		//				_x = _area.x0;
+		//				_y = _area.y1 - height;
 		//			}
 		//			else
 		//			{
@@ -1792,7 +1792,7 @@ void ILI9341_due::specialChar(uint8_t c)
 		* Room for simple wrap
 		*/
 
-		_x = _xStart; // _area.x1;
+		_x = _xStart; // _area.x0;
 		_y = _y + (height + _lineSpacing)*_textScale;
 		_isFirstChar = true;
 
@@ -1813,12 +1813,12 @@ void ILI9341_due::specialChar(uint8_t c)
 		//			* are atually 1 pixel taller when rendered.
 		//			*
 		//			*/
-		//			if (_y > _area.y1 + height)
+		//			if (_y > _area.y0 + height)
 		//			{
 		//				/*
 		//				* There is room so just do a simple wrap
 		//				*/
-		//				_x = _area.x1;
+		//				_x = _area.x0;
 		//				_y = _y - (height + 1);
 		//			}
 		//			else
@@ -1836,12 +1836,12 @@ void ILI9341_due::specialChar(uint8_t c)
 		//				*	(assumes "height" is one less than rendered height)
 		//				*/
 		//
-		//				uint8_t pixels = height + 1 - (_area.y1 - _y);
+		//				uint8_t pixels = height + 1 - (_area.y0 - _y);
 		//
-		//				//ScrollDown(_area.x1, _area.y1, _area.x2, _area.y2, pixels, _fontBgColor);
+		//				//ScrollDown(_area.x0, _area.y0, _area.x1, _area.y1, pixels, _fontBgColor);
 		//
-		//				_x = _area.x1;
-		//				_y = _area.y1;
+		//				_x = _area.x0;
+		//				_y = _area.y0;
 		//			}
 		//		}
 		//#endif
@@ -1944,7 +1944,7 @@ size_t ILI9341_due::write(uint8_t c)
 	* NOTE/WARNING: the below calculation assumes a 1 pixel pad.
 	* This will need to be changed if/when configurable pixel padding is supported.
 	*/
-	//	if (_wrap && _x + charWidth > _area.x2)
+	//	if (_wrap && _x + charWidth > _area.x1)
 	//	{
 	//		write('\n'); // fake a newline to cause wrap/scroll
 	//#ifndef GLCD_NODEFER_SCROLL
@@ -2656,8 +2656,8 @@ void ILI9341_due::printAlignedPivotedOffseted(const __FlashStringHelper *str, gT
 void ILI9341_due::printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
 {
 	//Serial << pixelsClearedOnLeft << " " << pixelsClearedOnRight << endl;
-	_x = _xStart = _area.x1;
-	_y = _yStart = _area.y1;
+	_x = _xStart = _area.x0;
+	_y = _yStart = _area.y0;
 
 	applyAlignPivotOffset(str, align, pivot, offsetX, offsetY);
 
@@ -2669,8 +2669,8 @@ void ILI9341_due::printAlignedPivotedOffseted(const char *str, gTextAlign align,
 void ILI9341_due::printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
 {
 	//Serial << pixelsClearedOnLeft << " " << pixelsClearedOnRight << endl;
-	_x = _xStart = _area.x1;
-	_y = _yStart = _area.y1;
+	_x = _xStart = _area.x0;
+	_y = _yStart = _area.y0;
 
 	applyAlignPivotOffset(str, align, pivot, offsetX, offsetY);
 
@@ -2682,8 +2682,8 @@ void ILI9341_due::printAlignedPivotedOffseted(const String &str, gTextAlign alig
 void ILI9341_due::printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
 {
 	//Serial << pixelsClearedOnLeft << " " << pixelsClearedOnRight << endl;
-	_x = _xStart = _area.x1;
-	_y = _yStart = _area.y1;
+	_x = _xStart = _area.x0;
+	_y = _yStart = _area.y0;
 
 	applyAlignPivotOffset(str, align, pivot, offsetX, offsetY);
 
@@ -2698,9 +2698,9 @@ void ILI9341_due::clearPixelsOnLeft(uint16_t pixelsToClearOnLeft){
 	if (pixelsToClearOnLeft > 0)
 	{
 
-		int16_t clearX1 = max(min(_x, (int16_t)_area.x1), _x - (int16_t)pixelsToClearOnLeft);
+		int16_t clearX1 = max(min(_x, (int16_t)_area.x0), _x - (int16_t)pixelsToClearOnLeft);
 		//Serial.println(clearX1);
-		//Serial << "clearPixelsOnLeft " << _x << " " << _area.x1 << " " << clearX1 << endl2;
+		//Serial << "clearPixelsOnLeft " << _x << " " << _area.x0 << " " << clearX1 << endl2;
 		fillRect(clearX1, _y, _x - clearX1, scaledFontHeight(), _fontBgColor);
 	}
 }
@@ -2710,8 +2710,8 @@ void ILI9341_due::clearPixelsOnRight(uint16_t pixelsToClearOnRight){
 	// CLEAR PIXELS ON THE RIGHT
 	if (pixelsToClearOnRight > 0)
 	{
-		int16_t clearX2 = min(max(_x, _area.x2), _x + pixelsToClearOnRight);
-		//Serial << "area from " << _area.x1 << " to " << _area.x2 << endl;
+		int16_t clearX2 = min(max(_x, _area.x1), _x + pixelsToClearOnRight);
+		//Serial << "area from " << _area.x0 << " to " << _area.x1 << endl;
 		//Serial << "clearing on right from " << _x << " to " << clearX2 << endl;
 		fillRect(_x, _y, clearX2 - _x, scaledFontHeight(), _fontBgColor);
 		//TOTRY
@@ -2754,46 +2754,46 @@ void ILI9341_due::applyAlignOffset(gTextAlign align, uint16_t offsetX, uint16_t 
 		{
 		case gTextAlignTopCenter:
 		{
-			_x += (_area.x2 - _area.x1) / 2;
+			_x += (_area.x1 - _area.x0) / 2;
 			break;
 		}
 		case gTextAlignTopRight:
 		{
-			_x += _area.x2 - _area.x1;
+			_x += _area.x1 - _area.x0;
 			break;
 		}
 		case gTextAlignMiddleLeft:
 		{
-			_y += (_area.y2 - _area.y1) / 2;
+			_y += (_area.y1 - _area.y0) / 2;
 			break;
 		}
 		case gTextAlignMiddleCenter:
 		{
-			_x += (_area.x2 - _area.x1) / 2;
-			_y += (_area.y2 - _area.y1) / 2;
+			_x += (_area.x1 - _area.x0) / 2;
+			_y += (_area.y1 - _area.y0) / 2;
 			break;
 		}
 		case gTextAlignMiddleRight:
 		{
-			_x += _area.x2 - _area.x1;
-			_y += (_area.y2 - _area.y1) / 2;
+			_x += _area.x1 - _area.x0;
+			_y += (_area.y1 - _area.y0) / 2;
 			break;
 		}
 		case gTextAlignBottomLeft:
 		{
-			_y += _area.y2 - _area.y1;
+			_y += _area.y1 - _area.y0;
 			break;
 		}
 		case gTextAlignBottomCenter:
 		{
-			_x += (_area.x2 - _area.x1) / 2;
-			_y += _area.y2 - _area.y1;
+			_x += (_area.x1 - _area.x0) / 2;
+			_y += _area.y1 - _area.y0;
 			break;
 		}
 		case gTextAlignBottomRight:
 		{
-			_x += _area.x2 - _area.x1;
-			_y += _area.y2 - _area.y1;
+			_x += _area.x1 - _area.x0;
+			_y += _area.y1 - _area.y0;
 			break;
 		}
 		}
@@ -2959,8 +2959,8 @@ void ILI9341_due::cursorTo(uint8_t column, uint8_t row)
 	* Text position is relative to current text area
 	*/
 
-	_x = _area.x1 + column * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1);
-	_y = _area.y1 + row * (fontHeight() + _lineSpacing) * _textScale;
+	_x = _area.x0 + column * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1);
+	_y = _area.y0 + row * (fontHeight() + _lineSpacing) * _textScale;
 	_isFirstChar = true;
 	//#ifndef GLCD_NODEFER_SCROLL
 	//	/*
@@ -2979,7 +2979,7 @@ void ILI9341_due::cursorTo(int8_t column)
 	* negative value moves the cursor backwards
 	*/
 	if (column >= 0)
-		_x = column * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1) + _area.x1;
+		_x = column * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1) + _area.x0;
 	else
 		_x -= column * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1);
 
@@ -3001,8 +3001,8 @@ void ILI9341_due::cursorToXY(int16_t x, int16_t y)
 	* Text position is relative to current text area
 	*/
 
-	_x = _xStart = _area.x1 + x;
-	_y = _yStart = _area.y1 + y;
+	_x = _xStart = _area.x0 + x;
+	_y = _yStart = _area.y0 + y;
 	_isFirstChar = true;
 	//Serial << F("cursorToXY x:") << x << F(" y:") << y << endl;
 
@@ -3031,13 +3031,13 @@ void ILI9341_due::eraseTextLine(uint16_t color, gTextEraseLine type)
 	switch (type)
 	{
 	case gTextEraseToEOL:
-		fillRect(_x, _y, _area.x2 - _x, scaledFontHeight(), color);
+		fillRect(_x, _y, _area.x1 - _x, scaledFontHeight(), color);
 		break;
 	case gTextEraseFromBOL:
-		fillRect(_area.x1, _y, _x - _area.x1, scaledFontHeight(), color);
+		fillRect(_area.x0, _y, _x - _area.x0, scaledFontHeight(), color);
 		break;
 	case gTextEraseFullLine:
-		fillRect(_area.x1, _y, _area.x2 - _area.x1, scaledFontHeight(), color);
+		fillRect(_area.x0, _y, _area.x1 - _area.x0, scaledFontHeight(), color);
 		break;
 	}
 

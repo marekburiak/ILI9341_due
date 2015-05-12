@@ -22,6 +22,7 @@ Copyright (c) 2014  Marek Buriak
 #define ILI9341_SPI_CLKDIVIDER SPI_CLOCK_DIV2	// for Uno, Mega,...
 #endif
 
+// uncomment if you want to use SPI transactions. Uncomment it if the library does not work when used with other libraries.
 //#define ILI_USE_SPI_TRANSACTION
 
 
@@ -35,7 +36,10 @@ Copyright (c) 2014  Marek Buriak
 //#define FEATURE_PRINT_ENABLED
 #define FEATURE_GTEXT_PRINT_ENABLED
 
+// 
 //#define LINE_SPACING_AS_PART_OF_LETTERS
+
+// comment out if you do need to use scaled text. The text will draw then faster.
 #define TEXT_SCALING_ENABLED
 
 // number representing the maximum angle (e.g. if 100, then if you pass in start=0 and end=50, you get a half circle)

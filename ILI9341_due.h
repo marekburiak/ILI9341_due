@@ -358,10 +358,10 @@ typedef enum {
 
 typedef struct
 {
+	uint16_t x0;
+	uint16_t y0;
 	uint16_t x1;
 	uint16_t y1;
-	uint16_t x2;
-	uint16_t y2;
 } gTextArea;
 
 typedef const uint8_t* gTextFont;
@@ -429,7 +429,6 @@ private:
 	void drawFastVLine_noTrans(int16_t x, int16_t y, uint16_t h, uint16_t color);
 	void drawFastHLine_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t color);
 	void drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
-	void pushColors_noTrans_noCS(const uint16_t *colors, uint16_t offset, uint32_t len);
 	void printHex8(uint8_t *data, uint8_t length);
 	void printHex16(uint16_t *data, uint8_t length);
 	void printHex32(uint32_t *data, uint8_t length);
@@ -528,8 +527,6 @@ public:
 
 	void pushColor(uint16_t color);
 	void pushColors(const uint16_t *colors, uint16_t offset, uint32_t len);
-	void pushColors(uint16_t *colors, uint16_t offset, uint32_t len);
-	
 	/*void pushColors565(uint8_t *colors, uint16_t offset, uint32_t len);
 	void pushColors565(const uint16_t *colors, uint16_t offset, uint32_t len);*/
 
@@ -567,10 +564,10 @@ public:
 	void screenshotToConsole();
 	
 #ifdef FEATURE_GTEXT_ENABLED
-	bool setTextArea(gTextArea area);
-	bool setTextArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2); //, textMode mode=DEFAULT_SCROLLDIR);
-	bool setTextAreaWH(int16_t x, int16_t y, int16_t w, int16_t h); //, textMode mode=DEFAULT_SCROLLDIR);
-	bool setTextArea(int16_t x1, int16_t y1, int16_t columns, int16_t rows, gTextFont font); //, textMode mode=DEFAULT_SCROLLDIR);
+	void setTextArea(gTextArea area);
+	void setTextArea(int16_t x0, int16_t y0, int16_t x1, int16_t y1); //, textMode mode=DEFAULT_SCROLLDIR);
+	void setTextAreaWH(int16_t x, int16_t y, int16_t w, int16_t h); //, textMode mode=DEFAULT_SCROLLDIR);
+	void setTextArea(int16_t x, int16_t y, int16_t columns, int16_t rows, gTextFont font); //, textMode mode=DEFAULT_SCROLLDIR);
 	void clearTextArea();
 	void clearTextArea(uint16_t color);
 
