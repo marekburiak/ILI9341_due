@@ -722,29 +722,39 @@ MIT license, all text above must be included in any redistribution
         "<ul><li><em>area</em> - area for drawing the text</li></ul>",
         "Draw strings into 2 separate areas.",
         '#include "fonts\\Arial_bold_14.h"<br/>' +
-        "gTextArea titleArea {10, 10, 110, 30}; // define a 100px wide and 20px high area<br/>" +
-        "gTextArea descriptionArea {10, 60, 110, 70}; // define a 100px wide and 20px high area<br/>" +
+        "gTextArea titleArea{ 10, 10, 300, 40 }; // define a 300px wide and 40px high title area<br/>" +
+        "gTextArea descriptionArea{ 10, 60, 300, 170 }; // define a 300px wide and 170px high description area<br/>" +
         "...<br/>" +
         'tft.setFont(Arial_bold_14);<br/>' +
         'tft.setTextColor(ILI9341_WHITE, ILI9341_DARKBLUE);<br/>' +
+        "...<br/>" +
         "tft.setTextArea(titleArea);<br/>" +
+        "tft.clearTextArea(ILI9341_LIGHTBLUE); // just to see where the area is<br/>" +
         'tft.print("My Title");<br/>' +
         'tft.setTextArea(descriptionArea);<br/>' +
+        "tft.clearTextArea(ILI9341_LIGHTBLUE);<br/>" +
         'tft.print("My Description");', true);
 
         addIliFunction("setTextArea",
         "Sets the area for drawing the text.",
-        "void setTextArea(int16_t x0, int16_t y0, int16_t x1, int16_t y1);",
-        "<ul><li><em>x0</em> - x-coordinate of area upper left corner</li>" +
-        "<li><em>y0</em> - y-coordinate of area upper left corner</li>" +
-        "<li><em>x1</em> - x-coordinate of area bottom right corner</li>" +
-        "<li><em>y1</em> - y-coordinate of area bottom right corner</li>" +
+        "void setTextArea(int16_t x, int16_t y, int16_t w, int16_t h);",
+        "<ul><li><em>x</em> - x-coordinate of area upper left corner</li>" +
+        "<li><em>y</em> - y-coordinate of area upper left corner</li>" +
+        "<li><em>w</em> - area width</li>" +
+        "<li><em>h</em> - area height</li>" +
         "</ul>",
         "Draw strings into 2 separate areas.",
-        "tft.setTextArea(10, 10, 110, 30);<br/>" +
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_DARKBLUE);<br/>' +
+        "...<br/>" +
+        "tft.setTextArea(10, 10, 300, 40);<br/>" +
+        "tft.clearTextArea(ILI9341_LIGHTBLUE); // just to see where the area is<br/>" +
         'tft.print("My Title");<br/>' +
-        'tft.setTextArea(10, 30, 110, 50);<br/>' +
-        'tft.print("My Description");', true, 'func_setTextAreaXYXY');
+        'tft.setTextArea(10, 60, 300, 170);<br/>' +
+        "tft.clearTextArea(ILI9341_LIGHTBLUE);<br/>" +
+        'tft.print("My Description");', true);
 
         addIliFunction("setTextArea",
         "Sets the area for drawing the text.",
@@ -759,24 +769,30 @@ MIT license, all text above must be included in any redistribution
         '#include "fonts\\Arial_bold_14.h"<br/>' +
         '...<br/>' +
         'tft.setFont(Arial_bold_14);<br/>' +
-        'tft.setTextArea(10, 10, 8, 1, Arial_bold_14);<br/>' +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_DARKBLUE);<br/>' +
+        "...<br/>" +
+        'tft.setTextArea(10, 10, 26, 2, Arial_bold_14); // 26 characters wide and 2 characters high area<br/>' +
+        "tft.clearTextArea(ILI9341_LIGHTBLUE); // just to see where the area is<br/>" +
         'tft.print("My Title");<br/>' +
-        'tft.setTextArea(0, 30, 14, 1, Arial_bold_14);<br/>' +
-        'tft.print("My Description");', true);
+        'tft.setTextArea(10, 60, 26, 7, Arial_bold_14); // 26 characters wide and 7 characters high area<br/>' +
+        "tft.clearTextArea(ILI9341_LIGHTBLUE); // just to see where the area is<br/>" +
+        'tft.print("My Description");', true, "func_setTextAreaCR.png");
 
-        addIliFunction("setTextAreaWH",
-        "Sets the area for drawing the text.",
-        "void setTextAreaWH(int16_t x, int16_t y, int16_t w, int16_t h);",
-        "<ul><li><em>x</em> - x-coordinate of area upper left corner</li>" +
-        "<li><em>y</em> - y-coordinate of area upper left corner</li>" +
-        "<li><em>w</em> - area width</li>" +
-        "<li><em>h</em> - area height</li>" +
-        "</ul>",
-        "Draw strings into 2 separate areas.",
-        "tft.setTextAreaWH(10, 10, 100, 20);<br/>" +
-        'tft.print("My Title");<br/>' +
-        'tft.setTextAreaWH(0, 30, 100, 20);<br/>' +
-        'tft.print("My Description");', true);
+        addIliFunction("clearTextArea",
+        "Clears the currently set text area with currently set text background color.",
+        "void clearTextArea();",
+        " ",
+        "Clear 2 text areas with text background color.",
+        "gTextArea titleArea{ 10, 10, 300, 40 };<br/>" +
+        "gTextArea descriptionArea{ 10, 60, 300, 170 };<br/>" +
+        "...<br/>" +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_DARKBLUE);<br/>' +
+        'tft.setTextArea(titleArea);<br/>' +
+        "tft.clearTextArea(); // clear the title area with dark blue color<br/>" +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_DARKGRAY);<br/>' +
+        'tft.setTextArea(descriptionArea);<br/>' +
+        "tft.clearTextArea(); // clear the title area with dark gray color", true);
+      
 
         addIliFunction("screenshotToConsole",
         "Takes a screenshot of the whole display and outputs it to the console in the form of a text string that looks like this:<br/> " +
@@ -800,7 +816,7 @@ MIT license, all text above must be included in any redistribution
         '&nbsp;&nbsp;&nbsp;Serial.begin(115200);</br>' +
         '&nbsp;&nbsp;&nbsp;tft.begin();</br>' +
         '&nbsp;&nbsp;&nbsp;tft.setRotation(iliRotation270);	// landscape</br>' +
-        '&nbsp;&nbsp;&nbsp;tft.fillScreen(ILI9341_BLUE);</br>' +
+        '&nbsp;&nbsp;&nbsp;tft.fillScreen(ILI9341_BLACK);</br>' +
         "&nbsp;&nbsp;&nbsp;tft.drawImage(alert, 140, 100, alertWidth, alertHeight);</br>" +
         "&nbsp;&nbsp;&nbsp;// reduce the SPI clock speed if you get errors or image artifacts</br>" +
         "&nbsp;&nbsp;&nbsp;//tft.setSPIClockDivider(10); // for Due<br/>" +
