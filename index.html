@@ -580,19 +580,29 @@ MIT license, all text above must be included in any redistribution
         addIliFunction("setAddrWindow",
         "Sets the drawing window for pushPixel and pushPixels operations.",
         "void setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);",
-         "<ul><li><em>x0</em> - x-coordinate of the upper left corner of the drawing window</li>" +
-        "<li><em>y0</em> - y-coordinate of the upper left corner of the drawing window</li>" +
-        "<li><em>x1</em> - x-coordinate of the bottom right corner of the drawing window</li>" +
-        "<li><em>y1</em> - y-coordinate of the bottom right corner of the drawing window</li></ul>",
-        "Set the drawing window to draw between point (100,100) and (120, 130).",
-        "tft.setAddrWindow(100, 100, 120, 130);", false);
+        "<ul><li><em>x</em> - x-coordinate of the upper left corner of the drawing window</li>" +
+        "<li><em>y</em> - y-coordinate of the upper left corner of the drawing window</li>" +
+        "<li><em>w</em> - x-coordinate of the bottom right corner of the drawing window</li>" +
+        "<li><em>h</em> - y-coordinate of the bottom right corner of the drawing window</li></ul>",
+        "Set the drawing window to a 20x30px region with top left corner at (100, 100).",
+        "tft.setAddrWindow(100, 100, 119, 129);", false);
+
+        addIliFunction("setAddrWindowRect",
+        "Same as setAddrWindow but uses width and height instead of bottom right corner coordinates.",
+        "void setAddrWindowRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h);",
+        "<ul><li><em>x</em> - x-coordinate of the upper left corner of the drawing window</li>" +
+        "<li><em>y</em> - y-coordinate of the upper left corner of the drawing window</li>" +
+        "<li><em>w</em> - drawing window width</li>" +
+        "<li><em>h</em> - drawing window height</li></ul>",
+        "Set the drawing window to a 20x30px region with top left corner at (100, 100).",
+        "tft.setAddrWindowRect(100, 100, 20, 30);", false);
 
         addIliFunction("pushColor",
         "Sends one 'pixel' to TFT. <em>setAddrWindow</em> needs to be called prior to calling <em>pushColor</em> to set the drawing region. If you want to draw just one pixel then it is easier to use the <em>drawPixel</em> function. If you want to draw more pixels within a rectangular area then combination of <em>setAddrWindow</em> and <em>pushColor</em> is a more efficient/faster than calling <em>drawPixel</em> multiple times. You set your drawing window with <em>setAddrWindow</em> once and then you call <em>pushPixel</em> multiple times to draw the pixels in left-to-right top-to-bottom order.",
         "void pushColor(uint16_t color);",
         "<ul><li><em>color</em> - pixel color to draw</li></ul>",
         "Draw a dashed line, 200px long, 3 pixels high. 3 pixels white, 2 pixels blue, 3 pixels white, 2 pixels blue,...",
-        "tft.setAddrWindow(60, 100, 259, 102); // set the drawing window to a 200x3px rectangle</br>" +
+        "tft.setAddrWindowRect(60, 100, 200, 3); // set the drawing window to a 200x3px rectangle</br>" +
         "for (byte y = 0; y < 3; y++) { // 3 lines<br/>" +
         "&nbsp;&nbsp;&nbsp;for (byte x = 0; x < 40; x++) { // draw 5 pixels (3 white, 2 blue) fourty times (1 line)</br>" +
         "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tft.pushColor(ILI9341_WHITE);</br>" +
@@ -612,7 +622,7 @@ MIT license, all text above must be included in any redistribution
         "Draw a dashed line, 200px long, 3 pixels high. 3 pixels white, 2 pixels blue, 3 pixels white, 2 pixels blue,...",
         "const PROGMEM uint16_t pixels[] = { ILI9341_WHITE, ILI9341_WHITE, ILI9341_WHITE, ILI9341_BLUE, ILI9341_BLUE };</br>" +
         "...</br>" +
-        "tft.setAddrWindow(60, 100, 259, 102); // set the drawing window to a 200x3px rectangle</br>" +
+        "tft.setAddrWindowRect(60, 100, 200, 3); // set the drawing window to a 200x3px rectangle</br>" +
         "for (byte y = 0; y < 3; y++) { // 3 lines<br/>" +
         "&nbsp;&nbsp;&nbsp;for (byte x = 0; x < 40; x++) { // draw 5 pixels (3 white, 2 blue) fourty times (1 line)</br>" +
         "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tft.pushColors(pixels, 0, 5);</br>" +
@@ -632,7 +642,7 @@ MIT license, all text above must be included in any redistribution
         "&nbsp;&nbsp;&nbsp;uint16_t color = (uint16_t)(255 * x) / 200;</br>" +
         "&nbsp;&nbsp;&nbsp;pixels[x] = tft.color565(color, color, color);</br>" +
         "}</br>" +
-        "tft.setAddrWindow(60, 100, 259, 102); // set the drawing window to a 200x3px rectangle</br>" +
+        "tft.setAddrWindowRect(60, 100, 200, 3); // set the drawing window to a 200x3px rectangle</br>" +
         "for (byte y = 0; y < 3; y++) { // 3 lines</br>" +
         "&nbsp;&nbsp;&nbsp;tft.pushColors(pixels, 0, 200);  // draw the generated colors</br>" +
         "}", true, "func_pushColorsNonConst.png");
@@ -792,7 +802,7 @@ MIT license, all text above must be included in any redistribution
         'tft.setTextColor(ILI9341_WHITE, ILI9341_DARKGRAY);<br/>' +
         'tft.setTextArea(descriptionArea);<br/>' +
         "tft.clearTextArea(); // clear the title area with dark gray color", true);
-      
+
 
         addIliFunction("screenshotToConsole",
         "Takes a screenshot of the whole display and outputs it to the console in the form of a text string that looks like this:<br/> " +
