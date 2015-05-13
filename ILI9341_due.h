@@ -358,10 +358,10 @@ typedef enum {
 
 typedef struct
 {
-	uint16_t x0;
-	uint16_t y0;
-	uint16_t x1;
-	uint16_t y1;
+	uint16_t x;
+	uint16_t y;
+	uint16_t w;
+	uint16_t h;
 } gTextArea;
 
 typedef const uint8_t* gTextFont;
@@ -568,11 +568,12 @@ public:
 	
 #ifdef FEATURE_GTEXT_ENABLED
 	void setTextArea(gTextArea area);
-	void setTextArea(int16_t x0, int16_t y0, int16_t x1, int16_t y1); //, textMode mode=DEFAULT_SCROLLDIR);
-	void setTextAreaWH(int16_t x, int16_t y, int16_t w, int16_t h); //, textMode mode=DEFAULT_SCROLLDIR);
+	void setTextAreaRect(int16_t x, int16_t y, int16_t w, int16_t h); //, textMode mode=DEFAULT_SCROLLDIR);
 	void setTextArea(int16_t x, int16_t y, int16_t columns, int16_t rows, gTextFont font); //, textMode mode=DEFAULT_SCROLLDIR);
 	void clearTextArea();
+	void clearTextArea(gTextArea area);
 	void clearTextArea(uint16_t color);
+	void clearTextArea(gTextArea area, uint16_t color);
 
 	// Font Functions
 	void setFont(gTextFont font);

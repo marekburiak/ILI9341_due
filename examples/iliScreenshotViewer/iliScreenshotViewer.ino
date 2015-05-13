@@ -28,7 +28,7 @@ void setup()
 	tft.begin();
 	tft.setRotation(iliRotation270);	// landscape
 	
-	tft.fillScreen(ILI9341_BLUE);
+	tft.fillScreen(ILI9341_BLACK);
 	tft.drawImage(alert, 140, 100, alertWidth, alertHeight);
 
 	// reduce the SPI clock speed if you get errors or image artifacts
