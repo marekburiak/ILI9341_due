@@ -504,9 +504,9 @@ MIT license, all text above must be included in any redistribution
         "<li><em>end</em> - arc end angle</li>" +
         "<li><em>color</em> - arc fill color</li></ul>",
          "A white arc with center at (100,100), 20px radius, 5px thickness, starting at 45 degrees and ending at 180 degrees.</br>" +
-         "A red pie with center at (100,150), 20px radius, starting at 45 degrees and ending at 180 degrees.",
+         "A red pie with center at (160,100), 20px radius, starting at 45 degrees and ending at 270 degrees.",
          "tft.fillArc(100, 100, 20, 5, 45, 180, ILI9341_WHITE);</br>" +
-         "tft.fillArc(100, 100, 20, 20, 45, 180, ILI9341_RED);"
+         "tft.fillArc(160, 100, 20, 20, 45, 270, ILI9341_RED);"
          , true);
 
         addIliFunction("drawTriangle",
@@ -591,14 +591,16 @@ MIT license, all text above must be included in any redistribution
         "Sends one 'pixel' to TFT. <em>setAddrWindow</em> needs to be called prior to calling <em>pushColor</em> to set the drawing region. If you want to draw just one pixel then it is easier to use the <em>drawPixel</em> function. If you want to draw more pixels within a rectangular area then combination of <em>setAddrWindow</em> and <em>pushColor</em> is a more efficient/faster than calling <em>drawPixel</em> multiple times. You set your drawing window with <em>setAddrWindow</em> once and then you call <em>pushPixel</em> multiple times to draw the pixels in left-to-right top-to-bottom order.",
         "void pushColor(uint16_t color);",
         "<ul><li><em>color</em> - pixel color to draw</li></ul>",
-        "Draw a dashed line, 20px long. 3 pixels white, 2 pixels black, 3 pixels white, 2 pixels black,...",
-        "tft.setAddrWindow(100, 100, 100+4*5, 100);  // set the drawing window to a 20px wide line which we will draw into</br>" +
-        "for(byte x=0; x < 4; x++) {  // draw 5 pixels (3 white, 2 black) four times</br>" +
-        "&nbsp;&nbsp;&nbsp;tft.pushColor(ILI9341_WHITE);</br>" +
-        "&nbsp;&nbsp;&nbsp;tft.pushColor(ILI9341_WHITE);</br>" +
-        "&nbsp;&nbsp;&nbsp;tft.pushColor(ILI9341_WHITE);</br>" +
-        "&nbsp;&nbsp;&nbsp;tft.pushColor(ILI9341_BLACK);</br>" +
-        "&nbsp;&nbsp;&nbsp;tft.pushColor(ILI9341_BLACK);</br>" +
+        "Draw a dashed line, 200px long, 3 pixels high. 3 pixels white, 2 pixels blue, 3 pixels white, 2 pixels blue,...",
+        "tft.setAddrWindow(60, 100, 259, 102); // set the drawing window to a 200x3px rectangle</br>" +
+        "for (byte y = 0; y < 3; y++) { // 3 lines<br/>" +
+        "&nbsp;&nbsp;&nbsp;for (byte x = 0; x < 40; x++) { // draw 5 pixels (3 white, 2 blue) fourty times (1 line)</br>" +
+        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tft.pushColor(ILI9341_WHITE);</br>" +
+        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tft.pushColor(ILI9341_WHITE);</br>" +
+        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tft.pushColor(ILI9341_WHITE);</br>" +
+        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tft.pushColor(ILI9341_BLUE);</br>" +
+        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tft.pushColor(ILI9341_BLUE);</br>" +
+        "&nbsp;&nbsp;&nbsp;}<br/>" +
         "}", true);
 
         addIliFunction("pushColors (const PROGMEM array)",
@@ -607,12 +609,14 @@ MIT license, all text above must be included in any redistribution
         "<ul><li><em>colors</em> - a pointer to an array (in progmem for AVR) of pixels/colors</li>" +
         "<li><em>offset</em> - offset from the beginning of the array</li>" +
         "<li><em>len</em> - number of pixels to draw from the array</li></ul>",
-        "Draw a dashed line, 20px long. 3 pixels white, 2 pixels black, 3 pixels white, 2 pixels black,...",
-        "const PROGMEM  uint16_t pixels[]  = { 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0x0000};  // 3 white pixels, 2 black ones</br>" +
+        "Draw a dashed line, 200px long, 3 pixels high. 3 pixels white, 2 pixels blue, 3 pixels white, 2 pixels blue,...",
+        "const PROGMEM uint16_t pixels[] = { ILI9341_WHITE, ILI9341_WHITE, ILI9341_WHITE, ILI9341_BLUE, ILI9341_BLUE };</br>" +
         "...</br>" +
-        "tft.setAddrWindow(100, 100, 100+4*5, 100);  // set the drawing window to a 20px wide line which we will draw into</br>" +
-        "for(byte x=0; x < 4; x++) {  // draw the pixel array four times</br>" +
-        "&nbsp;&nbsp;&nbsp;tft.pushColors(pixels, 0, 5);</br>" +
+        "tft.setAddrWindow(60, 100, 259, 102); // set the drawing window to a 200x3px rectangle</br>" +
+        "for (byte y = 0; y < 3; y++) { // 3 lines<br/>" +
+        "&nbsp;&nbsp;&nbsp;for (byte x = 0; x < 40; x++) { // draw 5 pixels (3 white, 2 blue) fourty times (1 line)</br>" +
+        "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tft.pushColors(pixels, 0, 5);</br>" +
+        "&nbsp;&nbsp;&nbsp;}<br/>" +
         "}", true, "func_pushColors.png");
 
         addIliFunction("pushColors",
@@ -621,15 +625,17 @@ MIT license, all text above must be included in any redistribution
         "<ul><li><em>colors</em> - a pointer to an array of pixels/colors</li>" +
         "<li><em>offset</em> - offset from the beginning of the array</li>" +
         "<li><em>len</em> - number of pixels to draw from the array</li></ul>",
-        "Draw a gradient line, 20px long. The gradient is generated at runtime.",
-        "uint16_t pixels[20];</br>" +
+        "Draw a gradient line, 200px long. The gradient is generated at runtime.",
+        "uint16_t pixels[200];</br>" +
         "...</br>" +
-        "tft.setAddrWindow(100, 100, 100+20, 100);  // set the drawing window to a 20px wide line which we will draw into</br>" +
-        "for (byte x = 0; x < 20; x++) { // generate a simple grayscale gradient</br>" +
-        "&nbsp;&nbsp;&nbsp;uint16_t color = (255 * x) / 20;</br>" +
+        "for (byte x = 0; x < 200; x++) { // generate a simple grayscale gradient</br>" +
+        "&nbsp;&nbsp;&nbsp;uint16_t color = (uint16_t)(255 * x) / 200;</br>" +
         "&nbsp;&nbsp;&nbsp;pixels[x] = tft.color565(color, color, color);</br>" +
         "}</br>" +
-        "tft.pushColors(pixels, 0, 20);  // draw the generated colors", true, "func_pushColorsNonConst.png");
+        "tft.setAddrWindow(60, 100, 259, 102); // set the drawing window to a 200x3px rectangle</br>" +
+        "for (byte y = 0; y < 3; y++) { // 3 lines</br>" +
+        "&nbsp;&nbsp;&nbsp;tft.pushColors(pixels, 0, 200);  // draw the generated colors</br>" +
+        "}", true, "func_pushColorsNonConst.png");
 
         addIliFunction("readPixel",
         "Reads pixel color from TFT.",
@@ -697,26 +703,30 @@ MIT license, all text above must be included in any redistribution
         "Sets the offset in degrees from the default position (set by ARC_ANGLE_OFFSET in ILI9341_due_config.h) where the arc will start (representing arc angle of 0 degrees). If you imagine a compass then the default starting position is at the North point (the arc will start from the top). Setting the offset to 90 degrees will move the starting point 90 degress clockwise so to the East point (the arc will start from the right side), etc.",
         "void setAngleOffset(int16_t angleOffset);",
         "<ul><li><em>angleOffset</em> - clokwise offset in degrees from the default start point (North point). Can be a negative number which will offset angle's 0 degree position counter-clockwise from the default start point.</li></ul>",
-        "Set the red arc angle start point to West.<br/>Set the yellow arc angle start point to 45 degrees clockwise from North.<br/>Set the blue arc angle start point to default.",
-        "tft.setAngleOffset(-90);<br/>tft.drawArc(100, 150, 50, 10, 0, 25, ILI9341_RED);</br>" +
-        "tft.setAngleOffset(45);<br/>tft.drawArc(100, 200, 50, 10, 0, 25, ILI9341_YELLOW);</br>" +
-        "tft.setAngleOffset(0);<br/>tft.drawArc(100, 100, 50, 10, 0, 25, ILI9341_BLUE);", true);
+        "Set the red arc angle start point to West.<br/>Set the yellow arc angle start point to 45 degrees clockwise from North.<br/>Set the green arc angle start point to default.",
+        "tft.setAngleOffset(-90);<br/>tft.fillArc(110, 100, 20, 10, 0, 195, ILI9341_RED);</br>" +
+        "tft.setAngleOffset(45);<br/>tft.fillArc(160, 100, 20, 10, 0, 195, ILI9341_YELLOW);</br>" +
+        "tft.setAngleOffset(0);<br/>tft.fillArc(210, 100, 20, 10, 0, 195, ILI9341_GREEN);", true);
 
         addIliFunction("setArcParams",
         "Sets parameters for drawing arcs. For now it has only one param to set.",
         "void setArcParams(float arcAngleMax);",
         "<ul><li><em>arcAngleMax</em> - sets the max value corresponding to 360 degrees. By default it is set to value defined by ARC_ANGLE_MAX in ILI9341_due_config.h which is 360. You can set it to any float value, so for example if you set it to 1.0 (which will represent the max angle of 360) then calling fillArc with startAngle of 0 and endAngle of 0.5 then you will get a half circle.</li></ul>",
-        "Set the max angle to 100 so we can draw arcs using percentages. Then draw an arc with 'angle' of 25% which will draw quarter of a circle.",
-        "tft.setArcParams(100);<br/>tft.drawArc(100, 150, 50, 10, 0, 25, ILI9341_WHITE);", true);
+        "Set the max angle to 100 so we can draw arcs using percentages. Then draw an arc with an 'angle' of 25% which will draw quarter of a circle.",
+        "tft.setArcParams(100);	// set arc max value to 100<br/>" +
+        "tft.fillArc(160, 120, 50, 10, 0, 25, ILI9341_WHITE); // draw 25% of a circle", true);
 
         addIliFunction("setTextArea",
         "Sets the area for drawing the text.",
         "void setTextArea(gTextArea area);",
         "<ul><li><em>area</em> - area for drawing the text</li></ul>",
         "Draw strings into 2 separate areas.",
-        "gTextArea titleArea {10, 10, 110, 30};<br/>" +
-        "gTextArea descriptionArea {10, 30, 110, 50};<br/>" +
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        "gTextArea titleArea {10, 10, 110, 30}; // define a 100px wide and 20px high area<br/>" +
+        "gTextArea descriptionArea {10, 60, 110, 70}; // define a 100px wide and 20px high area<br/>" +
         "...<br/>" +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_DARKBLUE);<br/>' +
         "tft.setTextArea(titleArea);<br/>" +
         'tft.print("My Title");<br/>' +
         'tft.setTextArea(descriptionArea);<br/>' +
@@ -778,7 +788,7 @@ MIT license, all text above must be included in any redistribution
         "0000000F26060600013000000002B606060001300000000</br>" +
         "EC6060600011000000001B7C7E7C000E000000000C60606</br>" +
         "06060002B000000011B606060001F00000001D1000050F0</br>" +
-        "==== PIXEL DATA END ====</div><br/>" +
+        "==== PIXEL DATA END ====</div>" +
         "That text string (everything between PIXEL DATA START and PIXEL DATA END, so starting with 0000... and ending with ...50F0) can be then pasted in the ILIScreenshotViewer (from the Tools folder) which will convert it back to an image.<br/>" +
         "Alternatively you can connect to Arduino from ILIScreenshotViewer and any time <em>screenshotToConsole</em> is called, ILIScreenshotViewer will automatically display the image so there is no need to copy/paste the text strings. Image can be saved in bmp, jpg or png format.<br/>" +
         "If you are getting errors after you paste in the string or the image has artifacts then try to lower the SPI clock speed before calling <em>screenshotToConsole</em>.",

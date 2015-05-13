@@ -422,6 +422,7 @@ Full-Width Styles
     width: 96%;
     padding: 0.8em;
     margin-top: 0.8em;
+    margin-bottom: 0.8em;
     background-color: white;
     box-shadow: 0 0 10px rgba(0,0,0,.1);
     overflow: auto;
