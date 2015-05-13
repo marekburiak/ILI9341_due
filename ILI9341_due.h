@@ -544,6 +544,7 @@ public:
 	void idle(boolean i);
 	void setPowerLevel(pwrLevel p);
 	void setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1);
+	void setAddrWindowRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 	void setSPIClockDivider(uint8_t divider);
 	void setAngleOffset(int16_t angleOffset);
 	void setArcParams(float arcAngleMax);
@@ -936,16 +937,16 @@ private:
 	}
 
 	// Writes commands to set the GRAM area where data/pixels will be written
-	void setAddr_cont(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+	void setAddr_cont(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 		__attribute__((always_inline)) {
 		writecommand_cont(ILI9341_CASET); // Column addr set
 		setDCForData();
-		write16_cont(x0);   // XSTART
-		write16_cont(x1);   // XEND
+		write16_cont(x);   // XSTART
+		write16_cont(x+w-1);   // XEND
 		writecommand_cont(ILI9341_PASET); // Row addr set
 		setDCForData();
-		write16_cont(y0);   // YSTART
-		write16_cont(y1);   // YEND
+		write16_cont(y);   // YSTART
+		write16_cont(y+h-1);   // YEND
 	}
 
 	//__attribute__((always_inline))
@@ -982,35 +983,35 @@ private:
 #ifdef __SAM3X8E__
 	inline __attribute__((always_inline))
 #endif
-		void setAddrAndRW_cont(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+		void setAddrAndRW_cont(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 	{
 		setDCForCommand();
 		write8_cont(ILI9341_CASET); // Column addr set
 		setDCForData();
-		write16_cont(x0);   // XSTART
-		write16_cont(x1);   // XEND
+		write16_cont(x);   // XSTART
+		write16_cont(x+w-1);   // XEND
 		setDCForCommand();
 		write8_cont(ILI9341_PASET); // Row addr set
 		setDCForData();
-		write16_cont(y0);   // YSTART
-		write16_cont(y1);   // YEND
+		write16_cont(y);   // YSTART
+		write16_cont(y+h-1);   // YEND
 		setDCForCommand();
 		write8_cont(ILI9341_RAMWR); // RAM write
 	}
 
 	inline __attribute__((always_inline))
-		void setAddrAndRW_cont_inline(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+		void setAddrAndRW_cont_inline(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
 	{
 		setDCForCommand();
 		write8_cont(ILI9341_CASET); // Column addr set
 		setDCForData();
-		write16_cont(x0);   // XSTART
-		write16_cont(x1);   // XEND
+		write16_cont(x);   // XSTART
+		write16_cont(x+w-1);   // XEND
 		setDCForCommand();
 		write8_cont(ILI9341_PASET); // Row addr set
 		setDCForData();
-		write16_cont(y0);   // YSTART
-		write16_cont(y1);   // YEND
+		write16_cont(y);   // YSTART
+		write16_cont(y+h-1);   // YEND
 		setDCForCommand();
 		write8_cont(ILI9341_RAMWR); // RAM write
 	}
@@ -1018,25 +1019,25 @@ private:
 #ifdef __SAM3X8E__
 	inline __attribute__((always_inline))
 #endif
-		void setColumnAddr(uint16_t x0, uint16_t x1)
+		void setColumnAddr(uint16_t x, uint16_t w)
 	{
 		setDCForCommand();
 		write8_cont(ILI9341_CASET); // Column addr set
 		setDCForData();
-		write16_cont(x0);   // XSTART
-		write16_cont(x1);   // XEND
+		write16_cont(x);   // XSTART
+		write16_cont(x+w-1);   // XEND
 	}
 
 #ifdef __SAM3X8E__
 	inline __attribute__((always_inline))
 #endif
-		void setRowAddr(uint16_t y0, uint16_t y1)
+		void setRowAddr(uint16_t y, uint16_t h)
 	{
 		setDCForCommand();
 		write8_cont(ILI9341_PASET); // Row addr set
 		setDCForData();
-		write16_cont(y0);   // YSTART
-		write16_cont(y1);   // YEND
+		write16_cont(y);   // YSTART
+		write16_cont(y+h-1);   // YEND
 	}
 
 	inline __attribute__((always_inline))
@@ -1546,86 +1547,6 @@ private:
 
 	//#endif
 
-	//	// Writes a sequence that will render a horizontal line
-	//	// At the end CS is kept enabled.
-	//	// In case of DMA mode, the content of scanline buffer is written
-	//	__attribute__((always_inline))
-	//		void writeHLine_cont(int16_t x, int16_t y, int16_t w, uint16_t color)
-	//	{
-	//#if SPI_MODE_DMA
-	//		//TOTRY move this down
-	//		fillScanline(color, w);
-	//#endif
-	//		setAddrAndRW_cont(x, y, x+w-1, y);
-	//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-	//		setDCForData();
-	//		do { write16_cont(color); } while (--w > 0);
-	//#elif SPI_MODE_DMA
-	//		writeScanline_cont(w);
-	//#endif
-	//	}
-
-	//	// Writes a sequence that will render a horizontal line
-	//	// At the end CS is disabled.
-	//	// In case of DMA mode, the content of scanline buffer is written
-	//	__attribute__((always_inline))
-	//		void writeHLine_last(int16_t x, int16_t y, int16_t w, uint16_t color)
-	//	{
-	//#if SPI_MODE_DMA
-	//		//TOTRY move this down
-	//		fillScanline(color, w);
-	//#endif
-	//		setAddrAndRW_cont(x, y, x+w-1, y);
-	//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-	//		setDCForData();
-	//		while (w-- > 1) {
-	//			write16_cont(color);
-	//		}
-	//		write16_last(color);
-	//#elif SPI_MODE_DMA
-	//		writeScanline_last(w);
-	//#endif
-	//	}
-
-	//	// Writes a sequence that will render a vertical line
-	//	// At the end CS is kept enabled.
-	//	// In case of DMA mode, the content of scanline buffer is filled and written
-	//	__attribute__((always_inline))
-	//		void writeVLine_cont(int16_t x, int16_t y, int16_t h, uint16_t color)
-	//	{
-	//#if SPI_MODE_DMA
-	//		// TRY move this down
-	//		fillScanline(color, h);
-	//#endif
-	//		setAddrAndRW_cont(x, y, x, y+h-1);
-	//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-	//		setDCForData();
-	//		do { write16_cont(color); } while (--h > 0);
-	//#elif SPI_MODE_DMA
-	//		writeScanline_cont(h);
-	//#endif
-	//	}
-
-	//	// Writes a sequence that will render a vertical line
-	//	// At the end CS is disabled.
-	//	// In case of DMA mode, the content of scanline buffer is filled and written
-	//	__attribute__((always_inline))
-	//		void writeVLine_last(int16_t x, int16_t y, int16_t h, uint16_t color)
-	//	{
-	//#if SPI_MODE_DMA
-	//		fillScanline(color, h);
-	//#endif
-	//		setAddrAndRW_cont(x, y, x, y+h-1);
-	//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
-	//		while (h-- > 1) {
-	//			write16_cont(color);
-	//		}
-	//		write16_last(color);
-	//#elif SPI_MODE_DMA
-	//		writeScanline_last(h);
-	//#endif
-	//	}
-
 	// Writes a sequence that will render a horizontal line
 	// CS must be set prior to calling this method
 	// for DMA mode, scanline buffer must be filled with the desired color
@@ -1636,7 +1557,7 @@ private:
 	{
 #ifdef __AVR__
 		const uint32_t numLoops = (uint32_t)w / (uint32_t)SCANLINE_PIXEL_COUNT;
-		setAddrAndRW_cont(x, y, x + w - 1, y);
+		setAddrAndRW_cont(x, y, w, y);
 		setDCForData();
 		for (uint32_t l = 0; l < numLoops; l++)
 		{
@@ -1646,7 +1567,7 @@ private:
 		if (remainingPixels > 0)
 			writeScanline16(remainingPixels);
 #elif defined __SAM3X8E__
-		setAddrAndRW_cont(x, y, x + w - 1, y);
+		setAddrAndRW_cont(x, y, w, 1);
 		setDCForData();
 		writeScanline16(w);
 #endif
@@ -1655,7 +1576,7 @@ private:
 	__attribute__((always_inline))
 		void writeHLine_cont_noCS_noScanline(int16_t x, int16_t y, int16_t w, uint16_t color)
 	{
-		setAddrAndRW_cont(x, y, x + w - 1, y);
+		setAddrAndRW_cont(x, y, w, 1);
 		setDCForData();
 		while (w-- > 0) {
 			write16_cont(color);
@@ -1672,7 +1593,7 @@ private:
 	{
 #ifdef __AVR__
 		const uint32_t numLoops = (uint32_t)h / (uint32_t)SCANLINE_PIXEL_COUNT;
-		setAddrAndRW_cont(x, y, x, y + h - 1);
+		setAddrAndRW_cont(x, y, 1, h);
 		setDCForData();
 		for (uint32_t l = 0; l < numLoops; l++)
 		{
@@ -1682,7 +1603,7 @@ private:
 		if (remainingPixels > 0)
 			writeScanline16(remainingPixels);
 #elif defined __SAM3X8E__
-		setAddrAndRW_cont(x, y, x, y + h - 1);
+		setAddrAndRW_cont(x, y, 1, h);
 		setDCForData();
 		writeScanline16(h);
 #endif
@@ -1691,29 +1612,17 @@ private:
 	__attribute__((always_inline))
 		void writeVLine_cont_noCS_noScanline(int16_t x, int16_t y, int16_t h, uint16_t color)
 	{
-		setAddrAndRW_cont(x, y, x, y + h - 1);
+		setAddrAndRW_cont(x, y, 1, h);
 		setDCForData();
 		while (h-- > 0) {
 			write16_cont(color);
 		}
 	}
 
-
-	//void HLine_cont(int16_t x, int16_t y, int16_t w, uint16_t color)
-	//	__attribute__((always_inline)) {
-	//		setAddrAndRW_cont(x, y, x+w-1, y);
-	//		do { writedata16_cont(color); } while (--w > 0);
-	//}
-	//void VLine_cont(int16_t x, int16_t y, int16_t h, uint16_t color)
-	//	__attribute__((always_inline)) {
-	//		setAddrAndRW_cont(x, y, x, y+h-1);
-	//		do { writedata16_cont(color); } while (--h > 0);
-	//}
-
 	inline __attribute__((always_inline))
 		void writePixel_cont(int16_t x, int16_t y, uint16_t color)
 	{
-		setAddrAndRW_cont_inline(x, y, x, y);
+		setAddrAndRW_cont_inline(x, y, 1, 1);
 		setDCForData();
 		write16_cont(color);
 	}
@@ -1722,7 +1631,7 @@ private:
 	inline __attribute__((always_inline))
 		void writePixel_last(int16_t x, int16_t y, uint16_t color)
 	{
-		setAddrAndRW_cont(x, y, x, y);
+		setAddrAndRW_cont(x, y, 1, 1);
 		setDCForData();
 		write16_last(color);
 	}

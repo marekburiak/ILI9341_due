@@ -254,7 +254,16 @@ void ILI9341_due::setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t 
 {
 	beginTransaction();
 	enableCS();
-	setAddrAndRW_cont(x0, y0, x1, y1);
+	setAddrAndRW_cont(x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+	disableCS();
+	endTransaction();
+}
+
+void ILI9341_due::setAddrWindowRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
+{
+	beginTransaction();
+	enableCS();
+	setAddrAndRW_cont(x, y, w, h);
 	disableCS();
 	endTransaction();
 }
@@ -372,7 +381,7 @@ void ILI9341_due::drawImage(const uint16_t *colors, uint16_t x, uint16_t y, uint
 	const uint32_t totalPixels = (uint32_t)w*(uint32_t)h;
 	beginTransaction();
 	enableCS();
-	setAddrAndRW_cont(x, y, x + w - 1, y + h - 1);
+	setAddrAndRW_cont(x, y, w, h);
 	pushColors_noTrans_noCS(colors, 0, totalPixels);
 	disableCS();
 	endTransaction();
@@ -394,7 +403,7 @@ void ILI9341_due::drawFastVLine_noTrans(int16_t x, int16_t y, uint16_t h, uint16
 	fillScanline16(color, min(h, SCANLINE_PIXEL_COUNT));
 
 	enableCS();
-	setAddrAndRW_cont(x, y, x, y + h - 1);
+	setAddrAndRW_cont(x, y, 1, h);
 	setDCForData();
 #ifdef __SAM3X8E__
 	writeScanline16(h);
@@ -410,7 +419,7 @@ void ILI9341_due::drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uin
 	//	if ((x >= _width) || (y >= _height)) return;
 	//	if ((y + h - 1) >= _height) h = _height - y;
 	//
-	//	setAddrAndRW_cont(x, y, x, y + h - 1);
+	//	setAddrAndRW_cont(x, y, 1, h);
 	//	setDCForData();
 	//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
 	//	while (h-- > 0) {
@@ -423,7 +432,7 @@ void ILI9341_due::drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uin
 	if ((x >= _width) || (y >= _height)) return;
 	if ((y + h - 1) >= _height) h = _height - y;
 
-	setAddrAndRW_cont(x, y, x, y + h - 1);
+	setAddrAndRW_cont(x, y, 1, h);
 	setDCForData();
 #ifdef __SAM3X8E__
 	writeScanline16(h);
@@ -449,7 +458,7 @@ void ILI9341_due::drawFastHLine_noTrans(int16_t x, int16_t y, uint16_t w, uint16
 
 	fillScanline16(color, min(w, SCANLINE_PIXEL_COUNT));
 	enableCS();
-	setAddrAndRW_cont(x, y, x + w - 1, y);
+	setAddrAndRW_cont(x, y, w, 1);
 	setDCForData();
 #ifdef __SAM3X8E__
 	writeScanline16(w);
@@ -466,7 +475,7 @@ void ILI9341_due::fillScreen(uint16_t color)
 
 	beginTransaction();
 	enableCS();
-	setAddrAndRW_cont(0, 0, _width - 1, _height - 1);
+	setAddrAndRW_cont(0, 0, _width, _height);
 	setDCForData();
 	for (uint32_t l = 0; l < numLoops; l++)
 	{
@@ -497,7 +506,7 @@ void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h,
 	const uint32_t totalPixels = (uint32_t)w*(uint32_t)h;
 	fillScanline16(color, min(totalPixels, SCANLINE_PIXEL_COUNT));
 	enableCS();
-	setAddrAndRW_cont(x, y, x + w - 1, y + h - 1);
+	setAddrAndRW_cont(x, y, w, h);
 	setDCForData();
 	writeScanlineLooped(totalPixels);
 	disableCS();
@@ -554,7 +563,8 @@ void ILI9341_due::invertDisplay(boolean i)
 uint16_t ILI9341_due::readPixel(int16_t x, int16_t y)
 {
 	beginTransaction();
-	setAddr_cont(x, y, x + 1, y + 1);
+	//setAddr_cont(x, y, x + 1, y + 1); ? should it not be x,y,x,y?
+	setAddr_cont(x, y, 1, 1);
 	writecommand_cont(ILI9341_RAMRD); // read from RAM
 	readdata8_cont(); // dummy read
 	uint8_t red = read8_cont();
@@ -838,7 +848,7 @@ void ILI9341_due::screenshotToConsole()
 	//uint16_t x=0;
 	//uint16_t y=0;
 	beginTransaction();
-	setAddr_cont(0, 0, _width - 1, _height - 1);
+	setAddr_cont(0, 0, _width, _height);
 	writecommand_cont(ILI9341_RAMRD); // read from RAM
 	readdata8_cont(); // dummy read, also sets DC high
 
@@ -1428,7 +1438,7 @@ void ILI9341_due::drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y,
 			}
 		}
 #ifdef __SAM3X8E__
-		setAddrAndRW_cont(x, y + j, x + w - 1, y + j);
+		setAddrAndRW_cont(x, y + j, w, 1);
 		setDCForData();
 		writeScanline16(w);
 #endif
@@ -2008,7 +2018,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 
 	enableCS();
 	if (_textScale == 1)
-		setRowAddr(_y, _y + charHeight - 1);
+		setRowAddr(_y, charHeight);
 
 	for (uint16_t j = 0; j < charWidth; j++) /* each column */
 	{
@@ -2017,11 +2027,11 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 		numRenderBits = 8;
 		if (_x >= 0 && _x < _width)
 		{
-			setColumnAddr(_x, _x + _textScale - 1);
+			setColumnAddr(_x, _textScale);
 
 			if (_textScale == 1)
 			{
-				//setAddrAndRW_cont(_x, _y, _x, _y + charHeight - 1);
+				//setAddrAndRW_cont(_x, _y, 1, charHeight);
 				setRW();
 				setDCForData();
 			}
@@ -2067,8 +2077,8 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 						else
 						{
 							// set a rectangle area
-							//setAddrAndRW_cont(_x, py, _x + _textScale - 1, py + _textScale - 1);
-							setRowAddr(py, py + _textScale - 1);
+							//setAddrAndRW_cont(_x, py, _textScale, _textScale);
+							setRowAddr(py, _textScale);
 							setRW();
 							//Serial << cx << " " << cy + (i * 8 + bitId)*_textScale << " " << _textScale <<endl2;
 							setDCForData();
@@ -2096,8 +2106,8 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 						else
 						{
 							// set a rectangle area
-							//setAddrAndRW_cont(_x, py, _x + _textScale - 1, py + _textScale - 1);
-							setRowAddr(py, py + _textScale - 1);
+							//setAddrAndRW_cont(_x, py, _textScale, _textScale);
+							setRowAddr(py, _textScale);
 							setRW();
 							setDCForData();
 #ifdef __AVR__
@@ -2180,7 +2190,7 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 
 		if (_x >= 0 && _x < _width)
 		{
-			setColumnAddr(_x, _x + _textScale - 1);
+			setColumnAddr(_x, _textScale);
 
 			for (uint8_t i = 0; i < charHeightInBytes; i++)	/* each vertical byte */
 			{
@@ -2220,12 +2230,13 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 						else
 						{
 							const uint32_t totalPixels = (lineEnd - lineStart + _textScale) * _textScale;
-							setRowAddr(_y + lineStart, _y + lineEnd + _textScale - 1);
+							//setRowAddr(_y + lineStart, _y + lineEnd + _textScale - 1);
+							setRowAddr(_y + lineStart, lineEnd - lineStart + _textScale);
 							setRW();
 							setDCForData();
 							writeScanlineLooped(totalPixels);
 
-							//setAddrAndRW_cont(_x, _y + lineStart, _x + _textScale - 1, _y + lineEnd + _textScale - 1);
+							//setAddrAndRW_cont(_x, _y + lineStart, _textScale, lineEnd - lineStart + _textScale);
 							////fillRect(cx, cy + lineStart, _textScale, lineEnd - lineStart + _textScale, ILI9341_BLUEVIOLET);
 
 							//setDCForData();
@@ -2248,13 +2259,14 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 				if (lineEnd == (charHeight - 1) * _textScale)	// we have a line that goes all the way to the bottom
 				{
 					const uint32_t totalPixels = uint32_t(lineEnd - lineStart + _textScale)*(uint32_t)_textScale;
-					setRowAddr(_y + lineStart, _y + lineEnd + _textScale - 1);
+					//setRowAddr(_y + lineStart, _y + lineEnd + _textScale - 1);
+					setRowAddr(_y + lineStart, lineEnd - lineStart + _textScale);
 					setRW();
 					setDCForData();
 					writeScanlineLooped(totalPixels);
 
 					////fillRect(cx, cy + lineStart, _textScale, lineEnd - lineStart + _textScale, ILI9341_BLUEVIOLET);
-					//setAddrAndRW_cont(_x, _y + lineStart, _x + _textScale - 1, _y + lineEnd + _textScale - 1);
+					//setAddrAndRW_cont(_x, _y + lineStart, _textScale, lineEnd - lineStart + _textScale);
 					//setDCForData();
 
 					//for (uint8_t s = 0; s < _textScale; s++)
@@ -2276,7 +2288,7 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 size_t ILI9341_due::print(char c){
 	_isFirstChar = true;
 	beginTransaction();
-	Print::print(c);
+	write(c);
 	endTransaction();
 }
 size_t ILI9341_due::print(unsigned char c, int b){
@@ -2825,7 +2837,6 @@ void ILI9341_due::clearPixelsOnLeft(uint16_t pixelsToClearOnLeft){
 	// CLEAR PIXELS ON THE LEFT
 	if (pixelsToClearOnLeft > 0)
 	{
-
 		int16_t clearX1 = max(min(_x, (int16_t)_area.x0), _x - (int16_t)pixelsToClearOnLeft);
 		//Serial.println(clearX1);
 		//Serial << "clearPixelsOnLeft " << _x << " " << _area.x0 << " " << clearX1 << endl2;
@@ -3124,7 +3135,6 @@ void ILI9341_due::cursorTo(int8_t column)
 __attribute__((always_inline))
 void ILI9341_due::cursorToXY(int16_t x, int16_t y)
 {
-
 	/*
 	* Text position is relative to current text area
 	*/
@@ -3233,7 +3243,6 @@ void ILI9341_due::setTextWrap(bool wrap)
 {
 	_wrap = wrap;
 }
-
 
 void ILI9341_due::setFontMode(gTextFontMode fontMode)
 {
