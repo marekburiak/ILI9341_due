@@ -1493,7 +1493,7 @@ void ILI9341_due::setArcParams(float arcAngleMax)
 
 void ILI9341_due::setAngleOffset(int16_t angleOffset)
 {
-	_angleOffset = angleOffset;
+	_angleOffset = ANGLE_OFFSET + angleOffset;
 }
 
 //uint8_t ILI9341_due::spiread(void) {
@@ -2273,8 +2273,131 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 	//_x = cx;
 }
 
-void ILI9341_due::puts(const char *str)
+size_t ILI9341_due::print(char c){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::print(c);
+	endTransaction();
+}
+size_t ILI9341_due::print(unsigned char c, int b){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::print(c,b);
+	endTransaction();
+}
+size_t ILI9341_due::print(int d, int b){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::print(d,b);
+	endTransaction();
+}
+size_t ILI9341_due::print(unsigned int u, int b){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::print(u,b);
+	endTransaction();
+}
+size_t ILI9341_due::print(long l, int b){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::print(l,b);
+	endTransaction();
+}
+size_t ILI9341_due::print(unsigned long ul, int b){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::print(ul,b);
+	endTransaction();
+}
+size_t ILI9341_due::print(double d, int b){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::print(d,b);
+	endTransaction();
+}
+size_t ILI9341_due::print(const Printable& str){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::print(str);
+	endTransaction();
+}
+
+size_t ILI9341_due::println(const __FlashStringHelper *str){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::println(str);
+	endTransaction();
+}
+size_t ILI9341_due::println(const String &str){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::println(str);
+	endTransaction();
+}
+size_t ILI9341_due::println(const char* str){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::println(str);
+	endTransaction();
+}
+size_t ILI9341_due::println(char c){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::println(c);
+	endTransaction();
+}
+size_t ILI9341_due::println(unsigned char c, int b){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::println(c,b);
+	endTransaction();
+}
+size_t ILI9341_due::println(int d, int b){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::println(d,b);
+	endTransaction();
+}
+size_t ILI9341_due::println(unsigned int u, int b){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::println(u,b);
+	endTransaction();
+}
+size_t ILI9341_due::println(long l, int b){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::println(l,b);
+	endTransaction();
+}
+size_t ILI9341_due::println(unsigned long ul, int b){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::println(ul,b);
+	endTransaction();
+}
+size_t ILI9341_due::println(double d, int b){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::println(d,b);
+	endTransaction();
+}
+size_t ILI9341_due::println(const Printable& str){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::println(str);
+	endTransaction();
+}
+size_t ILI9341_due::println(void){
+	_isFirstChar = true;
+	beginTransaction();
+	Print::println();
+	endTransaction();
+}
+
+size_t ILI9341_due::print(const char *str)
 {
+	beginTransaction();
 	_isFirstChar = true;
 	while (*str)
 	{
@@ -2282,20 +2405,24 @@ void ILI9341_due::puts(const char *str)
 		//_isFirstChar = false;
 		str++;
 	}
+	endTransaction();
 }
 
-void ILI9341_due::puts(const String &str)
+size_t ILI9341_due::print(const String &str)
 {
+	beginTransaction();
 	_isFirstChar = true;
 	for (int i = 0; i < str.length(); i++)
 	{
 		write(str[i]);
 		//_isFirstChar = false;
 	}
+	endTransaction();
 }
 
-void ILI9341_due::puts(const __FlashStringHelper *str)
+size_t ILI9341_due::print(const __FlashStringHelper *str)
 {
+	beginTransaction();
 	_isFirstChar = true;
 	PGM_P p = reinterpret_cast<PGM_P>(str);
 	uint8_t c;
@@ -2304,24 +2431,25 @@ void ILI9341_due::puts(const __FlashStringHelper *str)
 		//_isFirstChar = false;
 		p++;
 	}
+	endTransaction();
 }
 
 void ILI9341_due::printAt(const char *str, int16_t x, int16_t y)
 {
 	cursorToXY(x, y);
-	puts(str);
+	print(str);
 }
 
 void ILI9341_due::printAt(const String &str, int16_t x, int16_t y)
 {
 	cursorToXY(x, y);
-	puts(str);
+	print(str);
 }
 
 void ILI9341_due::printAt(const __FlashStringHelper *str, int16_t x, int16_t y)
 {
 	cursorToXY(x, y);
-	puts(str);
+	print(str);
 }
 
 void ILI9341_due::printAt(const char *str, int16_t x, int16_t y, gTextEraseLine eraseLine)
@@ -2329,7 +2457,7 @@ void ILI9341_due::printAt(const char *str, int16_t x, int16_t y, gTextEraseLine 
 	cursorToXY(x, y);
 	if (eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
 		clearPixelsOnLeft(1024);
-	puts(str);
+	print(str);
 	if (eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
 		clearPixelsOnRight(1024);
 }
@@ -2339,7 +2467,7 @@ void ILI9341_due::printAt(const String &str, int16_t x, int16_t y, gTextEraseLin
 	cursorToXY(x, y);
 	if (eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
 		clearPixelsOnLeft(1024);
-	puts(str);
+	print(str);
 	if (eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
 		clearPixelsOnRight(1024);
 }
@@ -2349,7 +2477,7 @@ void ILI9341_due::printAt(const __FlashStringHelper *str, int16_t x, int16_t y, 
 	cursorToXY(x, y);
 	if (eraseLine == gTextEraseFromBOL || eraseLine == gTextEraseFullLine)
 		clearPixelsOnLeft(1024);
-	puts(str);
+	print(str);
 	if (eraseLine == gTextEraseToEOL || eraseLine == gTextEraseFullLine)
 		clearPixelsOnRight(1024);
 }
@@ -2362,7 +2490,7 @@ void ILI9341_due::printAt(const char *str, int16_t x, int16_t y, uint16_t pixels
 	if (pixelsClearedOnLeft > 0)
 		clearPixelsOnLeft(pixelsClearedOnLeft);
 
-	puts(str);
+	print(str);
 
 	// CLEAR PIXELS ON THE RIGHT
 	if (pixelsClearedOnRight > 0)
@@ -2377,7 +2505,7 @@ void ILI9341_due::printAt(const String &str, int16_t x, int16_t y, uint16_t pixe
 	if (pixelsClearedOnLeft > 0)
 		clearPixelsOnLeft(pixelsClearedOnLeft);
 
-	puts(str);
+	print(str);
 
 	// CLEAR PIXELS ON THE RIGHT
 	if (pixelsClearedOnRight > 0)
@@ -2392,7 +2520,7 @@ void ILI9341_due::printAt(const __FlashStringHelper *str, int16_t x, int16_t y, 
 	if (pixelsClearedOnLeft > 0)
 		clearPixelsOnLeft(pixelsClearedOnLeft);
 
-	puts(str);
+	print(str);
 
 	// CLEAR PIXELS ON THE RIGHT
 	if (pixelsClearedOnRight > 0)
@@ -2519,7 +2647,7 @@ void ILI9341_due::printAtPivoted(const char *str, int16_t x, int16_t y, gTextPiv
 	if (pivot != gTextPivotTopLeft && pivot != gTextPivotDefault)
 		applyPivot(str, pivot, gTextAlignTopLeft);
 
-	puts(str);
+	print(str);
 }
 
 void ILI9341_due::printAtPivoted(const String &str, int16_t x, int16_t y, gTextPivot pivot)
@@ -2529,7 +2657,7 @@ void ILI9341_due::printAtPivoted(const String &str, int16_t x, int16_t y, gTextP
 	if (pivot != gTextPivotTopLeft && pivot != gTextPivotDefault)
 		applyPivot(str, pivot, gTextAlignTopLeft);
 
-	puts(str);
+	print(str);
 }
 
 void ILI9341_due::printAtPivoted(const __FlashStringHelper *str, int16_t x, int16_t y, gTextPivot pivot)
@@ -2539,7 +2667,7 @@ void ILI9341_due::printAtPivoted(const __FlashStringHelper *str, int16_t x, int1
 	if (pivot != gTextPivotTopLeft && pivot != gTextPivotDefault)
 		applyPivot(str, pivot, gTextAlignTopLeft);
 
-	puts(str);
+	print(str);
 }
 
 void ILI9341_due::printAlignedPivoted(const char *str, gTextAlign align, gTextPivot pivot)
@@ -2662,7 +2790,7 @@ void ILI9341_due::printAlignedPivotedOffseted(const char *str, gTextAlign align,
 	applyAlignPivotOffset(str, align, pivot, offsetX, offsetY);
 
 	clearPixelsOnLeft(pixelsClearedOnLeft);
-	puts(str);
+	print(str);
 	clearPixelsOnRight(pixelsClearedOnRight);
 }
 
@@ -2675,7 +2803,7 @@ void ILI9341_due::printAlignedPivotedOffseted(const String &str, gTextAlign alig
 	applyAlignPivotOffset(str, align, pivot, offsetX, offsetY);
 
 	clearPixelsOnLeft(pixelsClearedOnLeft);
-	puts(str);
+	print(str);
 	clearPixelsOnRight(pixelsClearedOnRight);
 }
 
@@ -2688,7 +2816,7 @@ void ILI9341_due::printAlignedPivotedOffseted(const __FlashStringHelper *str, gT
 	applyAlignPivotOffset(str, align, pivot, offsetX, offsetY);
 
 	clearPixelsOnLeft(pixelsClearedOnLeft);
-	puts(str);
+	print(str);
 	clearPixelsOnRight(pixelsClearedOnRight);
 }
 

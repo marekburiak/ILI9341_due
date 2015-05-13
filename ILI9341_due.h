@@ -501,6 +501,7 @@ private:
 	void fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color);
 	void drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, uint16_t color);
 	void fillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, int16_t delta, uint16_t color);
+	void pushColors_noTrans_noCS(const uint16_t *colors, uint16_t offset, uint32_t len);
 
 	void specialChar(uint8_t c);
 	void drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight);
@@ -527,6 +528,7 @@ public:
 
 	void pushColor(uint16_t color);
 	void pushColors(const uint16_t *colors, uint16_t offset, uint32_t len);
+	void pushColors(uint16_t *colors, uint16_t offset, uint32_t len);
 	/*void pushColors565(uint8_t *colors, uint16_t offset, uint32_t len);
 	void pushColors565(const uint16_t *colors, uint16_t offset, uint32_t len);*/
 
@@ -590,9 +592,9 @@ public:
 	void setTextWrap(bool wrap);
 	void setFontMode(gTextFontMode fontMode);
 
-	void puts(const char *str);
-	void puts(const String &str);
-	void puts(const __FlashStringHelper* str);
+	//void puts(const char *str);
+	//void puts(const String &str);
+	//void puts(const __FlashStringHelper* str);
 
 	void printAt(const char *str, int16_t x, int16_t y);
 	void printAt(const String &str, int16_t x, int16_t y);
@@ -698,6 +700,30 @@ public:
 
 #ifdef FEATURE_GTEXT_PRINT_ENABLED
 	virtual size_t write(uint8_t);
+	virtual size_t print(const __FlashStringHelper *);
+	virtual size_t print(const String &);
+	virtual size_t print(const char[]);
+	virtual size_t print(char);
+	virtual size_t print(unsigned char, int = DEC);
+	virtual size_t print(int, int = DEC);
+	virtual size_t print(unsigned int, int = DEC);
+	virtual size_t print(long, int = DEC);
+	virtual size_t print(unsigned long, int = DEC);
+	virtual size_t print(double, int = 2);
+	virtual size_t print(const Printable&);
+
+	virtual size_t println(const __FlashStringHelper *);
+	virtual size_t println(const String &s);
+	virtual size_t println(const char[]);
+	virtual size_t println(char);
+	virtual size_t println(unsigned char, int = DEC);
+	virtual size_t println(int, int = DEC);
+	virtual size_t println(unsigned int, int = DEC);
+	virtual size_t println(long, int = DEC);
+	virtual size_t println(unsigned long, int = DEC);
+	virtual size_t println(double, int = 2);
+	virtual size_t println(const Printable&);
+	virtual size_t println(void);
 #endif
 
 	uint16_t charWidth(uint8_t c);
