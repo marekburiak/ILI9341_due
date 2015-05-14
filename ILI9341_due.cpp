@@ -86,6 +86,10 @@ ILI9341_due::ILI9341_due(uint8_t cs, uint8_t dc, uint8_t rst)
 	_spiClkDivider = ILI9341_SPI_CLKDIVIDER;
 	_width = ILI9341_TFTWIDTH;
 	_height = ILI9341_TFTHEIGHT;
+	_area.x = 0;
+	_area.y = 0;
+	_area.w = ILI9341_TFTWIDTH;
+	_area.h = ILI9341_TFTHEIGHT;
 	_rotation = iliRotation0;
 #ifdef FEATURE_PRINT_ENABLED
 	_cursorY = _cursorX = 0;
@@ -547,6 +551,10 @@ void ILI9341_due::setRotation(iliRotation r)
 		_height = ILI9341_TFTWIDTH;
 		break;
 	}
+	_area.x = 0;
+	_area.y = 0;
+	_area.w = _width;
+	_area.h = _height;
 	endTransaction();
 }
 

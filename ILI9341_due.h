@@ -568,7 +568,7 @@ public:
 	
 #ifdef FEATURE_GTEXT_ENABLED
 	void setTextArea(gTextArea area);
-	void setTextAreaRect(int16_t x, int16_t y, int16_t w, int16_t h); //, textMode mode=DEFAULT_SCROLLDIR);
+	void setTextArea(int16_t x, int16_t y, int16_t w, int16_t h); //, textMode mode=DEFAULT_SCROLLDIR);
 	void setTextArea(int16_t x, int16_t y, int16_t columns, int16_t rows, gTextFont font); //, textMode mode=DEFAULT_SCROLLDIR);
 	void clearTextArea();
 	void clearTextArea(gTextArea area);
