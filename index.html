@@ -789,10 +789,10 @@ MIT license, all text above must be included in any redistribution
         'tft.print("My Description");', true, "func_setTextAreaCR.png");
 
         addIliFunction("clearTextArea",
-        "Clears the currently set text area with currently set text background color.",
+        "Clears the currently set text area with the currently set text background color.",
         "void clearTextArea();",
         " ",
-        "Clear 2 text areas with text background color.",
+        "Clear 2 text areas (text background color will be used).",
         "gTextArea titleArea{ 10, 10, 300, 40 };<br/>" +
         "gTextArea descriptionArea{ 10, 60, 300, 170 };<br/>" +
         "...<br/>" +
@@ -801,7 +801,95 @@ MIT license, all text above must be included in any redistribution
         "tft.clearTextArea(); // clear the title area with dark blue color<br/>" +
         'tft.setTextColor(ILI9341_WHITE, ILI9341_DARKGRAY);<br/>' +
         'tft.setTextArea(descriptionArea);<br/>' +
-        "tft.clearTextArea(); // clear the title area with dark gray color", true);
+        "tft.clearTextArea(); // clear the description area with dark gray color", true);
+
+        addIliFunction("clearTextArea",
+        "Clears the text area with the currently set text background color.",
+        "void clearTextArea(gTextArea area);",
+         "<ul><li><em>area</em> - text area to clear</li>" +
+        "</ul>",
+        "Clear 2 text areas (text background color will be used).",
+        "gTextArea titleArea{ 10, 10, 300, 40 };<br/>" +
+        "gTextArea descriptionArea{ 10, 60, 300, 170 };<br/>" +
+        "...<br/>" +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_DARKBLUE);<br/>' +
+        "tft.clearTextArea(titleArea); // clear the title area with dark blue color<br/>" +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_DARKGRAY);<br/>' +
+        "tft.clearTextArea(descriptionArea); // clear the description area with dark gray color", true);
+
+        addIliFunction("clearTextArea",
+        "Clears the currently set text area.",
+        "void clearTextArea(uint16_t color);",
+         "<ul><li><em>color</em> - color to clear with</li>" +
+        "</ul>",
+        "Clear 2 text areas.",
+        "gTextArea titleArea{ 10, 10, 300, 40 };<br/>" +
+        "gTextArea descriptionArea{ 10, 60, 300, 170 };<br/>" +
+        "...<br/>" +
+        'tft.setTextArea(titleArea);<br/>' +
+        "tft.clearTextArea(ILI9341_LIGHTBLUE); // clear the title area with light blue color<br/>" +
+        'tft.setTextArea(descriptionArea);<br/>' +
+        "tft.clearTextArea(ILI9341_LIGHTBLUE); // clear the description area with light blue color", true, "funct_clearTextAreaColor");
+
+        addIliFunction("clearTextArea",
+        "Clears the text area.",
+        "void clearTextArea(gTextArea area, uint16_t color);",
+         "<ul>" +
+         "<li><em>area</em> - text area to clear</li>" +
+         "<li><em>color</em> - color to clear with</li>" +
+        "</ul>",
+        "Clear 2 text areas.",
+        "gTextArea titleArea{ 10, 10, 300, 40 };<br/>" +
+        "gTextArea descriptionArea{ 10, 60, 300, 170 };<br/>" +
+        "...<br/>" +
+        "tft.clearTextArea(titleArea, ILI9341_LIGHTBLUE); // clear the title area with light blue color<br/>" +
+        "tft.clearTextArea(descriptionArea, ILI9341_LIGHTBLUE); // clear the description area with light blue color", true, "funct_clearTextAreaColorArea");
+
+
+        addIliFunction("setFont",
+        "Sets the font to use for text rendering. See the Using Custom Fonts section.",
+        "void setFont(gTextFont font);",
+        "<ul>" +
+        "<li><em>font</em> - font to use</li>" +
+        "</ul>",
+        "Set Arial_bold_14 font for the header and Arial14 font for the description.",
+        '#include "fonts\\Arial14.h"<br/>' +
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        "gTextArea titleArea{ 10, 10, 300, 40 };<br/>" +
+        "gTextArea descriptionArea{ 10, 60, 300, 170 };<br/>" +
+        "...<br/>" +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_LIGHTBLUE);<br/>' +
+        'tft.setTextArea(titleArea);<br/>' +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        'tft.print("My Title");<br/>' +
+        'tft.setTextArea(descriptionArea);<br/>' +
+        'tft.setFont(Arial14);<br/>' +
+        'tft.print("My Description");', true);
+
+
+        addIliFunction("setTextColor",
+        "Sets the text color. The default background color is black.",
+        "void setTextColor(uint16_t color);",
+        "<ul>" +
+        "<li><em>color</em> - text color to use</li>" +
+        "</ul>",
+        "Set red color for the header and green color for the description. If the background color was not previously set then black will be used.",
+        '#include "fonts\\Arial14.h"<br/>' +
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        "gTextArea titleArea{ 10, 10, 300, 40 };<br/>" +
+        "gTextArea descriptionArea{ 10, 60, 300, 170 };<br/>" +
+        "...<br/>" +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_LIGHTBLUE);<br/>' +
+        'tft.setTextArea(titleArea);<br/>' +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        'tft.print("My Title");<br/>' +
+        'tft.setTextArea(descriptionArea);<br/>' +
+        'tft.setFont(Arial14);<br/>' +
+        'tft.print("My Description");', true);
+
+
 
 
         addIliFunction("screenshotToConsole",
