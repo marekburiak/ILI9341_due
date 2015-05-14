@@ -3204,19 +3204,6 @@ void ILI9341_due::setFont(gTextFont font)
 	_font = font;
 }
 
-void ILI9341_due::setFont(gTextFont font, uint16_t fontColor)
-{
-	_font = font;
-	_fontColor = fontColor;
-}
-
-void ILI9341_due::setFont(gTextFont font, uint16_t fontColor, uint16_t backgroundColor)
-{
-	_font = font;
-	_fontColor = fontColor;
-	_fontBgColor = backgroundColor;
-}
-
 void ILI9341_due::setTextColor(uint16_t color)
 {
 	_fontColor = color;

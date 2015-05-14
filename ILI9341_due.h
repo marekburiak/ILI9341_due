@@ -577,8 +577,6 @@ public:
 
 	// Font Functions
 	void setFont(gTextFont font);
-	void setFont(gTextFont font, uint16_t color);
-	void setFont(gTextFont font, uint16_t color, uint16_t backgroundColor);
 	void setTextColor(uint16_t color);
 	void setTextColor(uint8_t R, uint8_t G, uint8_t B);
 	void setTextColor(uint16_t color, uint16_t backgroundColor);
