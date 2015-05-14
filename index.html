@@ -829,7 +829,7 @@ MIT license, all text above must be included in any redistribution
         'tft.setTextArea(titleArea);<br/>' +
         "tft.clearTextArea(ILI9341_LIGHTBLUE); // clear the title area with light blue color<br/>" +
         'tft.setTextArea(descriptionArea);<br/>' +
-        "tft.clearTextArea(ILI9341_LIGHTBLUE); // clear the description area with light blue color", true, "funct_clearTextAreaColor");
+        "tft.clearTextArea(ILI9341_LIGHTGREEN); // clear the description area with light green color", true, "func_clearTextAreaColor.png");
 
         addIliFunction("clearTextArea",
         "Clears the text area.",
@@ -843,7 +843,7 @@ MIT license, all text above must be included in any redistribution
         "gTextArea descriptionArea{ 10, 60, 300, 170 };<br/>" +
         "...<br/>" +
         "tft.clearTextArea(titleArea, ILI9341_LIGHTBLUE); // clear the title area with light blue color<br/>" +
-        "tft.clearTextArea(descriptionArea, ILI9341_LIGHTBLUE); // clear the description area with light blue color", true, "funct_clearTextAreaColorArea");
+        "tft.clearTextArea(descriptionArea, ILI9341_LIGHTGREEN); // clear the description area with light blue color", true, "func_clearTextAreaColor.png");
 
 
         addIliFunction("setFont",
@@ -859,10 +859,12 @@ MIT license, all text above must be included in any redistribution
         "gTextArea titleArea{ 10, 10, 300, 40 };<br/>" +
         "gTextArea descriptionArea{ 10, 60, 300, 170 };<br/>" +
         "...<br/>" +
-        'tft.setTextColor(ILI9341_WHITE, ILI9341_LIGHTBLUE);<br/>' +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_DARKBLUE);<br/>' +
+        "<br/>" +
         'tft.setTextArea(titleArea);<br/>' +
         'tft.setFont(Arial_bold_14);<br/>' +
         'tft.print("My Title");<br/>' +
+        "<br/>" +
         'tft.setTextArea(descriptionArea);<br/>' +
         'tft.setFont(Arial14);<br/>' +
         'tft.print("My Description");', true);
@@ -881,12 +883,14 @@ MIT license, all text above must be included in any redistribution
         "gTextArea titleArea{ 10, 10, 300, 40 };<br/>" +
         "gTextArea descriptionArea{ 10, 60, 300, 170 };<br/>" +
         "...<br/>" +
-        'tft.setTextColor(ILI9341_WHITE, ILI9341_LIGHTBLUE);<br/>' +
-        'tft.setTextArea(titleArea);<br/>' +
         'tft.setFont(Arial_bold_14);<br/>' +
+        "<br/>" +
+        'tft.setTextArea(titleArea);<br/>' +
+        'tft.setTextColor(ILI9341_RED);<br/>' +
         'tft.print("My Title");<br/>' +
+        "<br/>" +
         'tft.setTextArea(descriptionArea);<br/>' +
-        'tft.setFont(Arial14);<br/>' +
+        'tft.setTextColor(ILI9341_GREEN);<br/>' +
         'tft.print("My Description");', true);
 
 
