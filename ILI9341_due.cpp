@@ -98,8 +98,8 @@ ILI9341_due::ILI9341_due(uint8_t cs, uint8_t dc, uint8_t rst)
 	_wrap = true;
 #endif
 #ifdef FEATURE_ARC_ENABLED
-	_arcAngleMax = ARC_ANGLE_MAX;
-	_angleOffset = ANGLE_OFFSET;
+	_arcAngleMax = DEFAULT_ARC_ANGLE_MAX;
+	_angleOffset = DEFAULT_ANGLE_OFFSET;
 #endif
 #ifdef ILI_USE_SPI_TRANSACTION
 	_isInTransaction = false;
@@ -108,8 +108,8 @@ ILI9341_due::ILI9341_due(uint8_t cs, uint8_t dc, uint8_t rst)
 	_fontMode = gTextFontModeSolid;
 	_fontBgColor = ILI9341_BLACK;
 	_fontColor = ILI9341_WHITE;
-	_letterSpacing = 2;
-	_lineSpacing = 0;
+	_letterSpacing = DEFAULT_LETTER_SPACING;
+	_lineSpacing = DEFAULT_LINE_SPACING;
 #ifdef TEXT_SCALING_ENABLED
 	_textScale = 1;
 #endif
@@ -1511,7 +1511,7 @@ void ILI9341_due::setArcParams(float arcAngleMax)
 
 void ILI9341_due::setAngleOffset(int16_t angleOffset)
 {
-	_angleOffset = ANGLE_OFFSET + angleOffset;
+	_angleOffset = DEFAULT_ANGLE_OFFSET + angleOffset;
 }
 
 //uint8_t ILI9341_due::spiread(void) {
@@ -1686,8 +1686,8 @@ void ILI9341_due::setTextArea(gTextArea area) //, textMode mode)
 	_area.y = area.y;
 	_area.w = area.w;
 	_area.h = area.h;
-	_x = area.x;
-	_y = area.y;
+	_x = _xStart = area.x;
+	_y = _yStart = area.y;
 }
 
 //void ILI9341_due::setTextArea(int16_t x0, int16_t y0, int16_t x1, int16_t y1) //, textMode mode)
@@ -1719,8 +1719,8 @@ void ILI9341_due::setTextArea(int16_t x, int16_t y, int16_t w, int16_t h) //, te
 	_area.y = y;
 	_area.w = w;
 	_area.h = h;
-	_x = x;
-	_y = y;
+	_x = _xStart = x;
+	_y = _xStart = y;
 }
 
 __attribute__((always_inline))
@@ -2870,7 +2870,7 @@ void ILI9341_due::clearPixelsOnRight(uint16_t pixelsToClearOnRight){
 		int16_t clearX2 = min(max(_x, _area.x + _area.w - 1), _x + pixelsToClearOnRight);
 		//Serial << "area from " << _area.x << " to " << _area.x1 << endl;
 		//Serial << "clearing on right from " << _x << " to " << clearX2 << endl;
-		fillRect(_x, _y, clearX2 - _x, scaledFontHeight(), _fontBgColor);
+		fillRect(_x, _y, clearX2 - _x + 1, scaledFontHeight(), _fontBgColor);
 		//TOTRY
 		//fillRect(_x, _y, clearX2 - _x + 1, fontHeight(), _fontBgColor);
 	}
@@ -3116,8 +3116,8 @@ void ILI9341_due::cursorTo(uint8_t column, uint8_t row)
 	* Text position is relative to current text area
 	*/
 
-	_x = _area.x + column * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1);
-	_y = _area.y + row * (fontHeight() + _lineSpacing) * _textScale;
+	_x = _xStart = _area.x + column * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1);
+	_y = _yStart = _area.y + row * (fontHeight() + _lineSpacing) * _textScale;
 	_isFirstChar = true;
 	//#ifndef GLCD_NODEFER_SCROLL
 	//	/*
@@ -3136,7 +3136,7 @@ void ILI9341_due::cursorTo(int8_t column)
 	* negative value moves the cursor backwards
 	*/
 	if (column >= 0)
-		_x = column * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1) + _area.x;
+		_x = _xStart = column * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1) + _area.x;
 	else
 		_x -= column * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1);
 

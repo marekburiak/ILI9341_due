@@ -48,7 +48,7 @@
             // 
             this.pictureBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBox.Location = new System.Drawing.Point(459, 13);
+            this.pictureBox.Location = new System.Drawing.Point(337, 13);
             this.pictureBox.Name = "pictureBox";
             this.pictureBox.Size = new System.Drawing.Size(320, 240);
             this.pictureBox.TabIndex = 0;
@@ -57,7 +57,7 @@
             // btnShow
             // 
             this.btnShow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnShow.Location = new System.Drawing.Point(459, 259);
+            this.btnShow.Location = new System.Drawing.Point(337, 259);
             this.btnShow.Name = "btnShow";
             this.btnShow.Size = new System.Drawing.Size(158, 23);
             this.btnShow.TabIndex = 2;
@@ -68,7 +68,7 @@
             // lblFailed
             // 
             this.lblFailed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblFailed.Location = new System.Drawing.Point(494, 85);
+            this.lblFailed.Location = new System.Drawing.Point(372, 85);
             this.lblFailed.Name = "lblFailed";
             this.lblFailed.Size = new System.Drawing.Size(251, 86);
             this.lblFailed.TabIndex = 3;
@@ -79,7 +79,7 @@
             // btnSaveAs
             // 
             this.btnSaveAs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnSaveAs.Location = new System.Drawing.Point(704, 259);
+            this.btnSaveAs.Location = new System.Drawing.Point(582, 259);
             this.btnSaveAs.Name = "btnSaveAs";
             this.btnSaveAs.Size = new System.Drawing.Size(75, 23);
             this.btnSaveAs.TabIndex = 4;
@@ -99,7 +99,7 @@
             // btnConnect
             // 
             this.btnConnect.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnConnect.Location = new System.Drawing.Point(373, 259);
+            this.btnConnect.Location = new System.Drawing.Point(252, 259);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Size = new System.Drawing.Size(75, 23);
             this.btnConnect.TabIndex = 6;
@@ -117,14 +117,14 @@
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBox1.Size = new System.Drawing.Size(436, 239);
+            this.textBox1.Size = new System.Drawing.Size(314, 239);
             this.textBox1.TabIndex = 8;
             // 
             // label1
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(64, 264);
+            this.label1.Location = new System.Drawing.Point(13, 264);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(29, 13);
             this.label1.TabIndex = 10;
@@ -134,7 +134,7 @@
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(186, 264);
+            this.label2.Location = new System.Drawing.Point(109, 264);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(61, 13);
             this.label2.TabIndex = 11;
@@ -163,25 +163,25 @@
             "256000",
             "460800",
             "921600"});
-            this.cbBaudRates.Location = new System.Drawing.Point(253, 261);
+            this.cbBaudRates.Location = new System.Drawing.Point(172, 261);
             this.cbBaudRates.Name = global::ILIScreenshotViewer.Properties.Settings.Default.BaudRate;
-            this.cbBaudRates.Size = new System.Drawing.Size(81, 21);
+            this.cbBaudRates.Size = new System.Drawing.Size(67, 21);
             this.cbBaudRates.TabIndex = 9;
             // 
             // cbSerialPorts
             // 
             this.cbSerialPorts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.cbSerialPorts.FormattingEnabled = true;
-            this.cbSerialPorts.Location = new System.Drawing.Point(99, 261);
+            this.cbSerialPorts.Location = new System.Drawing.Point(44, 261);
             this.cbSerialPorts.Name = "cbSerialPorts";
-            this.cbSerialPorts.Size = new System.Drawing.Size(71, 21);
+            this.cbSerialPorts.Size = new System.Drawing.Size(60, 21);
             this.cbSerialPorts.TabIndex = 5;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(794, 298);
+            this.ClientSize = new System.Drawing.Size(672, 298);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.cbBaudRates);

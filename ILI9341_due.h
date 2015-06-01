@@ -585,12 +585,13 @@ public:
 	uint8_t getTextLetterSpacing()	{
 		return _letterSpacing;
 	};
-	void setTextLineSpacing(uint8_t letterSpacing);
+	void setTextLineSpacing(uint8_t lineSpacing);
 	uint8_t getTextLineSpacing()	{
 		return _lineSpacing;
 	};
 	void setTextWrap(bool wrap);
 	void setFontMode(gTextFontMode fontMode);
+	void setTextScale(uint8_t textScale);
 
 	//void puts(const char *str);
 	//void puts(const String &str);
@@ -664,8 +665,6 @@ public:
 	void cursorTo(uint8_t column, uint8_t row); // 0 based coordinates for character columns and rows
 	void cursorTo(int8_t column); // move cursor on the current row
 	void cursorToXY(int16_t x, int16_t y); // coordinates relative to active text area
-
-	void setTextScale(uint8_t s);
 
 	__attribute__((always_inline))
 		uint8_t fontHeight()	{

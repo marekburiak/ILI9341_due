@@ -11,13 +11,13 @@ Copyright (c) 2014  Marek Buriak
 #define _ILI9341_due_configH_
 
 // comment out the SPI mode you want to use (does not matter for AVR)
-//#define ILI9341_SPI_MODE_NORMAL	// uses SPI library
+#define ILI9341_SPI_MODE_NORMAL	// uses SPI library
 //#define ILI9341_SPI_MODE_EXTENDED	// uses Extended SPI in Due, make sure you use pin 4, 10 or 52 for CS
-#define ILI9341_SPI_MODE_DMA		// uses DMA in Due
+//#define ILI9341_SPI_MODE_DMA		// uses DMA in Due
 
 // set the clock divider
 #if defined __SAM3X8E__
-#define ILI9341_SPI_CLKDIVIDER 10	// for Due
+#define ILI9341_SPI_CLKDIVIDER 3	// for Due
 #elif defined __AVR__
 #define ILI9341_SPI_CLKDIVIDER SPI_CLOCK_DIV2	// for Uno, Mega,...
 #endif
@@ -44,10 +44,13 @@ Copyright (c) 2014  Marek Buriak
 
 // number representing the maximum angle (e.g. if 100, then if you pass in start=0 and end=50, you get a half circle)
 // this can be changed with setArcParams function at runtime
-#define ARC_ANGLE_MAX 360		
+#define DEFAULT_ARC_ANGLE_MAX 360		
 // rotational offset in degrees defining position of value 0 (-90 will put it at the top of circle)
 // this can be changed with setAngleOffset function at runtime
-#define ANGLE_OFFSET -90	
+#define DEFAULT_ANGLE_OFFSET -90	
+
+#define DEFAULT_LETTER_SPACING 2
+#define DEFAULT_LINE_SPACING 0
 
 
 #endif
