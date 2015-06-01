@@ -852,7 +852,7 @@ MIT license, all text above must be included in any redistribution
         "<ul>" +
         "<li><em>font</em> - font to use</li>" +
         "</ul>",
-        "Set Arial_bold_14 font for the header and Arial14 font for the description.",
+        "Set Arial bold font for the header and regular one for the description.",
         '#include "fonts\\Arial14.h"<br/>' +
         '#include "fonts\\Arial_bold_14.h"<br/>' +
         '...<br/>' +
@@ -871,13 +871,12 @@ MIT license, all text above must be included in any redistribution
 
 
         addIliFunction("setTextColor",
-        "Sets the text color. The default background color is black.",
+        "Sets the text foreground color.",
         "void setTextColor(uint16_t color);",
         "<ul>" +
         "<li><em>color</em> - text color to use</li>" +
         "</ul>",
         "Set red color for the header and green color for the description. If the background color was not previously set then black will be used.",
-        '#include "fonts\\Arial14.h"<br/>' +
         '#include "fonts\\Arial_bold_14.h"<br/>' +
         '...<br/>' +
         "gTextArea titleArea{ 10, 10, 300, 40 };<br/>" +
@@ -890,10 +889,343 @@ MIT license, all text above must be included in any redistribution
         'tft.print("My Title");<br/>' +
         "<br/>" +
         'tft.setTextArea(descriptionArea);<br/>' +
-        'tft.setTextColor(ILI9341_GREEN);<br/>' +
+        'tft.setTextColor(ILI9341_LIME);<br/>' +
         'tft.print("My Description");', true);
 
+        addIliFunction("setTextColor",
+        "Sets the text foreground color.",
+        "void setTextColor(uint8_t R, uint8_t G, uint8_t B);",
+        "<ul>" +
+        "<li><em>R</em> - red</li>" +
+        "<li><em>G</em> - green</li>" +
+        "<li><em>B</em> - blue</li>" +
+        "</ul>",
+        "Set red color for the header and green color for the description. If the background color was not previously set then black will be used.",
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        "gTextArea titleArea{ 10, 10, 300, 40 };<br/>" +
+        "gTextArea descriptionArea{ 10, 60, 300, 170 };<br/>" +
+        "...<br/>" +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        "<br/>" +
+        'tft.setTextArea(titleArea);<br/>' +
+        'tft.setTextColor(255, 0, 0);<br/>' +
+        'tft.print("My Title");<br/>' +
+        "<br/>" +
+        'tft.setTextArea(descriptionArea);<br/>' +
+        'tft.setTextColor(0, 255, 0);<br/>' +
+        'tft.print("My Description");', true);
 
+        addIliFunction("setTextColor",
+        "Sets the text foreground and background color.",
+        "void setTextColor(uint16_t color, uint16_t backgroundColor);",
+        "<ul>" +
+        "<li><em>color</em> - text foreground color</li>" +
+        "<li><em>backgroundColor</em> - text bacground color</li>" +
+        "</ul>",
+        "Set red foreground color, dark red background color for the header and green foreground color, blue background color for the description.",
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        "gTextArea titleArea{ 10, 10, 300, 40 };<br/>" +
+        "gTextArea descriptionArea{ 10, 60, 300, 170 };<br/>" +
+        "...<br/>" +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        "<br/>" +
+        'tft.setTextArea(titleArea);<br/>' +
+        'tft.setTextColor(ILI9341_RED, ILI9341_DARKRED);<br/>' +
+        'tft.print("My Title");<br/>' +
+        "<br/>" +
+        'tft.setTextArea(descriptionArea);<br/>' +
+        'tft.setTextColor(ILI9341_LIME, ILI9341_BLUE);<br/>' +
+        'tft.print("My Description");', true, "func_setTextColorFB.png");
+
+
+        addIliFunction("setTextColor",
+        "Sets the text foreground color.",
+        "void setTextColor(uint8_t R, uint8_t G, uint8_t B, uint8_t bgR, uint8_t bgG, uint8_t bgB);",
+        "<ul>" +
+        "<li><em>R</em> - foreground red</li>" +
+        "<li><em>G</em> - foreground green</li>" +
+        "<li><em>B</em> - foreground blue</li>" +
+        "<li><em>bgR</em> - background red</li>" +
+        "<li><em>bgG</em> - background green</li>" +
+        "<li><em>bgB</em> - background blue</li>" +
+        "</ul>",
+        "Set red foreground color, dark red background color for the header and green foreground color, blue background color for the description.",
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        "gTextArea titleArea{ 10, 10, 300, 40 };<br/>" +
+        "gTextArea descriptionArea{ 10, 60, 300, 170 };<br/>" +
+        "...<br/>" +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        "<br/>" +
+        'tft.setTextArea(titleArea);<br/>' +
+        'tft.setTextColor(255, 0, 0, 127, 0, 0);<br/>' +
+        'tft.print("My Title");<br/>' +
+        "<br/>" +
+        'tft.setTextArea(descriptionArea);<br/>' +
+        'tft.setTextColor(0, 255, 0, 0, 0, 255);<br/>' +
+        'tft.print("My Description");', true, "func_setTextColorFBRGB.png");
+
+        addIliFunction("setTextLetterSpacing",
+        "Sets the spacing between characters. The default is 2px (DEFAULT_LETTER_SPACING).",
+        "void setTextLetterSpacing(uint8_t letterSpacing);",
+        "<ul>" +
+        "<li><em>letterSpacing</em> - the distance in pixels between characters</li>" +
+        "</ul>",
+        "Set different letter spacings.",
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        "gTextArea textArea{ 10, 10, 300, 200 };<br/>" +
+        "...<br/>" +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        "<br/>" +
+        'tft.setTextArea(textArea);<br/>' +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_BLUE);<br/>' +
+        'tft.setTextLetterSpacing(0);<br/>' +
+        'tft.print("Letter Spacing 0\\n");<br/>' +
+        'tft.setTextLetterSpacing(1);<br/>' +
+        'tft.print("Letter Spacing 1\\n");<br/>' +
+        'tft.setTextLetterSpacing(2);<br/>' +
+        'tft.print("Letter Spacing 2\\n");<br/>' +
+        'tft.setTextLetterSpacing(3);<br/>' +
+        'tft.print("Letter Spacing 3\\n");<br/>' +
+        'tft.setTextLetterSpacing(4);<br/>' +
+        'tft.print("Letter Spacing 4\\n");<br/>' +
+        'tft.setTextLetterSpacing(5);<br/>' +
+        'tft.print("Letter Spacing 5\\n");<br/>' +
+        'tft.setTextLetterSpacing(6);<br/>' +
+        'tft.print("Letter Spacing 6\\n");<br/>' +
+        'tft.setTextLetterSpacing(7);<br/>' +
+        'tft.print("Letter Spacing 7\\n");<br/>' +
+        'tft.setTextLetterSpacing(8);<br/>' +
+        'tft.print("Letter Spacing 8\\n");<br/>' +
+        'tft.setTextLetterSpacing(9);<br/>' +
+        'tft.print("Letter Spacing 9\\n");<br/>' +
+        'tft.setTextLetterSpacing(10);<br/>' +
+        'tft.print("Letter Spacing 10");', true);
+
+        addIliFunction("getTextLetterSpacing",
+        "Gets the current spacing between characters.",
+        "uint8_t getTextLetterSpacing();",
+        "",
+        "Get the letter spacing.",
+        'uint8_t letterSpacing = tft.getTextLetterSpacing();', false);
+
+        addIliFunction("setTextLineSpacing",
+        "Sets the spacing between lines. The default is 0px (DEFAULT_LINE_SPACING).",
+        "void setTextLineSpacing(uint8_t lineSpacing);",
+        "<ul>" +
+        "<li><em>lineSpacing</em> - the distance in pixels between lines</li>" +
+        "</ul>",
+        "Set different line spacings.",
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        "gTextArea textArea{ 10, 10, 300, 200 };<br/>" +
+        "...<br/>" +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        "<br/>" +
+        'tft.setTextArea(textArea);<br/>' +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_NAVY);<br/>' +
+        'tft.setTextLineSpacing(0);<br/>' +
+        'tft.print("Line Spacing 0\\n");<br/>' +
+        'tft.setTextLineSpacing(1);<br/>' +
+        'tft.print("Line Spacing 1\\n");<br/>' +
+        'tft.setTextLineSpacing(2);<br/>' +
+        'tft.print("Line Spacing 2\\n");<br/>' +
+        'tft.setTextLineSpacing(3);<br/>' +
+        'tft.print("Line Spacing 3\\n");<br/>' +
+        'tft.setTextLineSpacing(4);<br/>' +
+        'tft.print("Line Spacing 4\\n");<br/>' +
+        'tft.setTextLineSpacing(5);<br/>' +
+        'tft.print("Line Spacing 5\\n");<br/>' +
+        'tft.setTextLineSpacing(6);<br/>' +
+        'tft.print("Line Spacing 6\\n");<br/>' +
+        'tft.setTextLineSpacing(7);<br/>' +
+        'tft.print("Line Spacing 7\\n");<br/>' +
+        'tft.setTextLineSpacing(8);<br/>' +
+        'tft.print("Line Spacing 8\\n");<br/>' +
+        'tft.setTextLineSpacing(9);<br/>' +
+        'tft.print("Line Spacing 9\\n");<br/>' +
+        'tft.setTextLineSpacing(10);<br/>' +
+        'tft.print("Line Spacing 10\\n");<br/>' +
+        'tft.print("Line Spacing end");', true);
+
+
+        addIliFunction("getTextLineSpacing",
+        "Gets the current spacing between lines.",
+        "uint8_t getTextLineSpacing();",
+        "",
+        "Get the line spacing.",
+        'uint8_t lineSpacing = tft.getTextLineSpacing();', false);
+
+        addIliFunction("setFontMode",
+        "Sets solid or transparent font background when rendering text.",
+        "void setFontMode(gTextFontMode fontMode);",
+        "<ul>" +
+        "<li><em>fontMode</em> - can be one of these enum values:<br/><ul><li><em>gTextFontModeTransparent</em> - transparent font background</li><li><em>gTextFontModeSolid</em> - solid font background (default)</li></ul>" +
+        "</ul>",
+        "Draw some random colored background and text with transparent and solid backgrounds.",
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        "gTextArea textArea{ 10, 10, 300, 200 };<br/>" +
+        "...<br/>" +
+        "for (uint32_t i = 0; i < 320; i += 20){<br/>" +
+        "&nbsp;&nbsp;for (uint32_t j = 0; j < 240; j += 20){<br/>" +
+        "&nbsp;&nbsp;&nbsp;&nbsp;tft.fillRect(i, j, 20, 20, random(0,65535));<br/>" +
+        "&nbsp;&nbsp;}<br/>" +
+        "}<br/>" +
+        "<br/>" +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        'tft.setTextArea(textArea);<br/>' +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_GREEN);<br/>' +
+        "<br/>" +
+        'tft.setFontMode(gTextFontModeTransparent);<br/>' +
+        'tft.print("gTextFontModeTransparent\\n\\n");<br/>' +
+        "<br/>" +
+        'tft.setFontMode(gTextFontModeSolid);<br/>' +
+        'tft.print("gTextFontModeSolid");', true);
+
+
+        addIliFunction("setTextScale",
+        "Sets text scaling.",
+        "void setTextScale(uint8_t textScale);",
+        "<ul>" +
+        "<li><em>textScale</em> - text scale multiplier" +
+        "</ul>",
+        "Draw text at different scales.",
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        "gTextArea textArea{ 10, 10, 300, 200 };<br/>" +
+        "...<br/>" +
+        "<br/>" +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        'tft.setTextArea(textArea);<br/>' +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_BLUE);<br/>' +
+        "<br/>" +
+        'tft.setTextScale(1);<br/>' +
+	    'tft.print("Text Scale 1\\n");<br/>' +
+        'tft.setTextScale(2);<br/>' +
+        'tft.print("Text Scale 2\\n");<br/>' +
+        'tft.setTextScale(3);<br/>' +
+        'tft.print("Text Scale 3\\n");<br/>' +
+        'tft.setTextScale(4);<br/>' +
+        'tft.print("Text Scale 4\\n");<br/>' +
+        'tft.setTextScale(5);<br/>' +
+        'tft.print("Text Scale 5");', true);
+
+        addIliFunction("printAt",
+        "Prints a string.",
+        "void printAt(const char *str, int16_t x, int16_t y);<br/>" +
+	    "void printAt(const String &str, int16_t x, int16_t y);<br/>" +
+        "void printAt(const __FlashStringHelper* str, int16_t x, int16_t y);",
+        "<ul>" +
+        "<li><em>str</em> - string to print" +
+        "<li><em>x</em> - x-coordinate of the string top left corner" +
+        "<li><em>y</em> - y-coordinate of the string top left corner" +
+        "</ul>",
+        "Print texts at different locations.",
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        'tft.setTextArea(10, 10, 300, 200);<br/>' +
+        'tft.clearTextArea(ILI9341_LIGHTBLUE);<br/>' +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_NAVY);<br/>' +
+        "<br/>" +
+        'tft.printAt("String 1", 10, 10);<br/>' +
+	    "<br/>" +
+	    'String str2 = "String 2";<br/>' +
+        'tft.printAt(str2, 30, 30);<br/>' +
+        "<br/>" +
+        'tft.printAt(F("String 3"), 50, 50);', true);
+
+
+        addIliFunction("printAt",
+        "Prints a string with line erase.",
+        "void printAt(const char *str, int16_t x, int16_t y, gTextEraseLine eraseLine);<br/>" +
+	    "void printAt(const String &str, int16_t x, int16_t y, gTextEraseLine eraseLine);<br/>" +
+        "void printAt(const __FlashStringHelper *str, int16_t x, int16_t y, gTextEraseLine eraseLine);",
+        "<ul>" +
+        "<li><em>str</em> - string to print" +
+        "<li><em>x</em> - x-coordinate (relative to text area) of the string top left corner " +
+        "<li><em>y</em> - y-coordinate (relative to text area) of the string top left corner" +
+        "<li><em>eraseLine</em> - can be one of these enum values:<br/><ul><li><em>gTextEraseFromBOL</em> - erases from the beginning of line</li><li><em>gTextEraseToEOL</em> - erases to the end of line</li><li><em>gTextEraseFullLine</em> - erases the whole line</li></ul>" +
+        "</ul>",
+        "Print text with different line erase.",
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        'tft.setTextArea(10, 10, 300, 200);<br/>' +
+        'tft.clearTextArea(ILI9341_LIGHTBLUE);<br/>' +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_NAVY);<br/>' +
+        "<br/>" +
+        'tft.printAt("EraseFromBOL", 100, 10, gTextEraseFromBOL);<br/>' +
+	    "<br/>" +
+	    'String str2 = "EraseToEOL";<br/>' +
+        'tft.printAt(str2, 100, 30, gTextEraseToEOL);<br/>' +
+        "<br/>" +
+        'tft.printAt(F("EraseFullLine"), 100, 50, gTextEraseFullLine);', true, "func_printAtErase.png");
+
+        addIliFunction("printAt",
+        "Prints a string with erase.",
+        "void printAt(const char *str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);<br/>" +
+	    "void printAt(const String &str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);<br/>" +
+        "void printAt(const __FlashStringHelper *str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);",
+        "<ul>" +
+        "<li><em>str</em> - string to print" +
+        "<li><em>x</em> - x-coordinate (relative to text area) of the string top left corner " +
+        "<li><em>y</em> - y-coordinate (relative to text area) of the string top left corner" +
+        "<li><em>pixelsClearedOnLeft</em> - number of pixels to be cleared on the string left side" +
+        "<li><em>pixelsClearedOnRight</em> - number of pixels to be cleared on the string right side" +
+        "</ul>",
+        "Print text with different line erase.",
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        'tft.setTextArea(10, 10, 300, 200);<br/>' +
+        'tft.clearTextArea(ILI9341_LIGHTBLUE);<br/>' +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_NAVY);<br/>' +
+        "<br/>" +
+        'tft.printAt("<- 10px on left, 10px on right ->", 30, 10, 10, 10);<br/>' +
+        "<br/>" +
+	    'String str2 = "<- 2px on left, 20px on right ->";<br/>' +
+	    'tft.printAt(str2, 30, 30, 2, 20);<br/>' +
+        "<br/>" +
+        'tft.printAt(F("<- 30px on left, 5px on right ->"), 30, 50, 30, 5);', true, "func_printAtErasePx.png");
+
+        addIliFunction("printAtPivoted",
+        "Prints a pivoted string.",
+        "void printAtPivoted(const char *str, int16_t x, int16_t y, gTextPivot pivot);<br/>" +
+	    "void printAtPivoted(const String &str, int16_t x, int16_t y, gTextPivot pivot);<br/>" +
+        "void printAtPivoted(const __FlashStringHelper *str, int16_t x, int16_t y, gTextPivot pivot);",
+        "<ul>" +
+        "<li><em>str</em> - string to print" +
+        "<li><em>x</em> - x-coordinate (relative to text area) of the string pivot" +
+        "<li><em>y</em> - y-coordinate (relative to text area) of the string pivot" +
+        "<li><em>pivot</em> - can be one of these enum values:<br/>" + 
+            "<ul>" +
+            "<li><em>gTextPivotTopLeft</em> - the pivot is in the top left corner of the string</li>" +
+            "<li><em>gTextPivotTopCenter</em> - the pivot is in the top center of the string</li>" +
+            "<li><em>gTextPivotTopRight</em> - the pivot is in the top right corner of the string</li>" +
+            "<li><em>gTextPivotMiddleLeft</em> - the pivot is in the middle left of the string</li>" +
+            "<li><em>gTextPivotMiddleCenter</em> - the pivot is in the middle center of the string</li>" +
+            "<li><em>gTextPivotMiddleRight</em> - the pivot is in the top middle right of the string</li>" +
+            "<li><em>gTextPivotBottomLeft</em> - the pivot is in the bottom left corner of the string</li>" +
+            "<li><em>gTextPivotBottomCenter</em> - the pivot is in the bottom center of the string</li>" +
+            "<li><em>gTextPivotBottomRight</em> - the pivot is in the bottom right corner of the string</li>" +
+            "</ul>" +
+        "</ul>",
+        "Print text at the same x-coordinate but with different pivots.",
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        'tft.setTextArea(10, 10, 300, 200);<br/>' +
+        'tft.clearTextArea(ILI9341_LIGHTBLUE);<br/>' +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_NAVY);<br/>' +
+        "<br/>" +
+        'tft.printAtPivoted("PivotTopLeft", 150, 10, gTextPivotTopLeft);<br/>' +
+	    'tft.printAtPivoted("PivotTopCenter", 150, 30, gTextPivotTopCenter);<br/>' +
+	    'tft.printAtPivoted("PivotTopRight", 150, 50, gTextPivotTopRight);', true);
 
 
         addIliFunction("screenshotToConsole",
