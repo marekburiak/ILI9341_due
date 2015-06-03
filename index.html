@@ -1141,7 +1141,7 @@ MIT license, all text above must be included in any redistribution
 
 
         addIliFunction("printAt",
-        "Prints a string with line erase.",
+        "Prints a string and erases areas to the left or right or both sides of the string.",
         "void printAt(const char *str, int16_t x, int16_t y, gTextEraseLine eraseLine);<br/>" +
 	    "void printAt(const String &str, int16_t x, int16_t y, gTextEraseLine eraseLine);<br/>" +
         "void printAt(const __FlashStringHelper *str, int16_t x, int16_t y, gTextEraseLine eraseLine);",
@@ -1167,7 +1167,7 @@ MIT license, all text above must be included in any redistribution
         'tft.printAt(F("EraseFullLine"), 100, 50, gTextEraseFullLine);', true, "func_printAtErase.png");
 
         addIliFunction("printAt",
-        "Prints a string with erase.",
+        "Prints a string and erases areas on both sides of the string.",
         "void printAt(const char *str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);<br/>" +
 	    "void printAt(const String &str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);<br/>" +
         "void printAt(const __FlashStringHelper *str, int16_t x, int16_t y, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);",
@@ -1194,15 +1194,15 @@ MIT license, all text above must be included in any redistribution
         'tft.printAt(F("<- 30px on left, 5px on right ->"), 30, 50, 30, 5);', true, "func_printAtErasePx.png");
 
         addIliFunction("printAtPivoted",
-        "Prints a pivoted string.",
+        "Prints a string which is positioned relatively to its pivot.",
         "void printAtPivoted(const char *str, int16_t x, int16_t y, gTextPivot pivot);<br/>" +
 	    "void printAtPivoted(const String &str, int16_t x, int16_t y, gTextPivot pivot);<br/>" +
         "void printAtPivoted(const __FlashStringHelper *str, int16_t x, int16_t y, gTextPivot pivot);",
         "<ul>" +
         "<li><em>str</em> - string to print" +
-        "<li><em>x</em> - x-coordinate (relative to text area) of the string pivot" +
-        "<li><em>y</em> - y-coordinate (relative to text area) of the string pivot" +
-        "<li><em>pivot</em> - can be one of these enum values:<br/>" + 
+        "<li><em>x</em> - x-coordinate (relative to text area) of the target pivot location" +
+        "<li><em>y</em> - y-coordinate (relative to text area) of the target pivot location" +
+        "<li><em>pivot</em> - a point that will can be one of these enum values:<br/>" + 
             "<ul>" +
             "<li><em>gTextPivotTopLeft</em> - the pivot is in the top left corner of the string</li>" +
             "<li><em>gTextPivotTopCenter</em> - the pivot is in the top center of the string</li>" +
@@ -1215,7 +1215,7 @@ MIT license, all text above must be included in any redistribution
             "<li><em>gTextPivotBottomRight</em> - the pivot is in the bottom right corner of the string</li>" +
             "</ul>" +
         "</ul>",
-        "Print text at the same x-coordinate but with different pivots.",
+        "Print text at the same x-coordinate but with different pivots. You define which pivot to use and that pivot is then moved (together with the string) to (x,y) location.",
         '#include "fonts\\Arial_bold_14.h"<br/>' +
         '...<br/>' +
         'tft.setFont(Arial_bold_14);<br/>' +
@@ -1226,6 +1226,114 @@ MIT license, all text above must be included in any redistribution
         'tft.printAtPivoted("PivotTopLeft", 150, 10, gTextPivotTopLeft);<br/>' +
 	    'tft.printAtPivoted("PivotTopCenter", 150, 30, gTextPivotTopCenter);<br/>' +
 	    'tft.printAtPivoted("PivotTopRight", 150, 50, gTextPivotTopRight);', true);
+
+
+        addIliFunction("printAligned",
+        "Prints a text area aligned string.",
+        "void printAligned(const char *str, gTextAlign align);<br/>" +
+        "void printAligned(const String &str, gTextAlign align);<br/>" +
+        "void printAligned(const __FlashStringHelper *str, gTextAlign align);",
+        "<ul>" +
+        "<li><em>str</em> - string to print" +
+        "<li><em>align</em> - alignment of string in respect to text area. Can be one of these values:<br/>" +
+            "<ul>" +
+            "<li><em>gTextAlignTopLeft</em> - aligning to top left</li>" +
+            "<li><em>gTextAlignTopCenter</em> - aligning to top center</li>" +
+            "<li><em>gTextAlignTopRight</em> - aligning to top right</li>" +
+            "<li><em>gTextAlignMiddleLeft</em> - aligning to midlle left</li>" +
+            "<li><em>gTextAlignMiddleCenter</em> - aligning to midlle center</li>" +
+            "<li><em>gTextAlignMiddleRight</em> - aligning to midlle right</li>" +
+            "<li><em>gTextAlignBottomLeft</em> - aligning to bottom left</li>" +
+            "<li><em>gTextAlignBottomCenter</em> - aligning to bottom center</li>" +
+            "<li><em>gTextAlignBottomRight</em> - aligning to bottom right</li>" +
+            "</ul>" +
+        "</ul>",
+        "Print text with different alignments.",
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        'tft.setTextArea(10, 10, 300, 200);<br/>' +
+        'tft.clearTextArea(ILI9341_LIGHTBLUE);<br/>' +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_NAVY);<br/>' +
+        "<br/>" +
+        'tft.printAligned("TopLeft", gTextAlignTopLeft);<br/>' +
+	    'tft.printAligned("TopCenter", gTextAlignTopCenter);<br/>' +
+        'tft.printAligned("TopRight", gTextAlignTopRight);<br/>' +
+        'tft.printAligned("MiddleLeft", gTextAlignMiddleLeft);<br/>' +
+        'tft.printAligned("MiddleCenter", gTextAlignMiddleCenter);<br/>' +
+        'tft.printAligned("MiddleRight", gTextAlignMiddleRight);<br/>' +
+        'tft.printAligned("BottomLeft", gTextAlignBottomLeft);<br/>' +
+        'tft.printAligned("BottomCenter", gTextAlignBottomCenter);<br/>' +
+        'tft.printAligned("BottomRight", gTextAlignBottomRight);', true);
+
+
+        addIliFunction("printAligned",
+        "Prints a text area aligned string with line erase.",
+        "void printAligned(const char *str, gTextAlign align, gTextEraseLine eraseLine);<br/>" +
+        "void printAligned(const String &str, gTextAlign align, gTextEraseLine eraseLine);<br/>" +
+        "void printAligned(const __FlashStringHelper *str, gTextAlign align, gTextEraseLine eraseLine);",
+        "<ul>" +
+        "<li><em>str</em> - string to print" +
+        "<li><em>align</em> - alignment of string in respect to text area. Can be one of these values:<br/>" +
+            "<ul>" +
+            "<li><em>gTextAlignTopLeft</em> - aligning to top left</li>" +
+            "<li><em>gTextAlignTopCenter</em> - aligning to top center</li>" +
+            "<li><em>gTextAlignTopRight</em> - aligning to top right</li>" +
+            "<li><em>gTextAlignMiddleLeft</em> - aligning to midlle left</li>" +
+            "<li><em>gTextAlignMiddleCenter</em> - aligning to midlle center</li>" +
+            "<li><em>gTextAlignMiddleRight</em> - aligning to midlle right</li>" +
+            "<li><em>gTextAlignBottomLeft</em> - aligning to bottom left</li>" +
+            "<li><em>gTextAlignBottomCenter</em> - aligning to bottom center</li>" +
+            "<li><em>gTextAlignBottomRight</em> - aligning to bottom right</li>" +
+            "</ul>" +
+            "<li><em>eraseLine</em> - can be one of these enum values:<br/><ul><li><em>gTextEraseFromBOL</em> - erases from the beginning of line</li><li><em>gTextEraseToEOL</em> - erases to the end of line</li><li><em>gTextEraseFullLine</em> - erases the whole line</li></ul>" +
+        "</ul>",
+        "Print text with different alignments.",
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        'tft.setTextArea(10, 10, 300, 200);<br/>' +
+        'tft.clearTextArea(ILI9341_LIGHTBLUE);<br/>' +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_NAVY);<br/>' +
+        "<br/>" +
+        'tft.printAligned("EraseFromBOL", gTextAlignTopCenter, gTextEraseFromBOL);<br/>' +
+	    'tft.printAligned("EraseToEOL", gTextAlignMiddleCenter, gTextEraseToEOL);<br/>' +
+        'tft.printAligned("EraseFullLine", gTextAlignBottomCenter, gTextEraseFullLine);', true, "func_printAlignedErase.png");
+
+        addIliFunction("printAligned",
+       "Prints a text area aligned string with erase.",
+       "void printAligned(const char *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight););<br/>" +
+       "void printAligned(const String &str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight););<br/>" +
+       "void printAligned(const __FlashStringHelper *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight););",
+       "<ul>" +
+       "<li><em>str</em> - string to print" +
+       "<li><em>align</em> - alignment of string in respect to text area. Can be one of these values:<br/>" +
+           "<ul>" +
+           "<li><em>gTextAlignTopLeft</em> - aligning to top left</li>" +
+           "<li><em>gTextAlignTopCenter</em> - aligning to top center</li>" +
+           "<li><em>gTextAlignTopRight</em> - aligning to top right</li>" +
+           "<li><em>gTextAlignMiddleLeft</em> - aligning to midlle left</li>" +
+           "<li><em>gTextAlignMiddleCenter</em> - aligning to midlle center</li>" +
+           "<li><em>gTextAlignMiddleRight</em> - aligning to midlle right</li>" +
+           "<li><em>gTextAlignBottomLeft</em> - aligning to bottom left</li>" +
+           "<li><em>gTextAlignBottomCenter</em> - aligning to bottom center</li>" +
+           "<li><em>gTextAlignBottomRight</em> - aligning to bottom right</li>" +
+           "</ul>" +
+       "<li><em>pixelsClearedOnLeft</em> - number of pixels to be cleared on the string left side" +
+       "<li><em>pixelsClearedOnRight</em> - number of pixels to be cleared on the string right side" +
+       "</ul>",
+       "Print text with different alignments and different erased areas on both sides of the string.",
+       '#include "fonts\\Arial_bold_14.h"<br/>' +
+       '...<br/>' +
+       'tft.setFont(Arial_bold_14);<br/>' +
+       'tft.setTextArea(10, 10, 300, 200);<br/>' +
+       'tft.clearTextArea(ILI9341_LIGHTBLUE);<br/>' +
+       'tft.setTextColor(ILI9341_WHITE, ILI9341_NAVY);<br/>' +
+       "<br/>" +
+       'tft.printAligned("<- 10px on left, 10px on right ->", gTextAlignTopLeft, 10, 10);<br/>' +
+       'tft.printAligned("<- 2px on left, 20px on right ->", gTextAlignMiddleCenter, 2, 20);<br/>' +
+       'tft.printAligned("<- 30px on left, 5px on right ->", gTextAlignBottomRight, 30, 5);', true, "func_printAlignedErasePx.png");
+
 
 
         addIliFunction("screenshotToConsole",
