@@ -1175,8 +1175,8 @@ MIT license, all text above must be included in any redistribution
         "<li><em>str</em> - string to print" +
         "<li><em>x</em> - x-coordinate (relative to text area) of the string top left corner " +
         "<li><em>y</em> - y-coordinate (relative to text area) of the string top left corner" +
-        "<li><em>pixelsClearedOnLeft</em> - number of pixels to be cleared on the string left side" +
-        "<li><em>pixelsClearedOnRight</em> - number of pixels to be cleared on the string right side" +
+        "<li><em>pixelsClearedOnLeft</em> - width in pixels to be cleared on the string left side" +
+        "<li><em>pixelsClearedOnRight</em> - width in pixels to be cleared on the string right side" +
         "</ul>",
         "Print text with different line erase.",
         '#include "fonts\\Arial_bold_14.h"<br/>' +
@@ -1268,7 +1268,7 @@ MIT license, all text above must be included in any redistribution
 
 
         addIliFunction("printAligned",
-        "Prints a text area aligned string with line erase.",
+        "Prints a text area aligned string and erases areas on left or right or both sides of the string.",
         "void printAligned(const char *str, gTextAlign align, gTextEraseLine eraseLine);<br/>" +
         "void printAligned(const String &str, gTextAlign align, gTextEraseLine eraseLine);<br/>" +
         "void printAligned(const __FlashStringHelper *str, gTextAlign align, gTextEraseLine eraseLine);",
@@ -1301,10 +1301,10 @@ MIT license, all text above must be included in any redistribution
         'tft.printAligned("EraseFullLine", gTextAlignBottomCenter, gTextEraseFullLine);', true, "func_printAlignedErase.png");
 
         addIliFunction("printAligned",
-       "Prints a text area aligned string with erase.",
-       "void printAligned(const char *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight););<br/>" +
-       "void printAligned(const String &str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight););<br/>" +
-       "void printAligned(const __FlashStringHelper *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight););",
+       "Prints a text area aligned string and erases areas on both sides of the string.",
+       "void printAligned(const char *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);<br/>" +
+       "void printAligned(const String &str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);<br/>" +
+       "void printAligned(const __FlashStringHelper *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);",
        "<ul>" +
        "<li><em>str</em> - string to print" +
        "<li><em>align</em> - alignment of string in respect to text area. Can be one of these values:<br/>" +
@@ -1319,8 +1319,8 @@ MIT license, all text above must be included in any redistribution
            "<li><em>gTextAlignBottomCenter</em> - aligning to bottom center</li>" +
            "<li><em>gTextAlignBottomRight</em> - aligning to bottom right</li>" +
            "</ul>" +
-       "<li><em>pixelsClearedOnLeft</em> - number of pixels to be cleared on the string left side" +
-       "<li><em>pixelsClearedOnRight</em> - number of pixels to be cleared on the string right side" +
+       "<li><em>pixelsClearedOnLeft</em> - width in pixels to be cleared on the string left side" +
+       "<li><em>pixelsClearedOnRight</em> - width in pixels to be cleared on the string right side" +
        "</ul>",
        "Print text with different alignments and different erased areas on both sides of the string.",
        '#include "fonts\\Arial_bold_14.h"<br/>' +
@@ -1333,6 +1333,115 @@ MIT license, all text above must be included in any redistribution
        'tft.printAligned("<- 10px on left, 10px on right ->", gTextAlignTopLeft, 10, 10);<br/>' +
        'tft.printAligned("<- 2px on left, 20px on right ->", gTextAlignMiddleCenter, 2, 20);<br/>' +
        'tft.printAligned("<- 30px on left, 5px on right ->", gTextAlignBottomRight, 30, 5);', true, "func_printAlignedErasePx.png");
+
+
+       addIliFunction("printAlignedOffseted",
+       "Prints a text area aligned string with offset.",
+       "void printAlignedOffseted(const char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY);<br/>" +
+       "void printAlignedOffseted(const String &str, gTextAlign align, uint16_t offsetX, uint16_t offsetY);<br/>" +
+       "void printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY);",
+       "<ul>" +
+       "<li><em>str</em> - string to print" +
+       "<li><em>align</em> - alignment of string in respect to text area. Can be one of these values:<br/>" +
+           "<ul>" +
+           "<li><em>gTextAlignTopLeft</em> - aligning to top left</li>" +
+           "<li><em>gTextAlignTopCenter</em> - aligning to top center</li>" +
+           "<li><em>gTextAlignTopRight</em> - aligning to top right</li>" +
+           "<li><em>gTextAlignMiddleLeft</em> - aligning to midlle left</li>" +
+           "<li><em>gTextAlignMiddleCenter</em> - aligning to midlle center</li>" +
+           "<li><em>gTextAlignMiddleRight</em> - aligning to midlle right</li>" +
+           "<li><em>gTextAlignBottomLeft</em> - aligning to bottom left</li>" +
+           "<li><em>gTextAlignBottomCenter</em> - aligning to bottom center</li>" +
+           "<li><em>gTextAlignBottomRight</em> - aligning to bottom right</li>" +
+           "</ul>" +
+       "<li><em>offsetX</em> - string offset in x-axis" +
+       "<li><em>offsetY</em> - string offset in y-axis" +
+       "</ul>",
+       "Print text aligned in the middle with different offsets.",
+       '#include "fonts\\Arial_bold_14.h"<br/>' +
+       '...<br/>' +
+       'tft.setFont(Arial_bold_14);<br/>' +
+       'tft.setTextArea(10, 10, 300, 200);<br/>' +
+       'tft.clearTextArea(ILI9341_LIGHTBLUE);<br/>' +
+       'tft.setTextColor(ILI9341_WHITE, ILI9341_NAVY);<br/>' +
+       "<br/>" +
+       'tft.printAlignedOffseted("Middle", gTextAlignMiddleCenter, 0, 0); // no actual offset<br/>' +
+	   'tft.printAlignedOffseted("-90px offset-x", gTextAlignMiddleCenter, -90, 0);<br/>' +
+       'tft.printAlignedOffseted("+90px offset-x", gTextAlignMiddleCenter, 90, 0);<br/>' +
+       'tft.printAlignedOffseted("-30px offset-y", gTextAlignMiddleCenter, 0, -30);<br/>' +
+       'tft.printAlignedOffseted("+30px offset-y", gTextAlignMiddleCenter, 0, 30);', true);
+
+       addIliFunction("printAlignedOffseted",
+      "Prints a text area aligned string with offset and erases areas on left or right or both sides of the string.",
+      "void printAlignedOffseted(const char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);<br/>" +
+      "void printAlignedOffseted(const String &str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);<br/>" +
+      "void printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);",
+      "<ul>" +
+      "<li><em>str</em> - string to print" +
+      "<li><em>align</em> - alignment of string in respect to text area. Can be one of these values:<br/>" +
+          "<ul>" +
+          "<li><em>gTextAlignTopLeft</em> - aligning to top left</li>" +
+          "<li><em>gTextAlignTopCenter</em> - aligning to top center</li>" +
+          "<li><em>gTextAlignTopRight</em> - aligning to top right</li>" +
+          "<li><em>gTextAlignMiddleLeft</em> - aligning to midlle left</li>" +
+          "<li><em>gTextAlignMiddleCenter</em> - aligning to midlle center</li>" +
+          "<li><em>gTextAlignMiddleRight</em> - aligning to midlle right</li>" +
+          "<li><em>gTextAlignBottomLeft</em> - aligning to bottom left</li>" +
+          "<li><em>gTextAlignBottomCenter</em> - aligning to bottom center</li>" +
+          "<li><em>gTextAlignBottomRight</em> - aligning to bottom right</li>" +
+          "</ul>" +
+      "<li><em>offsetX</em> - string offset in x-axis" +
+      "<li><em>offsetY</em> - string offset in y-axis" +
+      "<li><em>eraseLine</em> - can be one of these enum values:<br/><ul><li><em>gTextEraseFromBOL</em> - erases from the beginning of line</li><li><em>gTextEraseToEOL</em> - erases to the end of line</li><li><em>gTextEraseFullLine</em> - erases the whole line</li></ul>" +
+      "</ul>",
+      "Print text aligned in the middle with different offsets and different line erase.",
+      '#include "fonts\\Arial_bold_14.h"<br/>' +
+      '...<br/>' +
+      'tft.setFont(Arial_bold_14);<br/>' +
+      'tft.setTextArea(10, 10, 300, 200);<br/>' +
+      'tft.clearTextArea(ILI9341_LIGHTBLUE);<br/>' +
+      'tft.setTextColor(ILI9341_WHITE, ILI9341_NAVY);<br/>' +
+      "<br/>" +
+      'tft.printAlignedOffseted("-30px offset-y, EraseFromBOL", gTextAlignMiddleCenter, 0, -30, gTextEraseFromBOL);<br/>' +
+      'tft.printAlignedOffseted("Middle, EraseFullLine", gTextAlignMiddleCenter, 0, 0, gTextEraseFullLine);<br/>' +
+      'tft.printAlignedOffseted("+30px offset-y, EraseToEOL", gTextAlignMiddleCenter, 0, 30, gTextEraseToEOL);', true, "func_printAlignedOffsetedErase.png");
+
+
+       addIliFunction("printAlignedOffseted",
+        "Prints a text area aligned string with offset and erases areas on both sides of the string.",
+        "void printAlignedOffseted(const char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);<br/><br/>" +
+        "void printAlignedOffseted(const String &str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);<br/><br/>" +
+        "void printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);",
+        "<ul>" +
+        "<li><em>str</em> - string to print" +
+        "<li><em>align</em> - alignment of string in respect to text area. Can be one of these values:<br/>" +
+          "<ul>" +
+          "<li><em>gTextAlignTopLeft</em> - aligning to top left</li>" +
+          "<li><em>gTextAlignTopCenter</em> - aligning to top center</li>" +
+          "<li><em>gTextAlignTopRight</em> - aligning to top right</li>" +
+          "<li><em>gTextAlignMiddleLeft</em> - aligning to midlle left</li>" +
+          "<li><em>gTextAlignMiddleCenter</em> - aligning to midlle center</li>" +
+          "<li><em>gTextAlignMiddleRight</em> - aligning to midlle right</li>" +
+          "<li><em>gTextAlignBottomLeft</em> - aligning to bottom left</li>" +
+          "<li><em>gTextAlignBottomCenter</em> - aligning to bottom center</li>" +
+          "<li><em>gTextAlignBottomRight</em> - aligning to bottom right</li>" +
+          "</ul>" +
+        "<li><em>offsetX</em> - string offset in x-axis" +
+        "<li><em>offsetY</em> - string offset in y-axis" +
+        "<li><em>pixelsClearedOnLeft</em> - width in pixels to be cleared on the string left side" +
+        "<li><em>pixelsClearedOnRight</em> - width in pixels to be cleared on the string right side" +
+        "</ul>",
+        "Print text aligned in the middle with different offsets and different line erase.",
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        'tft.setTextArea(10, 10, 300, 200);<br/>' +
+        'tft.clearTextArea(ILI9341_LIGHTBLUE);<br/>' +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_NAVY);<br/>' +
+        "<br/>" +
+        'tft.printAlignedOffseted("<- 10px, -30px offset-y , 10px ->", gTextAlignMiddleCenter, 0, -30, 10, 10);<br/>' +
+	    'tft.printAlignedOffseted("<- 2px, Middle, 20px ->", gTextAlignMiddleCenter, 0, 0, 2, 20);<br/>' +
+        'tft.printAlignedOffseted("<- 30px, +30px offset-y, 5px ->", gTextAlignMiddleCenter, 0, 30, 30, 5);', true, "func_printAlignedOffsetedErasePx.png");
 
 
 
