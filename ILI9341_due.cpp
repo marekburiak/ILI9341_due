@@ -551,8 +551,8 @@ void ILI9341_due::setRotation(iliRotation r)
 		_height = ILI9341_TFTWIDTH;
 		break;
 	}
-	_area.x = 0;
-	_area.y = 0;
+	//_area.x = 0;
+	//_area.y = 0;
 	_area.w = _width;
 	_area.h = _height;
 	endTransaction();

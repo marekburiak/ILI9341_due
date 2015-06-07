@@ -193,11 +193,14 @@ namespace ILIScreenshotViewer
                 {
                     loadImageFromData = false;
                     data = data.TrimEnd('\r');
-                    this.Invoke(new Action<string>(d => { textBox1.AppendText("Loading Image...\r\n"); textBox1.ScrollToCaret(); }), new object[] { data });
+                    
                     this.Invoke(new Action<string>(d => { loadImage(d); }), new object[] { data });
                 }
                 else if (data.Contains("= PIXEL DATA START ="))
+                {
+                    this.Invoke(new Action<string>(d => { textBox1.AppendText("Loading Image...\r\n"); textBox1.ScrollToCaret(); textBox1.Refresh(); }), new object[] { data });
                     loadImageFromData = true;
+                }
                 else if (data.Contains("= PIXEL DATA END ="))
                 { }
                 else

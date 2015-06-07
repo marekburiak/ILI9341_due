@@ -14,21 +14,20 @@ MIT license, all text above must be included in any redistribution
 ****************************************************/
 
 
-//#include <SPI.h>
-#include <ILI_SdSpi.h>
-#include <ILI_SdFatConfig.h>
-#include <ILI9341_due_gText.h>
+#include <SPI.h>
+#include <ILI9341_due_config.h>
 #include <ILI9341_due.h>
+#include "fonts\SystemFont5x7.h"
 #include "fonts\Arial_bold_14.h"
 
-
+#define TFT_RST 8
 #define TFT_DC 9
 #define TFT_CS 10
 
 // Use hardware SPI (on Uno, #13, #12, #11) and the above for CS/DC
-ILI9341_due tft = ILI9341_due(TFT_CS, TFT_DC);
+ILI9341_due tft = ILI9341_due(TFT_CS, TFT_DC, TFT_RST);
 
-ILI9341_due_gText t1(&tft);
+gTextArea t1;
 long Screenfill,
 	Text,
 	Lines,
@@ -44,18 +43,17 @@ long Screenfill,
 
 void setup() {
 
-
 	Serial.begin(9600);
 	while (!Serial) ; // wait for Arduino Serial Monitor
-	Serial.println("ILI9341 Test!"); 
+	Serial.println(F("ILI9341 Test!")); 
 
 	tft.begin();
 	tft.setRotation(iliRotation270);
 	tft.fillScreen(ILI9341_BLUE);
-	t1.defineArea(30, 30, 26, 12, Arial_bold_14);
-	t1.selectFont(Arial_bold_14);
-	t1.setFontLetterSpacing(2);
-	t1.setFontColor(ILI9341_WHITE, ILI9341_BLUE);
+	
+	tft.setFont(Arial_bold_14);
+	tft.setTextLetterSpacing(2);
+	tft.setTextColor(ILI9341_WHITE, ILI9341_BLUE);
 
 #if SPI_MODE_NORMAL
 	char mode[] = "SPI_MODE_NORMAL";
@@ -65,21 +63,21 @@ void setup() {
 	char mode[] = "SPI_MODE_DMA";
 
 #endif
-	t1.drawString(mode, tft.width()/2 - t1.stringWidth(mode) / 2 - 30, 80);
-
+	tft.printAligned(mode, gTextAlignMiddleCenter);
 	delay(3000);
 	tft.setRotation(iliRotation0);
+
 	// read diagnostics (optional but can help debug problems)
 	uint8_t x = tft.readcommand8(ILI9341_RDMODE);
-	Serial.print("Display Power Mode: 0x"); Serial.println(x, HEX);
+	Serial.print(F("Display Power Mode: 0x")); Serial.println(x, HEX);
 	x = tft.readcommand8(ILI9341_RDMADCTL);
-	Serial.print("MADCTL Mode: 0x"); Serial.println(x, HEX);
+	Serial.print(F("MADCTL Mode: 0x")); Serial.println(x, HEX);
 	x = tft.readcommand8(ILI9341_RDPIXFMT);
-	Serial.print("Pixel Format: 0x"); Serial.println(x, HEX);
+	Serial.print(F("Pixel Format: 0x")); Serial.println(x, HEX);
 	x = tft.readcommand8(ILI9341_RDIMGFMT);
-	Serial.print("Image Format: 0x"); Serial.println(x, HEX);
+	Serial.print(F("Image Format: 0x")); Serial.println(x, HEX);
 	x = tft.readcommand8(ILI9341_RDSELFDIAG);
-	Serial.print("Self Diagnostic: 0x"); Serial.println(x, HEX); 
+	Serial.print(F("Self Diagnostic: 0x")); Serial.println(x, HEX); 
 
 	Serial.println(F("Benchmark                Time (microseconds)"));
 
@@ -136,10 +134,13 @@ void setup() {
 
 	tft.fillScreen(ILI9341_BLUE);
 	tft.setRotation(iliRotation270);
-	t1.cursorToXY(45, 80);
-	t1.print("Total time: ");
-	t1.print((micros() - start)/1000);
-	t1.print(" ms");
+	tft.setFont(Arial_bold_14);
+	tft.setTextColor(ILI9341_WHITE, ILI9341_BLUE);
+	tft.setTextArea(30, 30, 26, 12, Arial_bold_14);
+	tft.cursorToXY(45, 80);
+	tft.print(F("Total time: "));
+	tft.print((micros() - start)/1000);
+	tft.print(F(" ms"));
 
 	delay(2000);
 	printStats();
@@ -148,32 +149,32 @@ void setup() {
 
 void printStats()
 {
-	tft.setRotation(iliRotation270);
 	tft.fillScreen(ILI9341_BLUE);
-	t1.cursorTo(0, 0);
-	t1.print("Screen fill              "); t1.cursorTo(18); t1.print(Screenfill);
-	t1.cursorTo(0, 1);
-	t1.print("Text                     "); t1.cursorTo(18); t1.print(Text);
-	t1.cursorTo(0, 2);
-	t1.print("Lines                    "); t1.cursorTo(18); t1.print(Lines);
-	t1.cursorTo(0, 3);
-	t1.print("Horiz/Vert Lines         "); t1.cursorTo(18); t1.print(HorizVertLines);
-	t1.cursorTo(0, 4);
-	t1.print("Rectangles (outline)     "); t1.cursorTo(18); t1.print(Rectanglesoutline);
-	t1.cursorTo(0, 5);
-	t1.print("Rectangles (filled)      "); t1.cursorTo(18); t1.print(Rectanglesfilled);
-	t1.cursorTo(0, 6);
-	t1.print("Circles (filled)         "); t1.cursorTo(18); t1.print(Circlesfilled);
-	t1.cursorTo(0, 7);
-	t1.print("Circles (outline)        "); t1.cursorTo(18); t1.print(Circlesoutline);
-	t1.cursorTo(0, 8);
-	t1.print("Triangles (outline)      "); t1.cursorTo(18); t1.print(Trianglesoutline);
-	t1.cursorTo(0, 9);
-	t1.print("Triangles (filled)       "); t1.cursorTo(18); t1.print(Trianglesfilled);
-	t1.cursorTo(0, 10);
-	t1.print("Rounded rects (outline)  "); t1.cursorTo(18); t1.print(Roundedrectsoutline);
-	t1.cursorTo(0, 11);
-	t1.print("Rounded rects (filled)   "); t1.cursorTo(18); t1.print(Roundedrectsfilled);
+	
+	tft.cursorTo(0, 0);
+	tft.print(F("Screen fill              ")); tft.cursorTo(18); tft.print(Screenfill);
+	tft.cursorTo(0, 1);
+	tft.print(F("Text                     ")); tft.cursorTo(18); tft.print(Text);
+	tft.cursorTo(0, 2);
+	tft.print(F("Lines                    ")); tft.cursorTo(18); tft.print(Lines);
+	tft.cursorTo(0, 3);
+	tft.print(F("Horiz/Vert Lines         ")); tft.cursorTo(18); tft.print(HorizVertLines);
+	tft.cursorTo(0, 4);
+	tft.print(F("Rectangles (outline)     ")); tft.cursorTo(18); tft.print(Rectanglesoutline);
+	tft.cursorTo(0, 5);
+	tft.print(F("Rectangles (filled)      ")); tft.cursorTo(18); tft.print(Rectanglesfilled);
+	tft.cursorTo(0, 6);
+	tft.print(F("Circles (filled)         ")); tft.cursorTo(18); tft.print(Circlesfilled);
+	tft.cursorTo(0, 7);
+	tft.print(F("Circles (outline)        ")); tft.cursorTo(18); tft.print(Circlesoutline);
+	tft.cursorTo(0, 8);
+	tft.print(F("Triangles (outline)      ")); tft.cursorTo(18); tft.print(Trianglesoutline);
+	tft.cursorTo(0, 9);
+	tft.print(F("Triangles (filled)       ")); tft.cursorTo(18); tft.print(Trianglesfilled);
+	tft.cursorTo(0, 10);
+	tft.print(F("Rounded rects (outline)  ")); tft.cursorTo(18); tft.print(Roundedrectsoutline);
+	tft.cursorTo(0, 11);
+	tft.print(F("Rounded rects (filled)   ")); tft.cursorTo(18); tft.print(Roundedrectsfilled);
 
 }
 
@@ -197,28 +198,29 @@ unsigned long testFillScreen() {
 
 unsigned long testText() {
 	tft.fillScreen(ILI9341_BLACK);
+	tft.setFont(SystemFont5x7);
 	unsigned long start = micros();
-	tft.setCursor(0, 0);
-	tft.setTextColor(ILI9341_WHITE);  tft.setTextSize(1);
-	tft.println("Hello World!");
-	tft.setTextColor(ILI9341_YELLOW); tft.setTextSize(2);
+	tft.cursorTo(0, 0);
+	tft.setTextColor(ILI9341_WHITE, ILI9341_BLACK);  tft.setTextScale(1);
+	tft.println(F("Hello World!"));
+	tft.setTextColor(ILI9341_YELLOW); tft.setTextScale(2);
 	tft.println(1234.56);
-	tft.setTextColor(ILI9341_RED);    tft.setTextSize(3);
+	tft.setTextColor(ILI9341_RED);    tft.setTextScale(3);
 	tft.println(0xDEADBEEF, HEX);
 	tft.println();
 	tft.setTextColor(ILI9341_GREEN);
-	tft.setTextSize(5);
-	tft.println("Groop");
-	tft.setTextSize(2);
-	tft.println("I implore thee,");
-	tft.setTextSize(1);
-	tft.println("my foonting turlingdromes.");
-	tft.println("And hooptiously drangle me");
-	tft.println("with crinkly bindlewurdles,");
-	tft.println("Or I will rend thee");
-	tft.println("in the gobberwarts");
-	tft.println("with my blurglecruncheon,");
-	tft.println("see if I don't!");
+	tft.setTextScale(5);
+	tft.println(F("Groop"));
+	tft.setTextScale(2);
+	tft.println(F("I implore thee,"));
+	tft.setTextScale(1);
+	tft.println(F("my foonting turlingdromes."));
+	tft.println(F("And hooptiously drangle me"));
+	tft.println(F("with crinkly bindlewurdles,"));
+	tft.println(F("Or I will rend thee"));
+	tft.println(F("in the gobberwarts"));
+	tft.println(F("with my blurglecruncheon,"));
+	tft.println(F("see if I don't!"));
 	return micros() - start;
 }
 

@@ -32,7 +32,7 @@ along with ILI9341_due.  If not, see <http://www.gnu.org/licenses/>.
 selectFont -> setFont
 defineArea -> setTextArea
 new clearArea
-setFontColor -> setGTextColor
+setFontColor -> setTextColor
 setCursor -> cursorToXY
 setTextSize -> setTextScale
 setFontLetterSpacing -> setTextLetterSpacing

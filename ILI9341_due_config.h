@@ -11,13 +11,13 @@ Copyright (c) 2014  Marek Buriak
 #define _ILI9341_due_configH_
 
 // comment out the SPI mode you want to use (does not matter for AVR)
-#define ILI9341_SPI_MODE_NORMAL	// uses SPI library
+//#define ILI9341_SPI_MODE_NORMAL	// uses SPI library
 //#define ILI9341_SPI_MODE_EXTENDED	// uses Extended SPI in Due, make sure you use pin 4, 10 or 52 for CS
-//#define ILI9341_SPI_MODE_DMA		// uses DMA in Due
+#define ILI9341_SPI_MODE_DMA		// uses DMA in Due
 
 // set the clock divider
 #if defined __SAM3X8E__
-#define ILI9341_SPI_CLKDIVIDER 3	// for Due
+#define ILI9341_SPI_CLKDIVIDER 1	// for Due
 #elif defined __AVR__
 #define ILI9341_SPI_CLKDIVIDER SPI_CLOCK_DIV2	// for Uno, Mega,...
 #endif
