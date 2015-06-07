@@ -91,12 +91,28 @@
 
             </div>
 
-            <h3>Rendering custom fonts with ILI9341_due_gText</h3>
+            <h3>Creating Custom Fonts</h3>
 
             <p>
-                You have two options for rendering fonts. Either use text functions from ILI9341_due library where you have one font available (same as in Adafruit's GFX library) or use ILI9341_due_gText class to render your custom fonts.
-                The maximum height of the font is 255px. Custom font .h files can be generated with GLCDFontCreator2 tool (requires Java). It is included in the tools folder or you can dowload it from
+                You can create your own font files by using GLCDFontCreator2 tool. It generates .h files that can then be included in your sketch and the font can be set by the <em>setFont</em> function.
+                The maximum height of a font can be 255 px. GLCDFontCreator2 tool requires Java and it is included in the tools folder or you can dowload it from
                 <a href="https://code.google.com/p/glcd-arduino/downloads/detail?name=GLCDFontCreator2.zip&amp;can=2&amp;q=">here</a>.<br>
+                Here is a quick guide:
+                <ol>
+                    <li>Open GLCD Font Creator 2.</li>
+                    <li>From the menu select File->New Font.</li>
+                    <li>Select the Font, Size and Style you want to import in the Import Font group.</li>
+                    <li>Set the Start Index, that's the index from the character map. The first character (space) starts at index 32. The numbers start at index 48, upper-case characters at index 65, etc.</li>
+                    <li>Set the Char Count, that's the number of characters starting at the Start Index you want to have in your character set. So e.g. if you just need the numbers, set the Start Index to 48 and Char Count to 10. That will give you numbers 0-9 in your set.</li>
+                    <li>Set the Font Name. I advice to use maximum of 8 characters, no spaces.</li>
+                    <li>Click OK.</li>
+                    <li>From the menu select Export->Export Font.</li>
+                    <li>Provide a file name. I advice to use a maximum of 8 characters, no spaces and the same name as in step 6. I think you'd have to use 8.3 DOS style file names in your include (so something like #include "MyFont~1.h") if the file name would be over 8 chars. So keep it simple and don't use more than 8 chars. Also add ".h" to your file name so you do not have to add it afterwards.</li>
+                    <li>When you click Save, the app starts to export, if you do not see the file immediately, just wait for it.</li>
+                    <li>Copy the .h file where your sketch is (or wherever you can find it).</li>
+                    <li>Add an include in your sketch, #include "name_from_step_9.h".</li>
+                    <li>Call tft.setFont(name_from_step_6) and tft.print to render the text.</li>
+                </ol>
                 Here is a video of rendering a 255px-high font:
             </p>
             <div style="text-align: center">
@@ -128,46 +144,7 @@
             <div style="text-align: center">
                 <iframe width="560" height="315" src="http://www.youtube.com/embed/99todZeKaeI?rel=0&color=white" frameborder="0"></iframe>
             </div>
-            <h3>Taking screenshots</h3>
-
-            <p>
-                The library has a method called <i>screenshotToConsole</i>. When you call that method, you should get a string like this one in the console window:
-            </p>
-
-            <pre lang="Arduino"><code>==== PIXEL DATA START ====
-0000000090606060001F000000011B606060002B0000000
-11060606000350000000107606060003D00000000FF6060
-60004500000000F86060600016000000001F60606000160
-...                                     
-0000000F26060600013000000002B606060001300000000
-EC6060600011000000001B7C7E7C000E000000000C60606
-06060002B000000011B606060001F00000001D1000050F0
-==== PIXEL DATA END ====</code></pre>
-
-            <p>
-                Now, copy all between PIXEL DATA START and END (so starting with 0000... and ending with ...50F0) into the clipboard.<br />
-                Open ILIScreenshotViewer (from the tools folder) and click "Load Image from Clipboard" button. You should then see an image
-                of what was on the screen when you called <i>screenshotToConsole</i> method.
-            </p>
-            <div style="text-align: center">
-                <img src="images\ILIScreenshotViewer.png" />
-            </div>
-            <p>You can then click "Save As..." button to save the image in bmp, gif, png or jpg format.</p>
-            <p>
-                A couple of tips:
-                <ul>
-                    <li>
-                        Use some higher Serial speed. Depending on the image, the "screenshot" string might get long (in kB) so I guess transferring it at 115200b/s is better than at 9600b/s.
-                    </li>
-                    <li>
-                        If your get an error after you click the Load Image from Clipboard button or your image has artifacts, try lowering the SPI clock before you call screenshotToConsole method.
-                        Something like this:
-                        <pre lang="Arduino"><code>tft.setSPIClockDivider(24);  // lower the frequency
-tft.screenshotToConsole();   // take a "screenshot"
-tft.setSPIClockDivider(ILI9341_SPI_CLKDIVIDER); // restore the frequency</code></pre>
-                    </li>
-                </ul>
-            </p>
+           
 
             <h3>UTFT demo speed comparison</h3>
 
@@ -1141,7 +1118,7 @@ MIT license, all text above must be included in any redistribution
 
 
         addIliFunction("printAt",
-        "Prints a string and erases areas to the left or right or both sides of the string.",
+        "Prints a string and erases areas between the beginning of the line and the string or between the string and the end of line or both.",
         "void printAt(const char *str, int16_t x, int16_t y, gTextEraseLine eraseLine);<br/>" +
 	    "void printAt(const String &str, int16_t x, int16_t y, gTextEraseLine eraseLine);<br/>" +
         "void printAt(const __FlashStringHelper *str, int16_t x, int16_t y, gTextEraseLine eraseLine);",
@@ -1202,7 +1179,7 @@ MIT license, all text above must be included in any redistribution
         "<li><em>str</em> - string to print" +
         "<li><em>x</em> - x-coordinate (relative to text area) of the target pivot location" +
         "<li><em>y</em> - y-coordinate (relative to text area) of the target pivot location" +
-        "<li><em>pivot</em> - a point that will can be one of these enum values:<br/>" + 
+        "<li><em>pivot</em> - string's pivot location. Can be one of these enum values:<br/>" + 
             "<ul>" +
             "<li><em>gTextPivotTopLeft</em> - the pivot is in the top left corner of the string</li>" +
             "<li><em>gTextPivotTopCenter</em> - the pivot is in the top center of the string</li>" +
@@ -1268,7 +1245,7 @@ MIT license, all text above must be included in any redistribution
 
 
         addIliFunction("printAligned",
-        "Prints a text area aligned string and erases areas on left or right or both sides of the string.",
+        "Prints a text area aligned string and erases areas between the beginning of the line and the string or between the string and the end of line or both.",
         "void printAligned(const char *str, gTextAlign align, gTextEraseLine eraseLine);<br/>" +
         "void printAligned(const String &str, gTextAlign align, gTextEraseLine eraseLine);<br/>" +
         "void printAligned(const __FlashStringHelper *str, gTextAlign align, gTextEraseLine eraseLine);",
@@ -1372,7 +1349,7 @@ MIT license, all text above must be included in any redistribution
        'tft.printAlignedOffseted("+30px offset-y", gTextAlignMiddleCenter, 0, 30);', true);
 
        addIliFunction("printAlignedOffseted",
-      "Prints a text area aligned string with offset and erases areas on left or right or both sides of the string.",
+      "Prints a text area aligned string with offset and erases areas between the beginning of the line and the text or between the end of string and the end of line or both.",
       "void printAlignedOffseted(const char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);<br/>" +
       "void printAlignedOffseted(const String &str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);<br/>" +
       "void printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);",
@@ -1442,6 +1419,146 @@ MIT license, all text above must be included in any redistribution
         'tft.printAlignedOffseted("<- 10px, -30px offset-y , 10px ->", gTextAlignMiddleCenter, 0, -30, 10, 10);<br/>' +
 	    'tft.printAlignedOffseted("<- 2px, Middle, 20px ->", gTextAlignMiddleCenter, 0, 0, 2, 20);<br/>' +
         'tft.printAlignedOffseted("<- 30px, +30px offset-y, 5px ->", gTextAlignMiddleCenter, 0, 30, 30, 5);', true, "func_printAlignedOffsetedErasePx.png");
+
+
+       addIliFunction("printAlignedPivotedOffseted",
+        "Prints a pivot based text area aligned string with offset.",
+        "void printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);<br/><br/>" +
+        "void printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);<br/><br/>" +
+        "void printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);",
+        "<ul>" +
+        "<li><em>str</em> - string to print" +
+        "<li><em>align</em> - alignment of string in respect to text area. Can be one of these values:<br/>" +
+            "<ul>" +
+            "<li><em>gTextAlignTopLeft</em> - aligning to top left</li>" +
+            "<li><em>gTextAlignTopCenter</em> - aligning to top center</li>" +
+            "<li><em>gTextAlignTopRight</em> - aligning to top right</li>" +
+            "<li><em>gTextAlignMiddleLeft</em> - aligning to midlle left</li>" +
+            "<li><em>gTextAlignMiddleCenter</em> - aligning to midlle center</li>" +
+            "<li><em>gTextAlignMiddleRight</em> - aligning to midlle right</li>" +
+            "<li><em>gTextAlignBottomLeft</em> - aligning to bottom left</li>" +
+            "<li><em>gTextAlignBottomCenter</em> - aligning to bottom center</li>" +
+            "<li><em>gTextAlignBottomRight</em> - aligning to bottom right</li>" +
+            "</ul>" +
+        "<li><em>pivot</em> - string's pivot location. Can be one of these enum values:<br/>" +
+            "<ul>" +
+            "<li><em>gTextPivotTopLeft</em> - the pivot is in the top left corner of the string</li>" +
+            "<li><em>gTextPivotTopCenter</em> - the pivot is in the top center of the string</li>" +
+            "<li><em>gTextPivotTopRight</em> - the pivot is in the top right corner of the string</li>" +
+            "<li><em>gTextPivotMiddleLeft</em> - the pivot is in the middle left of the string</li>" +
+            "<li><em>gTextPivotMiddleCenter</em> - the pivot is in the middle center of the string</li>" +
+            "<li><em>gTextPivotMiddleRight</em> - the pivot is in the top middle right of the string</li>" +
+            "<li><em>gTextPivotBottomLeft</em> - the pivot is in the bottom left corner of the string</li>" +
+            "<li><em>gTextPivotBottomCenter</em> - the pivot is in the bottom center of the string</li>" +
+            "<li><em>gTextPivotBottomRight</em> - the pivot is in the bottom right corner of the string</li>" +
+            "</ul>" +
+        "</ul>" +
+        "<li><em>offsetX</em> - string offset in x-axis" +
+        "<li><em>offsetY</em> - string offset in y-axis" +
+        "</ul>",
+        "Print text with its middle right pivot aligned to bottom right corner of the text area and offset it by 5px to the left.",
+        '#include "fonts\\Arial_bold_14.h"<br/>' +
+        '...<br/>' +
+        'tft.setFont(Arial_bold_14);<br/>' +
+        'tft.setTextArea(10, 10, 300, 200);<br/>' +
+        'tft.clearTextArea(ILI9341_LIGHTBLUE);<br/>' +
+        'tft.setTextColor(ILI9341_WHITE, ILI9341_NAVY);<br/>' +
+        '<br/>' +
+        'tft.printAlignedPivotedOffseted("Text middle line aligned to bottom", gTextAlignBottomRight, gTextPivotMiddleRight, -5, 0);', true);
+
+       addIliFunction("printAlignedPivotedOffseted",
+       "Prints a pivot based text area aligned string with offset and erases areas between the beginning of the line and the string or between the string and the end of line or both.",
+       "void printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);<br/><br/>" +
+       "void printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);<br/><br/>" +
+       "void printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);",
+       "<ul>" +
+       "<li><em>str</em> - string to print" +
+       "<li><em>align</em> - alignment of string in respect to text area. Can be one of these values:<br/>" +
+           "<ul>" +
+           "<li><em>gTextAlignTopLeft</em> - aligning to top left</li>" +
+           "<li><em>gTextAlignTopCenter</em> - aligning to top center</li>" +
+           "<li><em>gTextAlignTopRight</em> - aligning to top right</li>" +
+           "<li><em>gTextAlignMiddleLeft</em> - aligning to midlle left</li>" +
+           "<li><em>gTextAlignMiddleCenter</em> - aligning to midlle center</li>" +
+           "<li><em>gTextAlignMiddleRight</em> - aligning to midlle right</li>" +
+           "<li><em>gTextAlignBottomLeft</em> - aligning to bottom left</li>" +
+           "<li><em>gTextAlignBottomCenter</em> - aligning to bottom center</li>" +
+           "<li><em>gTextAlignBottomRight</em> - aligning to bottom right</li>" +
+           "</ul>" +
+       "<li><em>pivot</em> - string's pivot location. Can be one of these enum values:<br/>" +
+           "<ul>" +
+           "<li><em>gTextPivotTopLeft</em> - the pivot is in the top left corner of the string</li>" +
+           "<li><em>gTextPivotTopCenter</em> - the pivot is in the top center of the string</li>" +
+           "<li><em>gTextPivotTopRight</em> - the pivot is in the top right corner of the string</li>" +
+           "<li><em>gTextPivotMiddleLeft</em> - the pivot is in the middle left of the string</li>" +
+           "<li><em>gTextPivotMiddleCenter</em> - the pivot is in the middle center of the string</li>" +
+           "<li><em>gTextPivotMiddleRight</em> - the pivot is in the top middle right of the string</li>" +
+           "<li><em>gTextPivotBottomLeft</em> - the pivot is in the bottom left corner of the string</li>" +
+           "<li><em>gTextPivotBottomCenter</em> - the pivot is in the bottom center of the string</li>" +
+           "<li><em>gTextPivotBottomRight</em> - the pivot is in the bottom right corner of the string</li>" +
+           "</ul>" +
+       "</ul>" +
+       "<li><em>offsetX</em> - string offset in x-axis" +
+       "<li><em>offsetY</em> - string offset in y-axis" +
+       "<li><em>eraseLine</em> - can be one of these enum values:<br/><ul><li><em>gTextEraseFromBOL</em> - erases from the beginning of line</li><li><em>gTextEraseToEOL</em> - erases to the end of line</li><li><em>gTextEraseFullLine</em> - erases the whole line</li></ul>" +
+       "</ul>",
+       "Print text with its middle right pivot aligned to bottom right corner of the text area, offset it by 5px to the left and erase everything from the beginning of the line.",
+       '#include "fonts\\Arial_bold_14.h"<br/>' +
+       '...<br/>' +
+       'tft.setFont(Arial_bold_14);<br/>' +
+       'tft.setTextArea(10, 10, 300, 200);<br/>' +
+       'tft.clearTextArea(ILI9341_LIGHTBLUE);<br/>' +
+       'tft.setTextColor(ILI9341_WHITE, ILI9341_NAVY);<br/>' +
+       '<br/>' +
+       'tft.printAlignedPivotedOffseted("Text middle line aligned to bottom", gTextAlignBottomRight, gTextPivotMiddleRight, -5, 0, gTextEraseFromBOL);', true, 'func_printAlignedPivotedOffsetedErase.png');
+
+
+       addIliFunction("printAlignedPivotedOffseted",
+      "Prints a pivot based text area aligned string with offset and erases areas between the beginning of the line and the string or between the string and the end of line or both.",
+      "void printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);<br/><br/>" +
+      "void printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);<br/><br/>" +
+      "void printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);",
+      "<ul>" +
+      "<li><em>str</em> - string to print" +
+      "<li><em>align</em> - alignment of string in respect to text area. Can be one of these values:<br/>" +
+          "<ul>" +
+          "<li><em>gTextAlignTopLeft</em> - aligning to top left</li>" +
+          "<li><em>gTextAlignTopCenter</em> - aligning to top center</li>" +
+          "<li><em>gTextAlignTopRight</em> - aligning to top right</li>" +
+          "<li><em>gTextAlignMiddleLeft</em> - aligning to midlle left</li>" +
+          "<li><em>gTextAlignMiddleCenter</em> - aligning to midlle center</li>" +
+          "<li><em>gTextAlignMiddleRight</em> - aligning to midlle right</li>" +
+          "<li><em>gTextAlignBottomLeft</em> - aligning to bottom left</li>" +
+          "<li><em>gTextAlignBottomCenter</em> - aligning to bottom center</li>" +
+          "<li><em>gTextAlignBottomRight</em> - aligning to bottom right</li>" +
+          "</ul>" +
+      "<li><em>pivot</em> - string's pivot location. Can be one of these enum values:<br/>" +
+          "<ul>" +
+          "<li><em>gTextPivotTopLeft</em> - the pivot is in the top left corner of the string</li>" +
+          "<li><em>gTextPivotTopCenter</em> - the pivot is in the top center of the string</li>" +
+          "<li><em>gTextPivotTopRight</em> - the pivot is in the top right corner of the string</li>" +
+          "<li><em>gTextPivotMiddleLeft</em> - the pivot is in the middle left of the string</li>" +
+          "<li><em>gTextPivotMiddleCenter</em> - the pivot is in the middle center of the string</li>" +
+          "<li><em>gTextPivotMiddleRight</em> - the pivot is in the top middle right of the string</li>" +
+          "<li><em>gTextPivotBottomLeft</em> - the pivot is in the bottom left corner of the string</li>" +
+          "<li><em>gTextPivotBottomCenter</em> - the pivot is in the bottom center of the string</li>" +
+          "<li><em>gTextPivotBottomRight</em> - the pivot is in the bottom right corner of the string</li>" +
+          "</ul>" +
+      "</ul>" +
+      "<li><em>offsetX</em> - string offset in x-axis" +
+      "<li><em>offsetY</em> - string offset in y-axis" +
+      "<li><em>pixelsClearedOnLeft</em> - width in pixels to be cleared on the string left side" +
+      "<li><em>pixelsClearedOnRight</em> - width in pixels to be cleared on the string right side" +
+      "</ul>",
+      "Print text with its middle right pivot aligned to bottom right corner of the text area, offset it by 5px to the left and erase 10px on the left side of the string and 5px on the right side of the string.",
+      '#include "fonts\\Arial_bold_14.h"<br/>' +
+      '...<br/>' +
+      'tft.setFont(Arial_bold_14);<br/>' +
+      'tft.setTextArea(10, 10, 300, 200);<br/>' +
+      'tft.clearTextArea(ILI9341_LIGHTBLUE);<br/>' +
+      'tft.setTextColor(ILI9341_WHITE, ILI9341_NAVY);<br/>' +
+      '<br/>' +
+      'tft.printAlignedPivotedOffseted("Text middle line aligned to bottom", gTextAlignBottomRight, gTextPivotMiddleRight, -5, 0, 10, 5);', true, 'func_printAlignedPivotedOffsetedErasePx.png');
 
 
 
