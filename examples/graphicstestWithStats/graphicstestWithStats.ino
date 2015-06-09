@@ -27,7 +27,6 @@ MIT license, all text above must be included in any redistribution
 // Use hardware SPI (on Uno, #13, #12, #11) and the above for CS/DC
 ILI9341_due tft = ILI9341_due(TFT_CS, TFT_DC, TFT_RST);
 
-gTextArea t1;
 long Screenfill,
 	Text,
 	Lines,
@@ -143,7 +142,7 @@ void setup() {
 	tft.print(F(" ms"));
 
 	delay(2000);
-	printStats();
+	//printStats();
 
 }
 

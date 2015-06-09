@@ -216,7 +216,7 @@ void ILI9341_due::setSPIClockDivider(uint8_t divider)
 #ifdef ILI_USE_SPI_TRANSACTION
 #if defined (__SAM3X8E__)
 	_spiSettings = SPISettings(F_CPU / divider, MSBFIRST, SPI_MODE0);
-#elif defined (__AVR__)
+#elif defined (ARDUINO_ARCH_AVR)
 #if divider == SPI_CLOCK_DIV2
 	_spiSettings = SPISettings(F_CPU / 2, MSBFIRST, SPI_MODE0);
 #elif divider == SPI_CLOCK_DIV4
@@ -411,7 +411,7 @@ void ILI9341_due::drawFastVLine_noTrans(int16_t x, int16_t y, uint16_t h, uint16
 	setDCForData();
 #ifdef __SAM3X8E__
 	writeScanline16(h);
-#elif defined __AVR__
+#elif defined ARDUINO_ARCH_AVR
 	writeScanlineLooped(h);
 #endif
 	disableCS();
@@ -440,7 +440,7 @@ void ILI9341_due::drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uin
 	setDCForData();
 #ifdef __SAM3X8E__
 	writeScanline16(h);
-#elif defined __AVR__
+#elif defined ARDUINO_ARCH_AVR
 	writeScanlineLooped(h);
 #endif
 
@@ -466,7 +466,7 @@ void ILI9341_due::drawFastHLine_noTrans(int16_t x, int16_t y, uint16_t w, uint16
 	setDCForData();
 #ifdef __SAM3X8E__
 	writeScanline16(w);
-#elif defined __AVR__
+#elif defined ARDUINO_ARCH_AVR
 	writeScanlineLooped(w);
 #endif
 	disableCS();
@@ -1186,7 +1186,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y
 				if (len) {
 #ifdef __SAM3X8E__
 					writeVLine_cont_noCS_noFill(y0, xbegin, len + 1);
-#elif defined __AVR__
+#elif defined ARDUINO_ARCH_AVR
 					writeVLine_cont_noCS_noScanline(y0, xbegin, len + 1, color);
 #endif
 				}
@@ -1201,7 +1201,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y
 		if (x0 > xbegin + 1) {
 #ifdef __SAM3X8E__
 			writeVLine_cont_noCS_noFill(y0, xbegin, x0 - xbegin);
-#elif defined __AVR__
+#elif defined ARDUINO_ARCH_AVR
 			writeVLine_cont_noCS_noScanline(y0, xbegin, x0 - xbegin, color);
 #endif
 		}
@@ -1215,7 +1215,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y
 				if (len) {
 #ifdef __SAM3X8E__
 					writeHLine_cont_noCS_noFill(xbegin, y0, len + 1);
-#elif defined __AVR__
+#elif defined ARDUINO_ARCH_AVR
 					writeHLine_cont_noCS_noScanline(xbegin, y0, len + 1, color);
 #endif
 				}
@@ -1230,7 +1230,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y
 		if (x0 > xbegin + 1) {
 #ifdef __SAM3X8E__
 			writeHLine_cont_noCS_noFill(xbegin, y0, x0 - xbegin);
-#elif defined __AVR__
+#elif defined ARDUINO_ARCH_AVR
 			writeHLine_cont_noCS_noScanline(xbegin, y0, x0 - xbegin, color);
 #endif
 		}
@@ -1430,7 +1430,7 @@ void ILI9341_due::drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y,
 		for (i = 0; i < w; i++)
 		{
 			if (pgm_read_byte(bitmap + j * byteWidth + i / 8) & (128 >> (i & 7))) {
-#if defined __AVR__
+#if defined ARDUINO_ARCH_AVR
 				drawPixel_cont(x + i, y + j, color);
 #elif defined __SAM3X8E__
 				_scanline16[i] = color;
@@ -1438,7 +1438,7 @@ void ILI9341_due::drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y,
 			}
 			else
 			{
-#if defined __AVR__
+#if defined ARDUINO_ARCH_AVR
 				drawPixel_cont(x + i, y + j, bgcolor);
 #elif defined __SAM3X8E__
 				_scanline16[i] = bgcolor;
@@ -2086,7 +2086,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 					{
 						if (_textScale == 1)
 						{
-#ifdef __AVR__
+#ifdef ARDUINO_ARCH_AVR
 							write16_cont(_fontBgColor);
 #elif defined __SAM3X8E__
 							_scanline16[lineId++] = _fontBgColor;
@@ -2100,7 +2100,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 							setRW();
 							//Serial << cx << " " << cy + (i * 8 + bitId)*_textScale << " " << _textScale <<endl2;
 							setDCForData();
-#ifdef __AVR__
+#ifdef ARDUINO_ARCH_AVR
 							pixelsInOnePointToDraw = numPixelsInOnePoint;
 							while (pixelsInOnePointToDraw--){
 								write16_cont(_fontBgColor);
@@ -2115,7 +2115,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 					{
 						if (_textScale == 1)
 						{
-#ifdef __AVR__
+#ifdef ARDUINO_ARCH_AVR
 							write16_cont(_fontColor);
 #elif defined __SAM3X8E__
 							_scanline16[lineId++] = _fontColor;
@@ -2128,7 +2128,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 							setRowAddr(py, _textScale);
 							setRW();
 							setDCForData();
-#ifdef __AVR__
+#ifdef ARDUINO_ARCH_AVR
 							pixelsInOnePointToDraw = numPixelsInOnePoint;
 							while (pixelsInOnePointToDraw--){
 								write16_cont(_fontColor);
@@ -2142,7 +2142,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 					data >>= 1;
 				}
 
-				//#ifdef __AVR__
+				//#ifdef ARDUINO_ARCH_AVR
 				//if (_textScale == 1 && (lineId == SCANLINE_PIXEL_COUNT - 1 || i == charHeightInBytes - 1))	// we have either filled the buffer or are rendering the bottom portion of the char
 				//{
 				//	writeScanline16(numRenderBits);	// max 8
@@ -2627,12 +2627,24 @@ void ILI9341_due::printAligned(const __FlashStringHelper *str, gTextAlign align,
 }
 
 __attribute__((always_inline))
-void ILI9341_due::printAlignedOffseted(const char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY)
+void ILI9341_due::printAlignedOffseted(const char *str, gTextAlign align, int16_t offsetX, int16_t offsetY)
 {
 	printAlignedPivotedOffseted(str, align, gTextPivotDefault, offsetX, offsetY, 0, 0);
 }
 
-void ILI9341_due::printAlignedOffseted(const char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine)
+__attribute__((always_inline))
+void ILI9341_due::printAlignedOffseted(const String &str, gTextAlign align, int16_t offsetX, int16_t offsetY)
+{
+	printAlignedPivotedOffseted(str, align, gTextPivotDefault, offsetX, offsetY, 0, 0);
+}
+
+__attribute__((always_inline))
+void ILI9341_due::printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, int16_t offsetX, int16_t offsetY)
+{
+	printAlignedPivotedOffseted(str, align, gTextPivotDefault, offsetX, offsetY, 0, 0);
+}
+
+void ILI9341_due::printAlignedOffseted(const char *str, gTextAlign align, int16_t offsetX, int16_t offsetY, gTextEraseLine eraseLine)
 {
 	uint16_t pixelsClearedOnLeft = 0;
 	uint16_t pixelsClearedOnRight = 0;
@@ -2643,7 +2655,7 @@ void ILI9341_due::printAlignedOffseted(const char *str, gTextAlign align, uint16
 	printAlignedPivotedOffseted(str, align, gTextPivotDefault, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
-void ILI9341_due::printAlignedOffseted(const String &str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine)
+void ILI9341_due::printAlignedOffseted(const String &str, gTextAlign align, int16_t offsetX, int16_t offsetY, gTextEraseLine eraseLine)
 {
 	uint16_t pixelsClearedOnLeft = 0;
 	uint16_t pixelsClearedOnRight = 0;
@@ -2654,7 +2666,7 @@ void ILI9341_due::printAlignedOffseted(const String &str, gTextAlign align, uint
 	printAlignedPivotedOffseted(str, align, gTextPivotDefault, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
-void ILI9341_due::printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine)
+void ILI9341_due::printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, int16_t offsetX, int16_t offsetY, gTextEraseLine eraseLine)
 {
 	uint16_t pixelsClearedOnLeft = 0;
 	uint16_t pixelsClearedOnRight = 0;
@@ -2665,7 +2677,20 @@ void ILI9341_due::printAlignedOffseted(const __FlashStringHelper *str, gTextAlig
 	printAlignedPivotedOffseted(str, align, gTextPivotDefault, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
-void ILI9341_due::printAlignedOffseted(const char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+__attribute__((always_inline))
+void ILI9341_due::printAlignedOffseted(const char *str, gTextAlign align, int16_t offsetX, int16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+{
+	printAlignedPivotedOffseted(str, align, gTextPivotDefault, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+__attribute__((always_inline))
+void ILI9341_due::printAlignedOffseted(const String &str, gTextAlign align, int16_t offsetX, int16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+{
+	printAlignedPivotedOffseted(str, align, gTextPivotDefault, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
+}
+
+__attribute__((always_inline))
+void ILI9341_due::printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, int16_t offsetX, int16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
 {
 	printAlignedPivotedOffseted(str, align, gTextPivotDefault, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
@@ -2763,22 +2788,22 @@ void ILI9341_due::printAlignedPivoted(const __FlashStringHelper *str, gTextAlign
 	printAlignedPivotedOffseted(str, align, pivot, 0, 0, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
-void ILI9341_due::printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY)
+void ILI9341_due::printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY)
 {
 	printAlignedPivotedOffseted(str, align, pivot, offsetX, offsetY, 0, 0);
 }
 
-void ILI9341_due::printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY)
+void ILI9341_due::printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY)
 {
 	printAlignedPivotedOffseted(str, align, pivot, offsetX, offsetY, 0, 0);
 }
 
-void ILI9341_due::printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY)
+void ILI9341_due::printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY)
 {
 	printAlignedPivotedOffseted(str, align, pivot, offsetX, offsetY, 0, 0);
 }
 
-void ILI9341_due::printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine)
+void ILI9341_due::printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY, gTextEraseLine eraseLine)
 {
 	uint16_t pixelsClearedOnLeft = 0;
 	uint16_t pixelsClearedOnRight = 0;
@@ -2789,7 +2814,7 @@ void ILI9341_due::printAlignedPivotedOffseted(const char *str, gTextAlign align,
 	printAlignedPivotedOffseted(str, align, pivot, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
-void ILI9341_due::printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine)
+void ILI9341_due::printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY, gTextEraseLine eraseLine)
 {
 	uint16_t pixelsClearedOnLeft = 0;
 	uint16_t pixelsClearedOnRight = 0;
@@ -2800,7 +2825,7 @@ void ILI9341_due::printAlignedPivotedOffseted(const String &str, gTextAlign alig
 	printAlignedPivotedOffseted(str, align, pivot, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
-void ILI9341_due::printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine)
+void ILI9341_due::printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY, gTextEraseLine eraseLine)
 {
 	uint16_t pixelsClearedOnLeft = 0;
 	uint16_t pixelsClearedOnRight = 0;
@@ -2811,7 +2836,7 @@ void ILI9341_due::printAlignedPivotedOffseted(const __FlashStringHelper *str, gT
 	printAlignedPivotedOffseted(str, align, pivot, offsetX, offsetY, pixelsClearedOnLeft, pixelsClearedOnRight);
 }
 
-void ILI9341_due::printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+void ILI9341_due::printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
 {
 	//Serial << pixelsClearedOnLeft << " " << pixelsClearedOnRight << endl;
 	_x = _xStart = _area.x;
@@ -2824,7 +2849,7 @@ void ILI9341_due::printAlignedPivotedOffseted(const char *str, gTextAlign align,
 	clearPixelsOnRight(pixelsClearedOnRight);
 }
 
-void ILI9341_due::printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+void ILI9341_due::printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
 {
 	//Serial << pixelsClearedOnLeft << " " << pixelsClearedOnRight << endl;
 	_x = _xStart = _area.x;
@@ -2837,7 +2862,7 @@ void ILI9341_due::printAlignedPivotedOffseted(const String &str, gTextAlign alig
 	clearPixelsOnRight(pixelsClearedOnRight);
 }
 
-void ILI9341_due::printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
+void ILI9341_due::printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight)
 {
 	//Serial << pixelsClearedOnLeft << " " << pixelsClearedOnRight << endl;
 	_x = _xStart = _area.x;
@@ -2876,7 +2901,7 @@ void ILI9341_due::clearPixelsOnRight(uint16_t pixelsToClearOnRight){
 	}
 }
 
-void ILI9341_due::applyAlignPivotOffset(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY){
+void ILI9341_due::applyAlignPivotOffset(const char *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY){
 	//PIVOT
 	if (pivot != gTextPivotTopLeft)
 		applyPivot(str, pivot, align);
@@ -2885,7 +2910,7 @@ void ILI9341_due::applyAlignPivotOffset(const char *str, gTextAlign align, gText
 	applyAlignOffset(align, offsetX, offsetY);
 }
 
-void ILI9341_due::applyAlignPivotOffset(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY){
+void ILI9341_due::applyAlignPivotOffset(const String &str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY){
 	//PIVOT
 	if (pivot != gTextPivotTopLeft)
 		applyPivot(str, pivot, align);
@@ -2894,7 +2919,7 @@ void ILI9341_due::applyAlignPivotOffset(const String &str, gTextAlign align, gTe
 	applyAlignOffset(align, offsetX, offsetY);
 }
 
-void ILI9341_due::applyAlignPivotOffset(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY){
+void ILI9341_due::applyAlignPivotOffset(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY){
 	//PIVOT
 	if (pivot != gTextPivotTopLeft)
 		applyPivot(str, pivot, align);
@@ -2903,7 +2928,7 @@ void ILI9341_due::applyAlignPivotOffset(const __FlashStringHelper *str, gTextAli
 	applyAlignOffset(align, offsetX, offsetY);
 }
 
-void ILI9341_due::applyAlignOffset(gTextAlign align, uint16_t offsetX, uint16_t offsetY)
+void ILI9341_due::applyAlignOffset(gTextAlign align, int16_t offsetX, int16_t offsetY)
 {
 	if (align != gTextAlignTopLeft)
 	{

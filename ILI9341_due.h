@@ -67,7 +67,14 @@ MIT license, all text above must be included in any redistribution
 #include <ILI9341_due_config.h>
 //#include "../Streaming/Streaming.h"
 
-#ifdef __AVR__
+#include "Arduino.h"
+
+
+#ifdef ARDUINO_ARCH_AVR
+#include <avr/pgmspace.h>
+#endif
+
+#ifdef ARDUINO_ARCH_AVR
 #define SPI_MODE_NORMAL 1
 #define SPI_MODE_EXTENDED 0
 #define SPI_MODE_DMA 0
@@ -91,16 +98,11 @@ MIT license, all text above must be included in any redistribution
 #endif
 #endif
 
-#include "Arduino.h"
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED | defined(ILI_USE_SPI_TRANSACTION)
 #include <SPI.h>
 #endif
 #if SPI_MODE_DMA
 #include <stdint.h>
-#endif
-
-#ifdef __AVR__
-#include <avr/pgmspace.h>
 #endif
 
 #define ILI9341_TFTWIDTH  240
@@ -393,7 +395,7 @@ typedef enum {
 
 #ifdef __SAM3X8E__
 #define SCANLINE_PIXEL_COUNT 320
-#elif defined __AVR__
+#elif defined ARDUINO_ARCH_AVR
 #define SCANLINE_PIXEL_COUNT 16
 #endif
 
@@ -509,10 +511,10 @@ private:
 	void applyPivot(const char *str, gTextPivot pivot, gTextAlign align);
 	void applyPivot(const String &str, gTextPivot pivot, gTextAlign align);
 	void applyPivot(const __FlashStringHelper *str, gTextPivot pivot, gTextAlign align);
-	void applyAlignOffset(gTextAlign align, uint16_t offsetX, uint16_t offsetY);
-	void applyAlignPivotOffset(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
-	void applyAlignPivotOffset(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
-	void applyAlignPivotOffset(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
+	void applyAlignOffset(gTextAlign align, int16_t offsetX, int16_t offsetY);
+	void applyAlignPivotOffset(const char *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY);
+	void applyAlignPivotOffset(const String &str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY);
+	void applyAlignPivotOffset(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY);
 	void clearPixelsOnLeft(uint16_t pixelsToClearOnLeft);
 	void clearPixelsOnRight(uint16_t pixelsToClearOnRight);
 #endif
@@ -625,17 +627,17 @@ public:
 	void printAligned(const String &str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
 	void printAligned(const __FlashStringHelper *str, gTextAlign align, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
 
-	void printAlignedOffseted(const char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY);
-	void printAlignedOffseted(const String &str, gTextAlign align, uint16_t offsetX, uint16_t offsetY);
-	void printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY);
+	void printAlignedOffseted(const char *str, gTextAlign align, int16_t offsetX, int16_t offsetY);
+	void printAlignedOffseted(const String &str, gTextAlign align, int16_t offsetX, int16_t offsetY);
+	void printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, int16_t offsetX, int16_t offsetY);
 
-	void printAlignedOffseted(const char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
-	void printAlignedOffseted(const String &str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
-	void printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
+	void printAlignedOffseted(const char *str, gTextAlign align, int16_t offsetX, int16_t offsetY, gTextEraseLine eraseLine);
+	void printAlignedOffseted(const String &str, gTextAlign align, int16_t offsetX, int16_t offsetY, gTextEraseLine eraseLine);
+	void printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, int16_t offsetX, int16_t offsetY, gTextEraseLine eraseLine);
 
-	void printAlignedOffseted(const char *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
-	void printAlignedOffseted(const String &str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
-	void printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAlignedOffseted(const char *str, gTextAlign align, int16_t offsetX, int16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAlignedOffseted(const String &str, gTextAlign align, int16_t offsetX, int16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAlignedOffseted(const __FlashStringHelper *str, gTextAlign align, int16_t offsetX, int16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
 
 	void printAlignedPivoted(const char *str, gTextAlign align, gTextPivot pivot);
 	void printAlignedPivoted(const String &str, gTextAlign align, gTextPivot pivot);
@@ -649,17 +651,17 @@ public:
 	void printAlignedPivoted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
 	void printAlignedPivoted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
 
-	void printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
-	void printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
-	void printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY);
+	void printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY);
+	void printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY);
+	void printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY);
 
-	void printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
-	void printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
-	void printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, gTextEraseLine eraseLine);
+	void printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY, gTextEraseLine eraseLine);
+	void printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY, gTextEraseLine eraseLine);
+	void printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY, gTextEraseLine eraseLine);
 
-	void printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
-	void printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
-	void printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, uint16_t offsetX, uint16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAlignedPivotedOffseted(const char *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAlignedPivotedOffseted(const String &str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
+	void printAlignedPivotedOffseted(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY, uint16_t pixelsClearedOnLeft, uint16_t pixelsClearedOnRight);
 
 
 	void cursorTo(uint8_t column, uint8_t row); // 0 based coordinates for character columns and rows
@@ -822,7 +824,7 @@ private:
 	__attribute__((always_inline))
 		void beginTransaction() {
 #ifdef ILI_USE_SPI_TRANSACTION
-#if defined __AVR__
+#if defined ARDUINO_ARCH_AVR
 		SPI.beginTransaction(_spiSettings);
 #elif defined (__SAM3X8E__)
 #if SPI_MODE_NORMAL
@@ -840,7 +842,7 @@ private:
 	__attribute__((always_inline))
 		void endTransaction() {
 #ifdef ILI_USE_SPI_TRANSACTION
-#if defined __AVR__
+#if defined ARDUINO_ARCH_AVR
 		SPI.endTransaction();
 #elif defined (__SAM3X8E__)
 		SPI.endTransaction();
@@ -850,7 +852,7 @@ private:
 
 	__attribute__((always_inline))
 		void spiwrite(uint8_t c) {
-#if defined __AVR__
+#if defined ARDUINO_ARCH_AVR
 		SPDR = c;
 		asm volatile("nop");
 		while (!(SPSR & _BV(SPIF))); // wait
@@ -863,7 +865,7 @@ private:
 
 	__attribute__((always_inline))
 		void spiwrite16(uint16_t d) {
-#if defined __AVR__
+#if defined ARDUINO_ARCH_AVR
 		SPDR = highByte(d);
 		while (!(SPSR & _BV(SPIF)));
 		SPDR = lowByte(d);
@@ -1459,24 +1461,24 @@ private:
 		{
 			_scanline16[i] = color;
 		}
-	}
-	// Sets all pixels in the scanline buffer to the specified color
-	__attribute__((always_inline))
-		void fillScanline(uint16_t color) {
-#if SPI_MODE_DMA | SPI_MODE_EXTENDED
-		_hiByte = highByte(color);
-		_loByte = lowByte(color);
-		for (uint16_t i = 0; i < SCANLINE_BUFFER_SIZE; i += 2)
-		{
-			_scanline[i] = _hiByte;
-			_scanline[i + 1] = _loByte;
-		}
-#elif SPI_MODE_NORMAL
-		for (uint16_t i = 0; i < SCANLINE_PIXEL_COUNT; i++)
-		{
-			_scanline[i] = color;
-		}
-#endif
+//	}
+//	// Sets all pixels in the scanline buffer to the specified color
+//	__attribute__((always_inline))
+//		void fillScanline(uint16_t color) {
+//#if SPI_MODE_DMA | SPI_MODE_EXTENDED
+//		_hiByte = highByte(color);
+//		_loByte = lowByte(color);
+//		for (uint16_t i = 0; i < SCANLINE_BUFFER_SIZE; i += 2)
+//		{
+//			_scanline[i] = _hiByte;
+//			_scanline[i + 1] = _loByte;
+//		}
+//#elif SPI_MODE_NORMAL
+//		for (uint16_t i = 0; i < SCANLINE_PIXEL_COUNT; i++)
+//		{
+//			_scanline[i] = color;
+//		}
+//#endif
 
 		// DMA16
 		//for (uint16_t i = 0; i < sizeof(_scanline); i++)
@@ -1553,9 +1555,9 @@ private:
 	__attribute__((always_inline))
 		void writeHLine_cont_noCS_noFill(int16_t x, int16_t y, int16_t w)
 	{
-#ifdef __AVR__
+#ifdef ARDUINO_ARCH_AVR
 		const uint32_t numLoops = (uint32_t)w / (uint32_t)SCANLINE_PIXEL_COUNT;
-		setAddrAndRW_cont(x, y, w, y);
+		setAddrAndRW_cont(x, y, w, 1);
 		setDCForData();
 		for (uint32_t l = 0; l < numLoops; l++)
 		{
@@ -1589,7 +1591,7 @@ private:
 	__attribute__((always_inline))
 		void writeVLine_cont_noCS_noFill(int16_t x, int16_t y, int16_t h)
 	{
-#ifdef __AVR__
+#ifdef ARDUINO_ARCH_AVR
 		const uint32_t numLoops = (uint32_t)h / (uint32_t)SCANLINE_PIXEL_COUNT;
 		setAddrAndRW_cont(x, y, 1, h);
 		setDCForData();
@@ -1681,7 +1683,7 @@ private:
 		void setDCForCommand(){
 		*_dcport &= ~_dcpinmask;
 	}
-#ifdef __AVR__
+#ifdef ARDUINO_ARCH_AVR
 	inline __attribute__((always_inline))
 		void spiTransfer(const uint8_t *buf, uint32_t count) {
 		SPDR = *buf;
