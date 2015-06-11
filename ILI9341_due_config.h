@@ -16,9 +16,9 @@ Copyright (c) 2014  Marek Buriak
 #define ILI9341_SPI_MODE_DMA		// uses DMA in Due
 
 // set the clock divider
-#if defined __SAM3X8E__
-#define ILI9341_SPI_CLKDIVIDER 1	// for Due
-#elif defined __AVR_ATmega328P__
+#if defined ARDUINO_SAM_DUE
+#define ILI9341_SPI_CLKDIVIDER 2	// for Due
+#elif defined ARDUINO_ARCH_AVR
 #define ILI9341_SPI_CLKDIVIDER SPI_CLOCK_DIV2	// for Uno, Mega,...
 #endif
 
@@ -36,11 +36,13 @@ Copyright (c) 2014  Marek Buriak
 //#define FEATURE_PRINT_ENABLED
 #define FEATURE_GTEXT_PRINT_ENABLED
 
-// 
-//#define LINE_SPACING_AS_PART_OF_LETTERS
-
 // comment out if you do need to use scaled text. The text will draw then faster.
 #define TEXT_SCALING_ENABLED
+
+#define DEFAULT_LETTER_SPACING 2
+#define DEFAULT_LINE_SPACING 0
+
+#define LINE_SPACING_AS_PART_OF_LETTERS
 
 // number representing the maximum angle (e.g. if 100, then if you pass in start=0 and end=50, you get a half circle)
 // this can be changed with setArcParams function at runtime
@@ -49,8 +51,7 @@ Copyright (c) 2014  Marek Buriak
 // this can be changed with setAngleOffset function at runtime
 #define DEFAULT_ANGLE_OFFSET -90	
 
-#define DEFAULT_LETTER_SPACING 2
-#define DEFAULT_LINE_SPACING 0
+
 
 
 #endif

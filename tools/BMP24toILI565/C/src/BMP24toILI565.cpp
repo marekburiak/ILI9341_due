@@ -161,8 +161,8 @@ int convertImage(char* filename)
 			{
 				fread(inRGB, 1, 3, rgb24file);
 				UINT16 iliColor = to565(inRGB[2], inRGB[1], inRGB[0]);
-				outRGB[1] = iliColor & 0xFF;
-				outRGB[0] = iliColor >> 8;
+				outRGB[0] = iliColor & 0xFF;
+				outRGB[1] = iliColor >> 8;
 				fwrite(outRGB, 1, 2, rgb16file);
 			}
 		}

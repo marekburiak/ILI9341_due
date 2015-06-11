@@ -46,7 +46,7 @@ void setup()
 	Serial.begin(9600);
 
 	tft.begin();
-	tft.setRotation(iliRotation270);	// landscape
+	//tft.setSPIClockDivider(4);
 	progmemPrint(PSTR("Initializing SD card..."));
 
 	if (!sd.begin(SD_CS, SD_SPI_SPEED)){
@@ -157,7 +157,7 @@ void bmpDraw(char* filename, int x, int y) {
 				{
 					goodBmp = true; // Supported BMP format -- proceed!
 
-					uint16_t buffer[BUFFPIXELCOUNT]; // pixel buffer (contains already formatted data for ILI9341 display)
+					uint16_t buffer[BUFFPIXELCOUNT]; // pixel buffer
 
 					bmpFile.seekSet(54);	//skip header
 					uint32_t totalPixels = (uint32_t)bmpWidth*(uint32_t)bmpHeight;
@@ -167,6 +167,7 @@ void bmpDraw(char* filename, int x, int y) {
 						bmpFile.read(buffer, 2 * BUFFPIXELCOUNT);
 						// push them to the diplay
 						tft.pushColors(buffer, 0, BUFFPIXELCOUNT);
+						
 					}
 
 					// render any remaining pixels that did not fully fit the buffer

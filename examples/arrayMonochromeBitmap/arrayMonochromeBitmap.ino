@@ -9,9 +9,9 @@ a full color image.
 #include "ILI9341_due_config.h"
 #include "ILI9341_due.h"
 
-#if defined(__AVR__)
+#if defined(ARDUINO_ARCH_AVR)
 #include <avr/pgmspace.h>
-#elif defined(__arm__)
+#elif defined(ARDUINO_SAM_DUE)
 #define PROGMEM
 #endif
 

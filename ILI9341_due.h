@@ -309,7 +309,6 @@ MIT license, all text above must be included in any redistribution
 #define ILI9341_YELLOW 0xFFE0 
 #define ILI9341_YELLOWGREEN 0x9E66
 
-#ifdef FEATURE_GTEXT_ENABLED
 // Font Indices
 #define GTEXT_FONT_LENGTH			0
 #define GTEXT_FONT_FIXED_WIDTH	2
@@ -368,8 +367,6 @@ typedef struct
 
 typedef const uint8_t* gTextFont;
 
-#endif
-
 typedef enum {
 	iliRotation0 = 0,
 	iliRotation90 = 1,
@@ -393,7 +390,7 @@ typedef enum {
 #define swap(a, b) { typeof(a) t = a; a = b; b = t; }
 #endif
 
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 #define SCANLINE_PIXEL_COUNT 320
 #elif defined ARDUINO_ARCH_AVR
 #define SCANLINE_PIXEL_COUNT 16
@@ -461,7 +458,7 @@ private:
 	bool _isInTransaction;
 #endif
 	//Pio *_dcport;
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 	volatile RwReg *_dcport;
 	uint32_t  _cs, _dc, _dcpinmask;
 #else
@@ -472,13 +469,13 @@ private:
 
 
 #if SPI_MODE_NORMAL | SPI_MODE_DMA
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 	//Pio *_csport;
 	volatile RwReg *_csport;
 	uint32_t _cspinmask;
 #endif
 #endif
-#ifdef FEATURE_GTEXT_ENABLED
+
 	uint16_t _fontColor;
 	uint16_t _fontBgColor;
 	gTextFont _font;
@@ -517,7 +514,7 @@ private:
 	void applyAlignPivotOffset(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY);
 	void clearPixelsOnLeft(uint16_t pixelsToClearOnLeft);
 	void clearPixelsOnRight(uint16_t pixelsToClearOnRight);
-#endif
+
 	bool pinIsChipSelect(uint8_t cs);
 
 public:
@@ -537,7 +534,7 @@ public:
 	void drawPixel(int16_t x, int16_t y, uint16_t color);
 	void drawFastVLine(int16_t x, int16_t y, uint16_t h, uint16_t color);
 	void drawFastHLine(int16_t x, int16_t y, uint16_t w, uint16_t color);
-	void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
+	void drawRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color);
 
 	void setRotation(iliRotation r);
 	void invertDisplay(boolean i);
@@ -558,8 +555,8 @@ public:
 	void fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t color);
 	void drawRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t radius, uint16_t color);
 	void fillRoundRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t radius, uint16_t color);
-	void drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color);
-	void drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color, uint16_t bgcolor);
+	void drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color);
+	void drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color, uint16_t bgcolor);
 	void drawImage(const uint16_t *colors, uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 	uint8_t getRotation(void);
 	void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
@@ -568,7 +565,6 @@ public:
 
 	void screenshotToConsole();
 	
-#ifdef FEATURE_GTEXT_ENABLED
 	void setTextArea(gTextArea area);
 	void setTextArea(int16_t x, int16_t y, int16_t w, int16_t h); //, textMode mode=DEFAULT_SCROLLDIR);
 	void setTextArea(int16_t x, int16_t y, int16_t columns, int16_t rows, gTextFont font); //, textMode mode=DEFAULT_SCROLLDIR);
@@ -699,7 +695,6 @@ public:
 	}
 
 
-#ifdef FEATURE_GTEXT_PRINT_ENABLED
 	virtual size_t write(uint8_t);
 	virtual size_t print(const __FlashStringHelper *);
 	virtual size_t print(const String &);
@@ -725,7 +720,6 @@ public:
 	virtual size_t println(double, int = 2);
 	virtual size_t println(const Printable&);
 	virtual size_t println(void);
-#endif
 
 	uint16_t charWidth(uint8_t c);
 	uint16_t stringWidth(const char* str);
@@ -769,7 +763,6 @@ public:
 
 		return width;
 	};
-#endif
 
 #ifdef FEATURE_ARC_ENABLED
 	inline __attribute__((always_inline))
@@ -826,7 +819,7 @@ private:
 #ifdef ILI_USE_SPI_TRANSACTION
 #if defined ARDUINO_ARCH_AVR
 		SPI.beginTransaction(_spiSettings);
-#elif defined (__SAM3X8E__)
+#elif defined (ARDUINO_SAM_DUE)
 #if SPI_MODE_NORMAL
 		SPI.beginTransaction(_spiSettings);
 #elif SPI_MODE_EXTENDED
@@ -844,7 +837,7 @@ private:
 #ifdef ILI_USE_SPI_TRANSACTION
 #if defined ARDUINO_ARCH_AVR
 		SPI.endTransaction();
-#elif defined (__SAM3X8E__)
+#elif defined (ARDUINO_SAM_DUE)
 		SPI.endTransaction();
 #endif
 #endif
@@ -856,7 +849,7 @@ private:
 		SPDR = c;
 		asm volatile("nop");
 		while (!(SPSR & _BV(SPIF))); // wait
-#elif defined (__SAM3X8E__)
+#elif defined (ARDUINO_SAM_DUE)
 #if SPI_MODE_NORMAL
 		SPI.transfer(c);
 #endif
@@ -870,7 +863,7 @@ private:
 		while (!(SPSR & _BV(SPIF)));
 		SPDR = lowByte(d);
 		while (!(SPSR & _BV(SPIF)));
-#elif defined (__SAM3X8E__)
+#elif defined (ARDUINO_SAM_DUE)
 #if SPI_MODE_NORMAL
 		SPI.transfer(highByte(d));
 		SPI.transfer(lowByte(d));
@@ -980,7 +973,7 @@ private:
 
 	// Enables CS, writes commands to set the GRAM area where data/pixels will be written
 	// Also sends RAM WRITE command which should be followed by writing data/pixels
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 	inline __attribute__((always_inline))
 #endif
 		void setAddrAndRW_cont(uint16_t x, uint16_t y, uint16_t w, uint16_t h)
@@ -1016,7 +1009,7 @@ private:
 		write8_cont(ILI9341_RAMWR); // RAM write
 	}
 
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 	inline __attribute__((always_inline))
 #endif
 		void setColumnAddr(uint16_t x, uint16_t w)
@@ -1028,7 +1021,7 @@ private:
 		write16_cont(x+w-1);   // XEND
 	}
 
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 	inline __attribute__((always_inline))
 #endif
 		void setRowAddr(uint16_t y, uint16_t h)
@@ -1146,7 +1139,7 @@ private:
 	//		write16_last(d);
 	//	}
 
-	//#ifdef __SAM3X8E__
+	//#ifdef ARDUINO_SAM_DUE
 	// Enables CS, sets DC and writes n-bytes from the buffer via DMA
 	// Does not disable CS
 	/*inline __attribute__((always_inline))
@@ -1566,7 +1559,7 @@ private:
 		uint16_t remainingPixels = w % SCANLINE_PIXEL_COUNT;
 		if (remainingPixels > 0)
 			writeScanline16(remainingPixels);
-#elif defined __SAM3X8E__
+#elif defined ARDUINO_SAM_DUE
 		setAddrAndRW_cont(x, y, w, 1);
 		setDCForData();
 		writeScanline16(w);
@@ -1602,7 +1595,7 @@ private:
 		uint16_t remainingPixels = h % SCANLINE_PIXEL_COUNT;
 		if (remainingPixels > 0)
 			writeScanline16(remainingPixels);
-#elif defined __SAM3X8E__
+#elif defined ARDUINO_SAM_DUE
 		setAddrAndRW_cont(x, y, 1, h);
 		setDCForData();
 		writeScanline16(h);
@@ -1636,7 +1629,7 @@ private:
 		write16_last(color);
 	}
 
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 	inline __attribute__((always_inline))
 #endif
 		void drawPixel_cont(int16_t x, int16_t y, uint16_t color) {
@@ -1734,7 +1727,7 @@ private:
 		while (!(SPSR & _BV(SPIF)));
 		//*buf = SPDR;
 	}
-#elif defined __SAM3X8E__
+#elif defined ARDUINO_SAM_DUE
 #if SPI_MODE_NORMAL
 	void spiTransfer(uint8_t _data) {
 		uint32_t ch = BOARD_PIN_TO_SPI_CHANNEL(BOARD_SPI_DEFAULT_SS);

@@ -12,10 +12,9 @@ Then include those .h files in your sketch and use the array name
 #include "info.h"
 #include "close.h"
 
-// CS and DC for the LCD
 #define LCD_CS 10	// Chip Select for LCD
 #define LCD_DC 9	// Command/Data for LCD
-#define LCD_RST 8	// Command/Data for LCD
+#define LCD_RST 8	// Reset for LCD
 
 ILI9341_due tft(LCD_CS, LCD_DC, LCD_RST);
 
@@ -26,6 +25,7 @@ void setup()
 	tft.setRotation(iliRotation270);	// landscape
 	
 	tft.fillScreen(ILI9341_BLACK);
+	//tft.setSPIClockDivider(2); // lower the frequency if the image is distorted
 	tft.drawImage(info, 100, 100, infoWidth, infoHeight);
 	tft.drawImage(alert, 140, 100, alertWidth, alertHeight);
 	tft.drawImage(close, 180, 100, closeWidth, closeHeight);

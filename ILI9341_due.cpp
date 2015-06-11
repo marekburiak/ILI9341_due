@@ -45,10 +45,7 @@ MIT license, all text above must be included in any redistribution
 #if SPI_MODE_NORMAL | SPI_MODE_EXTENDED | defined(ILI_USE_SPI_TRANSACTION)
 #include <SPI.h>
 #endif
-#if SPI_MODE_DMA
 
-
-#endif
 #include "..\Streaming\Streaming.h"
 
 
@@ -91,20 +88,14 @@ ILI9341_due::ILI9341_due(uint8_t cs, uint8_t dc, uint8_t rst)
 	_area.w = ILI9341_TFTWIDTH;
 	_area.h = ILI9341_TFTHEIGHT;
 	_rotation = iliRotation0;
-#ifdef FEATURE_PRINT_ENABLED
-	_cursorY = _cursorX = 0;
-	_textsize = 1;
-	_textcolor = _textbgcolor = 0xFFFF;
-	_wrap = true;
-#endif
-#ifdef FEATURE_ARC_ENABLED
+
 	_arcAngleMax = DEFAULT_ARC_ANGLE_MAX;
 	_angleOffset = DEFAULT_ANGLE_OFFSET;
-#endif
+
 #ifdef ILI_USE_SPI_TRANSACTION
 	_isInTransaction = false;
 #endif
-#ifdef FEATURE_GTEXT_ENABLED
+
 	_fontMode = gTextFontModeSolid;
 	_fontBgColor = ILI9341_BLACK;
 	_fontColor = ILI9341_WHITE;
@@ -115,7 +106,7 @@ ILI9341_due::ILI9341_due(uint8_t cs, uint8_t dc, uint8_t rst)
 #endif
 	_isFirstChar = true;
 	setTextArea(0, 0, _width - 1, _height - 1);
-#endif
+
 }
 
 
@@ -214,7 +205,7 @@ void ILI9341_due::setSPIClockDivider(uint8_t divider)
 {
 	_spiClkDivider = divider;
 #ifdef ILI_USE_SPI_TRANSACTION
-#if defined (__SAM3X8E__)
+#if defined (ARDUINO_SAM_DUE)
 	_spiSettings = SPISettings(F_CPU / divider, MSBFIRST, SPI_MODE0);
 #elif defined (ARDUINO_ARCH_AVR)
 #if divider == SPI_CLOCK_DIV2
@@ -409,7 +400,7 @@ void ILI9341_due::drawFastVLine_noTrans(int16_t x, int16_t y, uint16_t h, uint16
 	enableCS();
 	setAddrAndRW_cont(x, y, 1, h);
 	setDCForData();
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 	writeScanline16(h);
 #elif defined ARDUINO_ARCH_AVR
 	writeScanlineLooped(h);
@@ -438,7 +429,7 @@ void ILI9341_due::drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uin
 
 	setAddrAndRW_cont(x, y, 1, h);
 	setDCForData();
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 	writeScanline16(h);
 #elif defined ARDUINO_ARCH_AVR
 	writeScanlineLooped(h);
@@ -464,7 +455,7 @@ void ILI9341_due::drawFastHLine_noTrans(int16_t x, int16_t y, uint16_t w, uint16
 	enableCS();
 	setAddrAndRW_cont(x, y, w, 1);
 	setDCForData();
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 	writeScanline16(w);
 #elif defined ARDUINO_ARCH_AVR
 	writeScanlineLooped(w);
@@ -1063,7 +1054,7 @@ void ILI9341_due::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
 	int16_t x = 0;
 	int16_t y = r;
 
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 	fillScanline16(color, 2 * max(x, y) + 1 + delta);
 #else
 	fillScanline16(color);
@@ -1184,7 +1175,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y
 			if (err < 0) {
 				int16_t len = x0 - xbegin;
 				if (len) {
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 					writeVLine_cont_noCS_noFill(y0, xbegin, len + 1);
 #elif defined ARDUINO_ARCH_AVR
 					writeVLine_cont_noCS_noScanline(y0, xbegin, len + 1, color);
@@ -1199,7 +1190,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y
 			}
 		}
 		if (x0 > xbegin + 1) {
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 			writeVLine_cont_noCS_noFill(y0, xbegin, x0 - xbegin);
 #elif defined ARDUINO_ARCH_AVR
 			writeVLine_cont_noCS_noScanline(y0, xbegin, x0 - xbegin, color);
@@ -1213,7 +1204,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y
 			if (err < 0) {
 				int16_t len = x0 - xbegin;
 				if (len) {
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 					writeHLine_cont_noCS_noFill(xbegin, y0, len + 1);
 #elif defined ARDUINO_ARCH_AVR
 					writeHLine_cont_noCS_noScanline(xbegin, y0, len + 1, color);
@@ -1228,7 +1219,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y
 			}
 		}
 		if (x0 > xbegin + 1) {
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 			writeHLine_cont_noCS_noFill(xbegin, y0, x0 - xbegin);
 #elif defined ARDUINO_ARCH_AVR
 			writeHLine_cont_noCS_noScanline(xbegin, y0, x0 - xbegin, color);
@@ -1249,7 +1240,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y
 //	writeVLine_last(x+w-1, y, h, color);
 //}
 
-void ILI9341_due::drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
+void ILI9341_due::drawRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color)
 {
 	beginTransaction();
 
@@ -1397,8 +1388,7 @@ void ILI9341_due::fillTriangle(int16_t x0, int16_t y0,
 }
 
 // draws monochrome (single color) bitmaps
-void ILI9341_due::drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y,
-	int16_t w, int16_t h, uint16_t color)
+void ILI9341_due::drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color)
 {
 	int16_t i, j, byteWidth = (w + 7) / 8;
 
@@ -1418,8 +1408,7 @@ void ILI9341_due::drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y,
 }
 
 // draws monochrome (single color) bitmaps
-void ILI9341_due::drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y,
-	int16_t w, int16_t h, uint16_t color, uint16_t bgcolor)
+void ILI9341_due::drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color, uint16_t bgcolor)
 {
 	uint16_t i, j, byteWidth = (w + 7) / 8;
 
@@ -1432,7 +1421,7 @@ void ILI9341_due::drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y,
 			if (pgm_read_byte(bitmap + j * byteWidth + i / 8) & (128 >> (i & 7))) {
 #if defined ARDUINO_ARCH_AVR
 				drawPixel_cont(x + i, y + j, color);
-#elif defined __SAM3X8E__
+#elif defined ARDUINO_SAM_DUE
 				_scanline16[i] = color;
 #endif
 			}
@@ -1440,12 +1429,12 @@ void ILI9341_due::drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y,
 			{
 #if defined ARDUINO_ARCH_AVR
 				drawPixel_cont(x + i, y + j, bgcolor);
-#elif defined __SAM3X8E__
+#elif defined ARDUINO_SAM_DUE
 				_scanline16[i] = bgcolor;
 #endif
 			}
 		}
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 		setAddrAndRW_cont(x, y + j, w, 1);
 		setDCForData();
 		writeScanline16(w);
@@ -1658,7 +1647,6 @@ void ILI9341_due::printHex32(uint32_t *data, uint8_t length) // prints 8-bit dat
 }
 
 
-#ifdef FEATURE_GTEXT_ENABLED
 
 void ILI9341_due::clearTextArea()
 {
@@ -2088,7 +2076,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 						{
 #ifdef ARDUINO_ARCH_AVR
 							write16_cont(_fontBgColor);
-#elif defined __SAM3X8E__
+#elif defined ARDUINO_SAM_DUE
 							_scanline16[lineId++] = _fontBgColor;
 #endif
 						}
@@ -2105,7 +2093,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 							while (pixelsInOnePointToDraw--){
 								write16_cont(_fontBgColor);
 							}
-#elif defined __SAM3X8E__
+#elif defined ARDUINO_SAM_DUE
 							fillScanline16(_fontBgColor, numPixelsInOnePoint);
 							writeScanlineLooped(numPixelsInOnePoint);
 #endif
@@ -2117,7 +2105,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 						{
 #ifdef ARDUINO_ARCH_AVR
 							write16_cont(_fontColor);
-#elif defined __SAM3X8E__
+#elif defined ARDUINO_SAM_DUE
 							_scanline16[lineId++] = _fontColor;
 #endif
 						}
@@ -2133,7 +2121,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 							while (pixelsInOnePointToDraw--){
 								write16_cont(_fontColor);
 							}
-#elif defined __SAM3X8E__
+#elif defined ARDUINO_SAM_DUE
 							fillScanline16(_fontColor, numPixelsInOnePoint);
 							writeScanlineLooped(numPixelsInOnePoint);
 #endif
@@ -2154,7 +2142,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 			}
 			}
 		//Serial << endl;
-#ifdef __SAM3X8E__
+#ifdef ARDUINO_SAM_DUE
 		if (_textScale == 1)
 		{
 			writeScanline16(charHeight);
@@ -3339,5 +3327,5 @@ uint16_t ILI9341_due::stringWidth(const String &str)
 	return width;
 }
 
-#endif
+
 

@@ -99,9 +99,9 @@ namespace BMP24toILI565Array
 
                     StringBuilder sb = new StringBuilder();
 
-                    sb.AppendLine("#if defined(__AVR__)");
+                    sb.AppendLine("#if defined(ARDUINO_ARCH_AVR)");
                     sb.AppendLine("    #include <avr/pgmspace.h>");
-                    sb.AppendLine("#elif defined(__arm__)");
+                    sb.AppendLine("#elif defined(ARDUINO_SAM_DUE)");
                     sb.AppendLine("    #define PROGMEM");
                     sb.AppendLine("#endif");
                     sb.AppendLine();
