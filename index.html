@@ -38,7 +38,14 @@
                 <a name="ili9341_due" class="anchor" href="#ili9341_due"><span class="octicon octicon-link"></span></a>ILI9341_due
             </h1>
 
-            <p>Arduino Due library for interfacing with ILI9341-based TFT's in SPI, Extended SPI and DMA SPI mode.</p>
+            <p>
+                A library for interfacing with ILI9341-based TFT's in SPI, Extended SPI and DMA mode optimized for Arduino Due.
+            </p>
+
+            <p>The library can also be used with Arduino AVR boards like Uno, Mega, Pro Mini, Nano, etc.</p>
+            <div style="text-align: center">
+                <img src="images\avr.jpg" />
+            </div>
 
             <p>This library is based on 3 libraries:</p>
 
@@ -59,31 +66,126 @@
                 If you look into ILI9341_due.h, you should find this:
             </p>
 
+            <h3>ILI9341_due_config</h3>
+            <p>Some of the default parameters can be set in ILI9341_due_config.h file.</p>
+
+
+
+            <h4>SPI Mode</h4>
             <pre lang="Arduino"><code>// comment out the SPI mode you want to use
 //#define ILI9341_SPI_MODE_NORMAL
 //#define ILI9341_SPI_MODE_EXTENDED // make sure you use pin 4, 10 or 52 for CS
 #define ILI9341_SPI_MODE_DMA</code></pre>
 
-            <p>Uncomment the line depending on the SPI mode you want to use. As you can see, DMA mode is the default.</p>
+            <p>Uncomment the line depending on the SPI mode you want to use. DMA mode is the default. For AVR, it does not matter which mode you use, ILI9341_SPI_MODE_NORMAL is always going to be used since there is no Extended SPI or DMA available on AVRs.</p>
 
             <p>
-                <b>SPI_MODE_NORMAL</b> is the standard SPI mode where you can use any digital pin for CS but you/library has to drive it manually.<br>
-                <b>SPI_MODE_EXTENDED</b> is the extended SPI mode available in Due where CS pin is handled by the chip (which is faster than handling it manually). You are restricted to these pins for CS though - 4, 10 and 52 (as described <a href="http://arduino.cc/en/Reference/DueExtendedSPI">here</a>).<br>
-                <b>SPI_MODE_DMA</b> is utilizing DMA to do SPI transfers. You should be able to use any digital pin for CS.
+                <em>SPI_MODE_NORMAL</em> is the standard SPI mode where you can use any digital pin for CS but library has to drive the CS pin.<br>
+                <em>SPI_MODE_EXTENDED</em> is the extended SPI mode available in Due where CS pin is handled by the chip (which is faster than handling it in code). You are restricted to these 3 pins for CS - 4, 10 and 52 (as described <a href="http://arduino.cc/en/Reference/DueExtendedSPI">here</a>).<br>
+                <em>SPI_MODE_DMA</em> is utilizing D(irect) M(emory) A(ddress) to do SPI transfers. You should be able to use any digital pin for CS.
             </p>
 
             <p>
-                Here is a video where you can see the speed difference between the modes:
+                Here is a video where you can see the speed difference between the modes (v1.x version):
             </p>
             <div style="text-align: center">
                 <iframe width="560" height="315" src="http://www.youtube.com/embed/vnEwzN14BsU?rel=0&color=white" frameborder="0"></iframe>
             </div>
+
+            <h4>SPI clock divider</h4>
+            For Due:
+            <pre lang="Arduino"><code>#define ILI9341_SPI_CLKDIVIDER 2	// for Due</code></pre>
+
+            <p>This is used to set the SPI clock frequency on Due, which for example when set to 10 will set the SPI clock frequency to 84MHz/10=8.4MHz. The minimum divider is 1 (84MHz) and maximum is 255 (329kHz). If you are getting glitches on the screen or it just does not work try to use a higher divider to bring the frequency down (e.g. 11 to run it at 8-ish MHz). I was using 20cm dupont cables to connect TFT with Due and haven't had any issues running it with the divider set to 2.</p>
+
+            For AVR:
+            <pre lang="Arduino"><code>#define ILI9341_SPI_CLKDIVIDER SPI_CLOCK_DIV2	// for Uno, Mega,...</code></pre>
+
+            <p>
+                This is used to set the SPI clock frequency on AVR based boards (Uno, Mega,...). You can use one of these values:
+                <ul>
+                    <li><em>SPI_CLOCK_DIV2</em> - divider of 2</li>
+                    <li><em>SPI_CLOCK_DIV4</em> - divider of 4</li>
+                    <li><em>SPI_CLOCK_DIV8</em> - divider of 8</li>
+                    <li><em>SPI_CLOCK_DIV16</em> - divider of 16</li>
+                    <li><em>SPI_CLOCK_DIV32</em> - divider of 32</li>
+                    <li><em>SPI_CLOCK_DIV64</em> - divider of 64</li>
+                    <li><em>SPI_CLOCK_DIV128</em> - divider of 128</li>
+                </ul>
+            </p>
+
+            You can change the clock divider at runtime by calling the <em>setSPIClockDivider</em> function.
+
+            <h4>Text</h4>
+            <pre lang="Arduino"><code>#define TEXT_SCALING_ENABLED</code></pre>
+            <p>If you do not need scaled fonts (<em>setTextScale</em> function) then you can comment out the define to disable support for text scaling. Text will render a bit faster. Text scaling is enabled by default.</p>
+            Scaled font:
+            <div style="text-align: center">
+                <img src="images\func_setTextScale.png" />
+            </div>
+
             <br />
-            <pre lang="Arduino"><code>#define ILI9341_SPI_CLKDIVIDER 2</code></pre>
 
-            <p>This is used to set the SPI clock frequency, which at 2 means 84/2=42MHz (the max). If you are getting glitches on the screen or it just does not work try to use a higher divider to bring the frequency down (e.g. 11 to run it at 8-ish MHz). I was using 20cm dupont cables to connect TFT with Due and haven't had any issues running it with the divider set to 2.</p>
+            <pre lang="Arduino"><code>#define DEFAULT_LETTER_SPACING 2</code></pre>
+            <p>Set the default spacing between letters in pixels.</p>
+            Different letter spacings:
+            <div style="text-align: center">
+                <img src="images\func_setTextLetterSpacing.png" />
+            </div>
+            <br />
 
-            <p>If you want to ask me a question or just contact me, feel free to do so in the <a href="http://forum.arduino.cc/index.php?topic=265806.0">Arduino Forum</a>.</p>
+            <pre lang="Arduino"><code>#define DEFAULT_LINE_SPACING 0</code></pre>
+            <p>Set the default spacing between lines in pixels.</p>
+            Different line spacings:
+            <div style="text-align: center">
+                <img src="images\func_setTextLineSpacing.png" />
+            </div>
+            <br />
+
+            <pre lang="Arduino"><code>#define LINE_SPACING_AS_PART_OF_LETTERS</code></pre>
+            <p>If uncommented, the space between lines (defined by DEFAULT_LINE_SPACING) is filled with text background color. It is commented out/not used by default.</p>
+
+            <h4>Arcs</h4>
+            <pre lang="Arduino"><code>#define ARC_ANGLE_MAX 360</code></pre>
+            <p>
+                This number represents the maximum equal to 360 degrees (full circle). The default is 360 so if you pass in start=25 and end=75 you'll get an arc going from 25 degrees to 75 degrees.
+                If you set ARC_ANGLE_MAX 100 and you pass in start=0 and end=50 then you get a half circle (that can represent percentages). If you set ARC_ANGLE_MAX 2*PI, you can pass in
+                angles in radians etc...You can change the default at runtime by calling the <em>setArcParams</em> function.
+            </p>
+
+            <pre lang="Arduino"><code>#define ARC_ANGLE_OFFSET -90</code></pre>
+
+            <p>This number is an offset in degrees from the default position where the arc starts (representing value of 0). If you imagine a compass, then the default starting position is at the East point. Setting the value to -90 will move the starting point 90 degress counter-clockwise (so to the North point).</p>
+            <p>You can change the offset at runtime by calling the <em>setAngleOffset</em> function. The value provided in <em>setAngleOffset</em> argument is *in addition* to ARC_ANGLE_OFFSET value. So the total angle offset from the default East point is ARC_ANGLE_OFFSET+setAngleOffset value.</p>
+
+            <h3>Demos</h3>
+            <h4>Loading images from an SD card</h4>
+
+            <p>This is the SdFatTftBitmap example sketch demonstrating loading images from an SD card. The images were converted to RGB565 format using BMP24toILI565 tool (see the Tools folder). One image loads and displays in around 160ms using half speed for SD card SPI and half speed for Due SPI. I was getting distorted images when I tried to use the full speed for either of the SPIs.</p>
+            <div style="text-align: center">
+                <iframe width="560" height="315" src="http://www.youtube.com/embed/4adTpVc_Qog?rel=0&color=white" frameborder="0"></iframe>
+            </div>
+
+            <p>This is the Arcs demo from the examples folder:</p>
+            <div style="text-align: center">
+                <iframe width="560" height="315" src="http://www.youtube.com/embed/99todZeKaeI?rel=0&color=white" frameborder="0"></iframe>
+            </div>
+
+
+            <h4>UTFT demo speed comparison</h4>
+
+            <p>All the credits (and blame :) goes to TFTLCDCyg who ported the UTFT demo to ILI9341_due library. Both demos were run on Due at the max speed.</p>
+            <p>Here is a video of the demo powered by the UTFT library:</p>
+            <div style="text-align: center">
+                <iframe width="560" height="315" src="http://www.youtube.com/embed/ZYW9f8Q_b-Q?rel=0&color=white" frameborder="0"></iframe>
+            </div>
+            <p>And here is the demo powered by the ILI9341_due library:</p>
+            <div style="text-align: center">
+                <iframe width="560" height="315" src="http://www.youtube.com/embed/xkPDAK0VJq0?rel=0&color=white" frameborder="0"></iframe>
+            </div>
+            <p>The source code for the ILI9341_due-fied demo can be found in the library's examples folder. Done with ILI9431_due v.1.x version. The demo completes in around 1080ms with ILI9341_due v.2.x version.</p>
+
+
 
             <h3>ILI9341 functions</h3>
 
@@ -113,74 +215,10 @@
                     <li>Add an include in your sketch, #include "name_from_step_9.h".</li>
                     <li>Call tft.setFont(name_from_step_6) and tft.print to render the text.</li>
                 </ol>
-                Here is a video of rendering a 255px-high font:
-            </p>
-            <div style="text-align: center">
-                <iframe width="560" height="315" src="http://www.youtube.com/embed/OcTz_YBDXmo?rel=0&color=white" frameborder="0"></iframe>
-            </div>
-            <h3>Loading images from an SD card</h3>
 
-            <p>This is the SdFatTftBitmap example sketch demonstrating loading images from an SD card. The images were converted to RGB565 format using BMP24toILI565 tool (see the Tools folder). One image loads and displays in around 190ms (using half speed for SD card SPI as the full speed did not work for me, probably because the SD card pins were connected to Due via a breadboard).</p>
-            <div style="text-align: center">
-                <iframe width="560" height="315" src="http://www.youtube.com/embed/4adTpVc_Qog?rel=0&color=white" frameborder="0"></iframe>
-            </div>
-            <h3>Drawing Arcs</h3>
-            <p>You can use the <i>drawArc</i> method to draw arcs (with thickness) and depending on the thickness and angles you provide as parameters you might also draw pies and circles with thickness.</p>
-            <p>ILI9341_due.h has two defines which you can customize:</p>
-
-            <pre lang="Arduino"><code>#define ARC_ANGLE_MAX 360</code></pre>
             <p>
-                This number represents the maximum equal to 360 degrees (full circle). The default is 360 so if you pass in start=25 and end=75 you'll get an arc going from 25 degrees to 75 degrees.
-                If you set ARC_ANGLE_MAX 100 and you pass in start=0 and end=50 then you get a half circle (that can represent percentages). If you set ARC_ANGLE_MAX 2*PI, you can pass in
-                angles in radians etc...
-            </p>
-
-            <pre lang="Arduino"><code>#define ARC_ANGLE_OFFSET -90</code></pre>
-
-            <p>This number is an offset in degrees from the default position where the arc starts (representing value of 0). If you imagine a compass, then the default starting position is at the East point. Setting the value to -90 will move the starting point 90 degress counter-clockwise (so to the North point).</p>
-            <p>You can change these defaults at runtime by calling setArcParams function.</p>
-
-            <p>This is the Arcs demo from the examples folder:</p>
-            <div style="text-align: center">
-                <iframe width="560" height="315" src="http://www.youtube.com/embed/99todZeKaeI?rel=0&color=white" frameborder="0"></iframe>
-            </div>
-           
-
-            <h3>UTFT demo speed comparison</h3>
-
-            <p>All the credits (and blame :) goes to TFTLCDCyg who ported the UTFT demo to ILI9341_due library. Both demos were run on Due at the max speed.</p>
-            <p>Here is a video of the demo powered by the UTFT library:</p>
-            <div style="text-align: center">
-                <iframe width="560" height="315" src="http://www.youtube.com/embed/ZYW9f8Q_b-Q?rel=0&color=white" frameborder="0"></iframe>
-            </div>
-            <p>And here is the demo powered by the ILI9341_due library:</p>
-            <div style="text-align: center">
-                <iframe width="560" height="315" src="http://www.youtube.com/embed/xkPDAK0VJq0?rel=0&color=white" frameborder="0"></iframe>
-            </div>
-            <p>The source code for the ILI9341_due-fied demo can be found in the library's examples folder.</p>
-
-            <h3>AVR compatibility</h3>
-
-            <p>The library can also be used with Arduino AVR boards like Uno, Mega, Pro Mini, Nano, etc.</p>
-            <div style="text-align: center">
-                <img src="images\avr.jpg" />
-            </div>
-            <p>
-                The only mode available for AVR is SPI_MODE_NORMAL so you need to include SPI.h in your sketch. The library is faster than the original Adafruit one but do not expect DMA-like speed increase. It is comparable to some other tweaked Adafruit libraries out there and you get things like gText and arcs.
-                Not all library examples will work. It is because of smaller ROM/RAM space available on AVRs.
-            </p>
-            <p>
-                In order to decrease ROM/RAM requirements, you can comment out 2 features in ILI9341_due.h:
-                <pre lang="Arduino"><code>// commenting out/disabling the ARC feature will exclude the drawArc function. It is going to save a few ROM bytes.
-#define FEATURE_ARC_ENABLED
-// commenting out/disabling the PRINT feature will exclude the drawChars and print functions, it saves around 3.6kB ROM and 1.3kB RAM(!)
-// I recommend using gText for drawing the text.
-#define FEATURE_PRINT_ENABLED</code></pre>
-                I highly recommend to disable the PRINT feature if you are not using .print function (to draw blocky text). It will save you 1.3kB of RAM (of 2kB available on Uno). You can use gText instead.
-            </p>
-            <p>
-                <h4>Using gText on AVR</h4>
-                If you are using your custom fonts (generated with GLCDFontCreator2) you need to manually modify the generated .c file in order to make it succesfully compile for AVR. After you generate the .c file the array definition will look something like this:
+                <h4>Custom fonts on AVR (important!)</h4>
+                In order to use generated fonts on Uno, Mega,... you need to manually modify the generated .c file to make it succesfully compile. After you generate a .c file the array definition will look something like this:
             </p>
             <pre lang="Arduino"><code>static uint8_t Arial_14[] PROGMEM = {</code></pre>
 
@@ -193,14 +231,25 @@
             <pre lang="Arduino"><code>static const uint8_t Arial_14[] PROGMEM = {</code></pre>
 
             <br />
-            <h3>Known bugs/issues/missing functionality</h3>
+            Here is a video of rendering a 255px-high font:
+            </p>
+            <div style="text-align: center">
+                <iframe width="560" height="315" src="http://www.youtube.com/embed/OcTz_YBDXmo?rel=0&color=white" frameborder="0"></iframe>
+            </div>
 
-            <ul>
-                <li>I am sure there are bugs, feel free to fix them</li>
-                <li>New line is not handled when rendering with gText</li>
-            </ul>
-            <p>I plan to add some more features (like handling the new line and scrolling in gText) but I am not sure when will that happen as I have very little time to work on it (if I want to get at least 5 hours of sleep). So feel free to enhance the lib.</p>
+            <h3>AVR compatibility</h3>
 
+
+            <p>
+                The only mode available for AVR is SPI_MODE_NORMAL so you need to include SPI.h in your sketch. The library is faster than the original Adafruit one but do not expect DMA-like speed increase. It is comparable to some other tweaked Adafruit libraries out there and you get things like gText and arcs.
+                Not all library examples will work. It is because of smaller ROM/RAM space available on AVRs.
+            </p>
+
+
+            <h3>Contact</h3>
+            <p>If you want to ask me a question or just contact me, feel free to do so in the <a href="http://forum.arduino.cc/index.php?topic=265806.0">Arduino Forum</a>.</p>
+
+            <br />
             <pre><code>------------------------------------------
 This is a library for the Adafruit ILI9341 display products
 This library works with the Adafruit 2.8" Touch Shield V2 (SPI)
