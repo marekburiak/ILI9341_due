@@ -21,28 +21,30 @@ v1.00.000 - Breaking changes:
                     drawStringPivoted -> printAlignedPivoted
                     drawStringPivotedOffseted -> printAlignedPivotedOffseted
                 - setTextArea (previously defineArea) is now set by x,y,width,height 
-                    (previously x1,y1,x2,y2)
+                  (previously x1,y1,x2,y2)
                 - images in .565 format must be generated again with the current BMP24toILI565 tool
+                  tool
           - New functions
-                    - setAngleOffset (extracted from setArcParams)
-                    - drawLineByAngle
-                    - printAtOffseted
-                    - clearArea
-                    - drawImage
-                    - setTextLineSpacing
+                - setAngleOffset (extracted from setArcParams)
+                - drawLineByAngle
+                - printAtOffseted
+                - clearArea
+                - drawImage
+                - setTextLineSpacing
           - New additions
-                    - added support for String and FlashStringHelper*
-                    - supporting '\n' in strings
-                    - much more predefined colors like ILI9341_CHOCOLATE or ILI9341_SKYBLUE
-                    - BMP24toILI9341Array - a tool to convert an image to an array
-                      (so you can draw small images directly from memory, no need for SD card)
+                - added support for String and FlashStringHelper*
+                - supporting '\n' in strings
+                - much more predefined colors like ILI9341_CHOCOLATE or ILI9341_SKYBLUE
+                - BMP24toILI9341Array - a tool to convert an image to an array
+                  (so you can draw small images directly from memory, no need for SD card)
           - Other changes
-                    - many speed improvements
-                    - removed ILI9341_due_gText.h, ILI_SDSpi.h, ILI_SdFatConfig.h
-                    - added ILI9341_due_config.h
-                    - gText is now embedded directly in the ILI9341_due library so you do not
-                      need to create ILI9341_due_gText objects anymore. Just call tft.print
-                    - updated github.io page, documented all functions (with examples and pictures!)
+                - many speed improvements
+                - removed ILI9341_due_gText.h, ILI_SDSpi.h, ILI_SdFatConfig.h
+                - added ILI9341_due_config.h
+                - gText is now embedded directly in the ILI9341_due library so you do not
+                  need to create ILI9341_due_gText objects anymore. Just call tft.print
+                - updated github.io page, documented all functions (with examples and 
+                  pictures!)
 
             
 ILI9341_due_gText(&tft) -> gTextArea
