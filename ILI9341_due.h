@@ -1,5 +1,5 @@
 /*
-v0.94.000
+v1.00.000
 
 ILI9341_due.h - Arduino Due library for interfacing with ILI9341-based TFTs
 
