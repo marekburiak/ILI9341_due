@@ -46,7 +46,7 @@ MIT license, all text above must be included in any redistribution
 #include <SPI.h>
 #endif
 
-#include "..\Streaming\Streaming.h"
+//#include "..\Streaming\Streaming.h"
 
 
 static const uint8_t init_commands[] PROGMEM = {
