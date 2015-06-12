@@ -22,7 +22,7 @@ v1.00.000 - Breaking changes:
                     drawStringPivotedOffseted -> printAlignedPivotedOffseted
                 - setTextArea (previously defineArea) is now set by x,y,width,height 
                   (previously x1,y1,x2,y2)
-                - images in .565 format must be generated again with the current BMP24toILI565 tool
+                - images in .565 format must be generated again with the current BMP24toILI565
                   tool
           - New functions
                 - setAngleOffset (extracted from setArcParams)
@@ -43,8 +43,7 @@ v1.00.000 - Breaking changes:
                 - added ILI9341_due_config.h
                 - gText is now embedded directly in the ILI9341_due library so you do not
                   need to create ILI9341_due_gText objects anymore. Just call tft.print
-                - updated github.io page, documented all functions (with examples and 
-                  pictures!)
+                - updated github.io page, documented all functions (with examples and pictures!)
 
             
 ILI9341_due_gText(&tft) -> gTextArea
