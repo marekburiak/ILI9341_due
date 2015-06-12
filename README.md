@@ -30,7 +30,7 @@ v1.00.000 - Breaking changes:
                 - drawLineByAngle
                 - printAtOffseted
                 - clearArea
-                - drawImage (supports rendering from static and dynamic arrays)
+                - drawImage
                 - setTextLineSpacing
                 - drawBitmap - well not a new function but now it actually works
           - New additions
