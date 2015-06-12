@@ -2,7 +2,7 @@
 
 /*
  *
- * roboto70
+ * roboto70nums
  *
  * created with FontCreator
  * written by F. Maximilian Thiele
@@ -10,7 +10,7 @@
  * http://www.apetech.de/fontCreator
  * me@apetech.de
  *
- * File Name           : roboto70.h
+ * File Name           : roboto70nums.h
  * Date                : 18.09.2014
  * Font size in bytes  : 15623
  * Font width          : 10
@@ -39,13 +39,13 @@
 #include <inttypes.h>
 #include <avr/pgmspace.h>
 
-#ifndef ROBOTO70_H
-#define ROBOTO70_H
+#ifndef ROBOTO70NUMS_H
+#define ROBOTO70NUM_H
 
-#define ROBOTO70_WIDTH 10
-#define ROBOTO70_HEIGHT 51
+#define ROBOTO70NUMS_WIDTH 10
+#define ROBOTO70NUMS_HEIGHT 51
 
-static const uint8_t roboto70[] PROGMEM = {
+static const uint8_t roboto70nums[] PROGMEM = {
     0x3D, 0x07, // size
     0x0A, // width
     0x33, // height

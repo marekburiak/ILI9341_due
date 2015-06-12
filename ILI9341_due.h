@@ -29,23 +29,6 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with ILI9341_due.  If not, see <http://www.gnu.org/licenses/>.
 
-selectFont -> setFont
-defineArea -> setTextArea
-new clearArea
-setFontColor -> setTextColor
-setCursor -> cursorToXY
-setTextSize -> setTextScale
-setFontLetterSpacing -> setTextLetterSpacing
-getFontLetterSpacing -> getTextLetterSpacing
-ILI9341_due_gText(&tft) -> gTextArea
-setArcParams -> setArcParams + setAngleOffset
-drawLineByAngle
-drawArc -> fillArc
-
-new:
-setTextLineSpacing
-*/
-
 /***************************************************
 This is our library for the Adafruit ILI9341 Breakout and Shield
 ----> http://www.adafruit.com/products/1651
