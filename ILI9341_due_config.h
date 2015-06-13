@@ -1,9 +1,12 @@
 /*
-v1.00.001
+v1.01.000
 
 ILI9341_due_config.h - Arduino Due library for interfacing with ILI9341-based TFTs
 
-Copyright (c) 2014  Marek Buriak
+Code: https://github.com/marekburiak/ILI9341_due
+Documentation: http://marekburiak.github.io/ILI9341_due/
+
+Copyright (c) 2015  Marek Buriak
 
 */
 

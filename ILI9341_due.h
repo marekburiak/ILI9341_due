@@ -1,9 +1,12 @@
 /*
-v1.00.001
+v1.01.000
 
 ILI9341_due.h - Arduino Due library for interfacing with ILI9341-based TFTs
 
-Copyright (c) 2014  Marek Buriak
+Code: https://github.com/marekburiak/ILI9341_due
+Documentation: http://marekburiak.github.io/ILI9341_due/
+
+Copyright (c) 2015  Marek Buriak
 
 2.4 TFT Pin-out
 T_IRQ T_DO T_DIN T_CS T_CLK MISO LED CLK MOSI DC RESET CS GND VCC
@@ -389,7 +392,7 @@ typedef enum {
 class ILI9341_due
 	: public Print
 {
-private:
+protected:
 	int16_t _width, _height; // Display w/h as modified by current rotation
 	iliRotation	_rotation;
 
@@ -778,7 +781,7 @@ public:
 		return sin(angle * DEG_TO_RAD);
 	}
 
-private:
+protected:
 
 	__attribute__((always_inline))
 		uint16_t scaledFontHeight()	{
