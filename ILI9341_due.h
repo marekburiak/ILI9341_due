@@ -387,26 +387,16 @@ typedef enum {
 #endif
 
 class ILI9341_due
-#if defined(FEATURE_PRINT_ENABLED) | defined(FEATURE_GTEXT_PRINT_ENABLED)
 	: public Print
-#endif
 {
 private:
 	int16_t _width, _height; // Display w/h as modified by current rotation
-#ifdef FEATURE_PRINT_ENABLED
-	int16_t	_cursorX, _cursorY;
-	uint16_t _textcolor, _textbgcolor;
-	uint8_t	_textsize;
-	boolean _wrap; // If set, 'wrap' text at right edge of display
-#endif
 	iliRotation	_rotation;
 
-#ifdef FEATURE_ARC_ENABLED
 	float _arcAngleMax;
 	int16_t _angleOffset;
 
 	void fillArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float startAngle, float endAngle, uint16_t color);
-#endif
 
 	void drawFastVLine_cont_noFill(int16_t x, int16_t y, int16_t h, uint16_t color);
 	void drawFastVLine_noTrans(int16_t x, int16_t y, uint16_t h, uint16_t color);
@@ -748,7 +738,6 @@ public:
 		return width;
 	};
 
-#ifdef FEATURE_ARC_ENABLED
 	inline __attribute__((always_inline))
 		void fillArc(uint16_t x, uint16_t y, uint16_t radius, uint16_t thickness, float start, float end, uint16_t color)
 	{
@@ -788,7 +777,6 @@ public:
 		//Serial << "SIN_LOOKUP angle:" << (float)angle << " radians:" << radians << " sin:" << sin(radians) << " return: " << sin(radians) * (double)65535 << endl;
 		return sin(angle * DEG_TO_RAD);
 	}
-#endif
 
 private:
 

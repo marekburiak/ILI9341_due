@@ -630,8 +630,6 @@ uint16_t ILI9341_due::readPixel(int16_t x, int16_t y)
 //}
 
 
-
-#ifdef FEATURE_ARC_ENABLED
 // DrawArc function thanks to Jnmattern and his Arc_2.0 (https://github.com/Jnmattern)
 void ILI9341_due::fillArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, uint16_t thickness, float start, float end, uint16_t color) {
 	int16_t xmin = 65535, xmax = -32767, ymin = 32767, ymax = -32767;
@@ -834,7 +832,6 @@ void ILI9341_due::fillArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 		disableCS();
 	}
 }
-#endif
 
 void ILI9341_due::screenshotToConsole()
 {

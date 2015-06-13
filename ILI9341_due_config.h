@@ -25,28 +25,22 @@ Copyright (c) 2014  Marek Buriak
 // uncomment if you want to use SPI transactions. Uncomment it if the library does not work when used with other libraries.
 //#define ILI_USE_SPI_TRANSACTION
 
-
-// comment out the features you do not need to save flash memory and RAM (especially on AVR)
-
-#define FEATURE_GTEXT_ENABLED
-// commenting out/disabling the ARC feature will exclude the drawArc function. It is going to save a few ROM bytes.
-#define FEATURE_ARC_ENABLED
-// commenting out/disabling the PRINT feature will exclude the drawChars and print functions, it saves around 3.6kB ROM and 1.3kB RAM(!)
-// I recommend using gText for drawing the text.
-//#define FEATURE_PRINT_ENABLED
-#define FEATURE_GTEXT_PRINT_ENABLED
-
 // comment out if you do need to use scaled text. The text will draw then faster.
 #define TEXT_SCALING_ENABLED
 
+// default letter spacing
 #define DEFAULT_LETTER_SPACING 2
+
+// default line spacing
 #define DEFAULT_LINE_SPACING 0
 
-#define LINE_SPACING_AS_PART_OF_LETTERS
+// sets the space between lines as part of the text
+//#define LINE_SPACING_AS_PART_OF_LETTERS
 
 // number representing the maximum angle (e.g. if 100, then if you pass in start=0 and end=50, you get a half circle)
 // this can be changed with setArcParams function at runtime
 #define DEFAULT_ARC_ANGLE_MAX 360		
+
 // rotational offset in degrees defining position of value 0 (-90 will put it at the top of circle)
 // this can be changed with setAngleOffset function at runtime
 #define DEFAULT_ANGLE_OFFSET -90	
