@@ -28,6 +28,7 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with ILI9341_due.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /***************************************************
 This is our library for the Adafruit ILI9341 Breakout and Shield
@@ -421,14 +422,14 @@ private:
 	uint16_t _color;
 
 	uint16_t _scanline16[SCANLINE_PIXEL_COUNT];
-#if SPI_MODE_DMA | SPI_MODE_EXTENDED
-	uint8_t _scanline[SCANLINE_BUFFER_SIZE];
+//#if SPI_MODE_DMA | SPI_MODE_EXTENDED
+//	uint8_t _scanline[SCANLINE_BUFFER_SIZE];
+//
+//#elif SPI_MODE_NORMAL
+//	uint16_t _scanline[SCANLINE_BUFFER_SIZE];
+//#endif
 
-#elif SPI_MODE_NORMAL
-	uint16_t _scanline[SCANLINE_BUFFER_SIZE];
-#endif
-
-	uint16_t _scanlineCounter = 0;
+	//uint16_t _scanlineCounter = 0;
 #if SPI_MODE_DMA | SPI_MODE_EXTENDED
 
 	//uint16_t _scanline[SCANLINE_BUFFER_SIZE];	 // DMA16
@@ -1217,20 +1218,20 @@ private:
 
 	// Writes n-bytes from the scanline buffer via DMA
 	// Does not disable CS
-	inline __attribute__((always_inline))
-		void writeScanline(uint32_t n) {
-		/*setDCForData();
-		enableCS();*/
-#if SPI_MODE_NORMAL
-		spiTransfer(_scanline, n);
-#elif SPI_MODE_EXTENDED
-		SPI.transfer(_cs, _scanline, n << 1, SPI_CONTINUE);
-#elif SPI_MODE_DMA
-		dmaSend(_scanline, n << 1);	// each pixel is 2 bytes
-#endif
-
-		//dmaSend(_scanline, n); // DMA16
-	}
+//	inline __attribute__((always_inline))
+//		void writeScanline(uint32_t n) {
+//		/*setDCForData();
+//		enableCS();*/
+//#if SPI_MODE_NORMAL
+//		spiTransfer(_scanline, n);
+//#elif SPI_MODE_EXTENDED
+//		SPI.transfer(_cs, _scanline, n << 1, SPI_CONTINUE);
+//#elif SPI_MODE_DMA
+//		dmaSend(_scanline, n << 1);	// each pixel is 2 bytes
+//#endif
+//
+//		//dmaSend(_scanline, n); // DMA16
+//	}
 
 	inline __attribute__((always_inline))
 		void writeScanline16(uint32_t n) {
@@ -1487,27 +1488,27 @@ private:
 	}
 
 	// Sets first n pixels in scanline buffer to the specified color
-	__attribute__((always_inline))
-		void fillScanline(uint16_t color, uint32_t n){
-		_hiByte = highByte(color);
-		_loByte = lowByte(color);
-		for (uint16_t i = 0; i < (n << 1); i += 2)
-		{
-			_scanline[i] = _hiByte;
-			_scanline[i + 1] = _loByte;
-		}
+	//__attribute__((always_inline))
+	//	void fillScanline(uint16_t color, uint32_t n){
+	//	_hiByte = highByte(color);
+	//	_loByte = lowByte(color);
+	//	for (uint16_t i = 0; i < (n << 1); i += 2)
+	//	{
+	//		_scanline[i] = _hiByte;
+	//		_scanline[i + 1] = _loByte;
+	//	}
 
-		// DMA16
-		//for (uint16_t i = 0; i < n; i++)
-		//{
-		//	_scanline[i] = color;
-		//}
+	//	// DMA16
+	//	//for (uint16_t i = 0; i < n; i++)
+	//	//{
+	//	//	_scanline[i] = color;
+	//	//}
 
-		/*_scanline[0]=highByte(color);
-		_scanline[1]=lowByte(color);
-		memmove(((uint8_t*)_scanline)+2*sizeof(_scanline[0]), _scanline, (n << 1) -2*sizeof(_scanline[0]));
-		*/
-	}
+	//	/*_scanline[0]=highByte(color);
+	//	_scanline[1]=lowByte(color);
+	//	memmove(((uint8_t*)_scanline)+2*sizeof(_scanline[0]), _scanline, (n << 1) -2*sizeof(_scanline[0]));
+	//	*/
+	//}
 
 	//inline __attribute__((always_inline))
 	//	void *memcpy_forward(uint8_t *dst, const uint8_t *src, uint32_t n)
@@ -1996,11 +1997,11 @@ private:
 		return (DMAC->DMAC_CHSR & (DMAC_CHSR_ENA0 << ul_num)) ? false : true;
 	}
 
-	static bool spi_set_16bit_transfer() {
+	static void spi_set_16bit_transfer() {
 		SPI0->SPI_CSR[ILI_SPI_CHIP_SEL] = (SPI0->SPI_CSR[ILI_SPI_CHIP_SEL] &= 0xFFFFFF0F) | 0x00000080;
 	}
 
-	static bool spi_set_8bit_transfer() {
+	static void spi_set_8bit_transfer() {
 		SPI0->SPI_CSR[ILI_SPI_CHIP_SEL] = SPI0->SPI_CSR[ILI_SPI_CHIP_SEL] &= 0xFFFFFF0F;
 	}
 	//------------------------------------------------------------------------------
@@ -2165,7 +2166,7 @@ private:
 		int rtn = 0;
 #if ILI_USE_SAM3X_DMAC
 		// clear overrun error
-		uint32_t s = pSpi->SPI_SR;
+		pSpi->SPI_SR;
 
 		spiDmaRX(buf, n);
 		spiDmaTX(0, n);

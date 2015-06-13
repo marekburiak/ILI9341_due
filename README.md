@@ -6,6 +6,7 @@ Please see http://marekburiak.github.io/ILI9341_due
 
 Version History:
 ```
+v1.00.001 - removed unused variables (a few bytes saved), fixed compiler warnings
 v1.00.000 - Breaking changes:
                 - functions renamed:
                     drawArc -> fillArc

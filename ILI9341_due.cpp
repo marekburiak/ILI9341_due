@@ -23,7 +23,6 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with ILI9341_due.  If not, see <http://www.gnu.org/licenses/>.
-
 */
 
 /***************************************************
@@ -47,6 +46,10 @@ MIT license, all text above must be included in any redistribution
 #endif
 
 //#include "..\Streaming\Streaming.h"
+
+#pragma GCC diagnostic push 
+#pragma GCC diagnostic ignored "-Wattributes"
+#pragma GCC diagnostic ignored "-Wswitch"
 
 
 static const uint8_t init_commands[] PROGMEM = {
@@ -393,7 +396,7 @@ void ILI9341_due::drawFastVLine_noTrans(int16_t x, int16_t y, uint16_t h, uint16
 {
 	// Rudimentary clipping
 	if ((x >= _width) || (y >= _height)) return;
-	if ((y + h - 1) >= _height) h = _height - y;
+	if ((y + (int16_t)h - 1) >= _height) h = _height - y;
 
 	fillScanline16(color, min(h, SCANLINE_PIXEL_COUNT));
 
@@ -448,7 +451,7 @@ void ILI9341_due::drawFastHLine_noTrans(int16_t x, int16_t y, uint16_t w, uint16
 {
 	// Rudimentary clipping
 	if ((x >= _width) || (y >= _height)) return;
-	if ((x + w - 1) >= _width)  w = _width - x;
+	if ((x + (int16_t)w - 1) >= _width)  w = _width - x;
 
 
 	fillScanline16(color, min(w, SCANLINE_PIXEL_COUNT));
@@ -495,8 +498,8 @@ void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h,
 	//Serial << "x:" << x << " y:" << y << " w:" << x << " h:" << h << " width:" << _width << " height:" << _height <<endl;
 	// rudimentary clipping (drawChar w/big text requires this)
 	if ((x >= _width) || (y >= _height) || (x + w - 1 < 0) || (y + h - 1 < 0)) return;
-	if ((x + w - 1) >= _width)  w = _width - x;
-	if ((y + h - 1) >= _height) h = _height - y;
+	if ((x + (int16_t)w - 1) >= _width)  w = _width - x;
+	if ((y + (int16_t)h - 1) >= _height) h = _height - y;
 
 	const uint32_t totalPixels = (uint32_t)w*(uint32_t)h;
 	fillScanline16(color, min(totalPixels, SCANLINE_PIXEL_COUNT));
@@ -835,7 +838,6 @@ void ILI9341_due::fillArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 
 void ILI9341_due::screenshotToConsole()
 {
-	uint16_t color565;
 	uint8_t lastColor[3];
 	uint8_t color[3];
 	uint32_t sameColorPixelCount = 0;
@@ -1390,7 +1392,7 @@ void ILI9341_due::fillTriangle(int16_t x0, int16_t y0,
 // draws monochrome (single color) bitmaps
 void ILI9341_due::drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color)
 {
-	int16_t i, j, byteWidth = (w + 7) / 8;
+	uint16_t i, j, byteWidth = (w + 7) / 8;
 
 	beginTransaction();
 	enableCS();
@@ -1894,7 +1896,6 @@ size_t ILI9341_due::write(uint8_t c)
 	uint8_t charCount = pgm_read_byte(_font + GTEXT_FONT_CHAR_COUNT);
 
 	uint16_t index = 0;
-	uint8_t thielefont;
 
 	if (c < firstChar || c >= (firstChar + charCount)) {
 		return 0; // invalid char
@@ -1902,13 +1903,13 @@ size_t ILI9341_due::write(uint8_t c)
 	c -= firstChar;
 
 	if (isFixedWidthFont(_font) {
-		thielefont = 0;
+		//thielefont = 0;
 		charWidth = pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH);
 		index = c*charHeightInBytes*charWidth + GTEXT_FONT_WIDTH_TABLE;
 	}
 	else{
 		// variable width font, read width data, to get the index
-		thielefont = 1;
+		//thielefont = 1;
 		/*
 		* Because there is no table for the offset of where the data
 		* for each character glyph starts, run the table and add up all the
@@ -1989,16 +1990,19 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 {
 	uint8_t bitId = 0;
 	uint16_t py;
-
-	uint8_t charHeightInBytes = (charHeight + 7) / 8; /* calculates height in rounded up bytes */
-
+#ifdef ARDUINO_SAM_DUE
 	uint16_t lineId = 0;
+#endif
+	uint16_t charHeightInBytes = (charHeight + 7) / 8; /* calculates height in rounded up bytes */
+
 	uint8_t numRenderBits = 8;
 	const uint8_t numRemainingBits = charHeight % 8;
-	uint16_t numPixelsInOnePoint;
+	uint16_t numPixelsInOnePoint = 1;
 	if (_textScale > 1)
 		numPixelsInOnePoint = (uint16_t)_textScale *(uint16_t)_textScale;
+#ifdef ARDUINO_ARCH_AVR
 	uint16_t pixelsInOnePointToDraw;
+#endif
 
 	if (_letterSpacing > 0 && !_isFirstChar)
 	{
@@ -2029,7 +2033,9 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 	for (uint16_t j = 0; j < charWidth; j++) /* each column */
 	{
 		//Serial << "Printing row" << endl;
+#ifdef ARDUINO_SAM_DUE
 		lineId = 0;
+#endif
 		numRenderBits = 8;
 		if (_x >= 0 && _x < _width)
 		{
@@ -2042,7 +2048,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 				setDCForData();
 			}
 
-			for (uint8_t i = 0; i < charHeightInBytes; i++)	/* each vertical byte */
+			for (uint16_t i = 0; i < charHeightInBytes; i++)	/* each vertical byte */
 			{
 				uint16_t page = i*charWidth; // page must be 16 bit to prevent overflow
 				uint8_t data = pgm_read_byte(_font + index + page + j);
@@ -2167,7 +2173,6 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 	uint8_t bit = 0, lastBit = 0;
 	uint16_t lineStart = 0;
 	uint16_t lineEnd = 0;
-
 	if (_letterSpacing > 0 && !_isFirstChar)
 	{
 		_x += _letterSpacing * _textScale;
@@ -2178,9 +2183,8 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 	fillScanline16(_fontColor);	//pre-fill the scanline, we will be drawing different lenghts of it
 
 
-	uint8_t charHeightInBytes = (charHeight + 7) / 8; /* calculates height in rounded up bytes */
+	uint16_t charHeightInBytes = (charHeight + 7) / 8; /* calculates height in rounded up bytes */
 
-	uint16_t lineId = 0;
 	uint8_t numRenderBits = 8;
 	const uint8_t numRemainingBits = charHeight % 8;
 
@@ -2189,16 +2193,13 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 	for (uint8_t j = 0; j < charWidth; j++) /* each column */
 	{
 		//Serial << "Printing row" << endl;
-		lineId = 0;
-		lineEnd = 0;
 		numRenderBits = 8;
-
 
 		if (_x >= 0 && _x < _width)
 		{
 			setColumnAddr(_x, _textScale);
 
-			for (uint8_t i = 0; i < charHeightInBytes; i++)	/* each vertical byte */
+			for (uint16_t i = 0; i < charHeightInBytes; i++)	/* each vertical byte */
 			{
 				uint16_t page = i*charWidth; // page must be 16 bit to prevent overflow
 				uint8_t data = pgm_read_byte(_font + index + page + j);
@@ -2296,48 +2297,56 @@ size_t ILI9341_due::print(char c){
 	beginTransaction();
 	write(c);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::print(unsigned char c, int b){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::print(c,b);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::print(int d, int b){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::print(d,b);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::print(unsigned int u, int b){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::print(u,b);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::print(long l, int b){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::print(l,b);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::print(unsigned long ul, int b){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::print(ul,b);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::print(double d, int b){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::print(d,b);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::print(const Printable& str){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::print(str);
 	endTransaction();
+	return 0;
 }
 
 size_t ILI9341_due::println(const __FlashStringHelper *str){
@@ -2345,72 +2354,84 @@ size_t ILI9341_due::println(const __FlashStringHelper *str){
 	beginTransaction();
 	Print::println(str);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::println(const String &str){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println(str);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::println(const char* str){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println(str);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::println(char c){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println(c);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::println(unsigned char c, int b){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println(c,b);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::println(int d, int b){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println(d,b);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::println(unsigned int u, int b){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println(u,b);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::println(long l, int b){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println(l,b);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::println(unsigned long ul, int b){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println(ul,b);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::println(double d, int b){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println(d,b);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::println(const Printable& str){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println(str);
 	endTransaction();
+	return 0;
 }
 size_t ILI9341_due::println(void){
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println();
 	endTransaction();
+	return 0;
 }
 
 size_t ILI9341_due::print(const char *str)
@@ -2424,18 +2445,20 @@ size_t ILI9341_due::print(const char *str)
 		str++;
 	}
 	endTransaction();
+	return 0;
 }
 
 size_t ILI9341_due::print(const String &str)
 {
 	beginTransaction();
 	_isFirstChar = true;
-	for (int i = 0; i < str.length(); i++)
+	for (uint16_t i = 0; i < str.length(); i++)
 	{
 		write(str[i]);
 		//_isFirstChar = false;
 	}
 	endTransaction();
+	return 0;
 }
 
 size_t ILI9341_due::print(const __FlashStringHelper *str)
@@ -2450,6 +2473,7 @@ size_t ILI9341_due::print(const __FlashStringHelper *str)
 		p++;
 	}
 	endTransaction();
+	return 0;
 }
 
 void ILI9341_due::printAt(const char *str, int16_t x, int16_t y)
@@ -2868,7 +2892,7 @@ void ILI9341_due::clearPixelsOnLeft(uint16_t pixelsToClearOnLeft){
 	// CLEAR PIXELS ON THE LEFT
 	if (pixelsToClearOnLeft > 0)
 	{
-		int16_t clearX1 = max(min(_x, (int16_t)_area.x), _x - (int16_t)pixelsToClearOnLeft);
+		int16_t clearX1 = max(min((int16_t)_x, (int16_t)_area.x), (int16_t)_x - (int16_t)pixelsToClearOnLeft);
 		//Serial.println(clearX1);
 		//Serial << "clearPixelsOnLeft " << _x << " " << _area.x << " " << clearX1 << endl2;
 		fillRect(clearX1, _y, _x - clearX1, scaledFontHeight(), _fontBgColor);
@@ -2880,7 +2904,7 @@ void ILI9341_due::clearPixelsOnRight(uint16_t pixelsToClearOnRight){
 	// CLEAR PIXELS ON THE RIGHT
 	if (pixelsToClearOnRight > 0)
 	{
-		int16_t clearX2 = min(max(_x, _area.x + _area.w - 1), _x + pixelsToClearOnRight);
+		int16_t clearX2 = min(max((int16_t)_x, (int16_t)_area.x + (int16_t)_area.w - 1), (int16_t)_x + (int16_t)pixelsToClearOnRight);
 		//Serial << "area from " << _area.x << " to " << _area.x1 << endl;
 		//Serial << "clearing on right from " << _x << " to " << clearX2 << endl;
 		fillRect(_x, _y, clearX2 - _x + 1, scaledFontHeight(), _fontBgColor);
@@ -3319,7 +3343,7 @@ uint16_t ILI9341_due::stringWidth(const String &str)
 {
 	uint16_t width = 0;
 
-	for (int i = 0; i < str.length(); i++)
+	for (uint16_t i = 0; i < str.length(); i++)
 	{
 		width += charWidth(str[i]) + _letterSpacing * _textScale;
 	}
@@ -3329,3 +3353,4 @@ uint16_t ILI9341_due::stringWidth(const String &str)
 
 
 
+#pragma GCC diagnostic pop 
