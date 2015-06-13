@@ -151,7 +151,7 @@
             <div style="text-align: center">
                 <img src="images\func_setTextLineSpacing2.png" />
             </div>
-            <br />
+
             <h4>Arcs</h4>
             <pre lang="Arduino"><code>#define ARC_ANGLE_MAX 360</code></pre>
             <p>
@@ -165,41 +165,7 @@
             <p>This number is an offset in degrees from the default position where the arc starts (representing value of 0). If you imagine a compass, then the default starting position is at the East point. Setting the value to -90 will move the starting point 90 degress counter-clockwise (so to the North point).</p>
             <p>You can change the offset at runtime by calling the <em>setAngleOffset</em> function. The value provided in <em>setAngleOffset</em> argument is *in addition* to ARC_ANGLE_OFFSET value. So the total angle offset from the default East point is ARC_ANGLE_OFFSET+setAngleOffset value.</p>
 
-            <h3>Demos</h3>
-            <h4>Loading images from an SD card</h4>
-
-            <p>This is the SdFatTftBitmap example sketch demonstrating loading images from an SD card. The images were converted to RGB565 format using BMP24toILI565 tool (see the Tools folder). One image loads and displays in around 160ms using half speed for SD card SPI and half speed for Due SPI. I was getting distorted images when I tried to use the full speed for either of the SPIs.</p>
-            <div style="text-align: center">
-                <iframe width="560" height="315" src="http://www.youtube.com/embed/4adTpVc_Qog?rel=0&color=white" frameborder="0"></iframe>
-            </div>
-
-            <p>This is the Arcs demo from the examples folder:</p>
-            <div style="text-align: center">
-                <iframe width="560" height="315" src="http://www.youtube.com/embed/99todZeKaeI?rel=0&color=white" frameborder="0"></iframe>
-            </div>
-
-
-            <h4>UTFT demo speed comparison</h4>
-
-            <p>All the credits (and blame :) goes to TFTLCDCyg who ported the UTFT demo to ILI9341_due library. Both demos were run on Due at the max speed.</p>
-            <p>Here is a video of the demo powered by the UTFT library:</p>
-            <div style="text-align: center">
-                <iframe width="560" height="315" src="http://www.youtube.com/embed/ZYW9f8Q_b-Q?rel=0&color=white" frameborder="0"></iframe>
-            </div>
-            <p>And here is the demo powered by the ILI9341_due library:</p>
-            <div style="text-align: center">
-                <iframe width="560" height="315" src="http://www.youtube.com/embed/xkPDAK0VJq0?rel=0&color=white" frameborder="0"></iframe>
-            </div>
-            <p>The source code for the ILI9341_due-fied demo can be found in the library's examples folder. Done with ILI9431_due v0.x version. The demo completes in around 1080ms with ILI9341_due v1.x version.</p>
-
-
-
-            <h3>ILI9341 functions</h3>
-
-            <div id="iliFunctions">
-
-            </div>
-
+            <br/>
             <h3>Creating Custom Fonts</h3>
 
             <p>
@@ -244,7 +210,46 @@
                 <iframe width="560" height="315" src="http://www.youtube.com/embed/OcTz_YBDXmo?rel=0&color=white" frameborder="0"></iframe>
             </div>
 
-          <br />
+            <h3>Demos</h3>
+            <h4>Loading images from an SD card</h4>
+
+            <p>This is the SdFatTftBitmap example sketch demonstrating loading images from an SD card. The images were converted to RGB565 format using BMP24toILI565 tool (see the Tools folder). One image loads and displays in around 160ms using half speed for SD card SPI and half speed for Due SPI. I was getting distorted images when I tried to use the full speed for either of the SPIs.</p>
+            <div style="text-align: center">
+                <iframe width="560" height="315" src="http://www.youtube.com/embed/4adTpVc_Qog?rel=0&color=white" frameborder="0"></iframe>
+            </div>
+
+            <p>This is the Arcs demo from the examples folder:</p>
+            <div style="text-align: center">
+                <iframe width="560" height="315" src="http://www.youtube.com/embed/99todZeKaeI?rel=0&color=white" frameborder="0"></iframe>
+            </div>
+
+
+            <h4>UTFT demo speed comparison</h4>
+
+            <p>All the credits (and blame :) goes to TFTLCDCyg who ported the UTFT demo to ILI9341_due library. Both demos were run on Due at the max speed.</p>
+            <p>Here is a video of the demo powered by the UTFT library:</p>
+            <div style="text-align: center">
+                <iframe width="560" height="315" src="http://www.youtube.com/embed/ZYW9f8Q_b-Q?rel=0&color=white" frameborder="0"></iframe>
+            </div>
+            <p>And here is the demo powered by the ILI9341_due library:</p>
+            <div style="text-align: center">
+                <iframe width="560" height="315" src="http://www.youtube.com/embed/xkPDAK0VJq0?rel=0&color=white" frameborder="0"></iframe>
+            </div>
+            <p>The source code for the ILI9341_due-fied demo can be found in the library's examples folder. Done with ILI9431_due v0.x version. The demo completes in around 1080ms with ILI9341_due v1.x version.</p>
+
+
+
+            <h3>ILI9341 functions</h3>
+            <h4>Functions summary (in alphabetical order)</h4>
+            <div id="iliFunctionsSummary">
+
+            </div>
+
+            <br />
+            <h4>Functions details</h4>
+            <div id="iliFunctions">
+
+            </div>
 
             <h3>Contact</h3>
             <p>If you want to ask me a question or just contact me, feel free to do so in the <a href="http://forum.arduino.cc/index.php?topic=265806.0">Arduino Forum</a>.</p>
@@ -295,14 +300,56 @@ MIT license, all text above must be included in any redistribution
     </div>-->
 
     <script type="text/javascript">
+        var funcNumber = 0;
+        var funcSummaryArray = [];
+
         function addIliFunction(functionName, functionDescription, functionDeclarationCode, functionArguments, functionExampleDesc, functionExampleCode, includeImage, functionExampleImage) {
+            funcNumber += 1;
+
             var funcs = document.getElementById("iliFunctions");
+            
+
             var funcElem = document.createElement("div");
             funcElem.className = "function";
 
             var funcHeader = document.createElement("div");
             funcHeader.className = "functionHeader";
-            funcHeader.appendChild(document.createTextNode(functionName));
+            var funcHeaderA = document.createElement("a");
+            funcHeaderA.name = functionName + funcNumber;
+            funcHeaderA.innerHTML = functionName;
+            funcHeader.appendChild(funcHeaderA);
+            
+
+
+
+
+            var funcSummaryLink = document.createElement("div");
+            funcSummaryLink.className = "function functionSummaryLink";
+            var funcSummaryLinkA = document.createElement("a");
+            funcSummaryLinkA.className = "functionSummaryLinkA";
+            funcSummaryLinkA.href = '#' + funcHeaderA.name;
+
+            var funcSummaryLinkHeader = document.createElement("div");
+            funcSummaryLinkHeader.className = "functionHeader functionSummaryLinkHeader";
+            //var funcSummaryLinkHeaderA = document.createElement("a");
+            funcSummaryLinkHeader.innerHTML = functionName;
+            //funcSummaryLinkHeader.appendChild(funcSummaryLinkHeaderA);
+            funcSummaryLinkA.appendChild(funcSummaryLinkHeader);
+            
+            var funcSummaryLinkFuncCode = document.createElement("div");
+            funcSummaryLinkFuncCode.className = "functionCode functionSummaryLinkFunctionCode";
+            //funcSummaryLinkA.href = '#' + funcHeaderA.name;
+            funcSummaryLinkFuncCode.innerHTML = functionDeclarationCode.replace(/<br\/><br\/>/g, "<br/>");
+            funcSummaryLinkA.appendChild(funcSummaryLinkFuncCode);
+            funcSummaryLink.appendChild(funcSummaryLinkA);
+
+            funcSummaryArray.push({name: funcHeaderA.name, html: funcSummaryLink });
+
+            
+
+
+
+
 
             var funcContent = document.createElement("div");
             funcContent.className = "functionContent";
@@ -314,6 +361,8 @@ MIT license, all text above must be included in any redistribution
             var funcDeclaration = document.createElement("div");
             funcDeclaration.className = "functionCode";
             funcDeclaration.innerHTML = functionDeclarationCode;
+
+            
             //if (_.isArray(functionDeclarationCode)) {
             //    _.forEach(functionDeclarationCode, function (functionDeclaration) {
 
@@ -1640,6 +1689,15 @@ MIT license, all text above must be included in any redistribution
         "&nbsp;&nbsp;&nbsp;//tft.setSPIClockDivider(SPI_CLOCK_DIV8); // for Uno, Mega,...<br/>" +
         "&nbsp;&nbsp;&nbsp;tft.screenshotToConsole();<br/>" +
         "}", true);
+
+        var sortedSummary = _.sortBy(funcSummaryArray, 'name');
+
+        var funcsSummary = document.getElementById("iliFunctionsSummary");
+
+        _.forEach(sortedSummary, function (link) {
+            funcsSummary.appendChild(link.html);
+        });
+        
 
     </script>
 

@@ -203,10 +203,10 @@ ul {
     padding-left: 20px;
 }
 
-ul li ul {
-    list-style: circle;
-    padding-left: 20px;
-}
+    ul li ul {
+        list-style: circle;
+        padding-left: 20px;
+    }
 
 ol {
     list-style: decimal inside;
@@ -370,21 +370,48 @@ Full-Width Styles
 }
 
 .italic {
-    font-style:italic;
+    font-style: italic;
 }
 
 .bold {
     font-weight: bold;
 }
 
+
+
 .function {
     border: 2px solid darkgray;
     width: 100%;
-    
     overflow: hidden;
     line-height: 1.5em;
     margin-bottom: 10px;
 }
+
+    .function a {
+        color: white;
+        cursor: default;
+    }
+
+        /* unvisited link */
+        .function a:link {
+            color: white;
+        }
+
+        /* visited link */
+        .function a:visited {
+            color: white;
+        }
+
+        /* mouse over link */
+        .function a:hover {
+            color: white;
+            text-decoration: none;
+        }
+
+        /* selected link */
+        .function a:active {
+            color: white;
+        }
 
 .functionHeader {
     background-color: darkgray;
@@ -399,7 +426,6 @@ Full-Width Styles
 }
 
 .functionDescription {
- 
 }
 
 .functionArgumentsTitle {
@@ -407,11 +433,10 @@ Full-Width Styles
 }
 
 .functionArguments {
-    
 }
 
 .functionExample {
-    margin-top:1.5em;
+    margin-top: 1.5em;
 }
 
 .functionExampleTitle {
@@ -437,6 +462,32 @@ Full-Width Styles
 
 .functionExampleImage {
     text-align: center;
+}
+
+.functionSummaryLink {
+    margin-bottom: 5px;
+    
+}
+
+.functionSummaryLink a {
+    cursor:pointer;
+    
+}
+
+.functionSummaryLinkHeader{
+    font-size: 16px;
+    padding-left: 5px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    
+}
+
+.functionSummaryLinkFunctionCode {
+    width: 97%;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 3px;
+    padding-bottom: 3px;
 }
 
 /*******************************************************************************
