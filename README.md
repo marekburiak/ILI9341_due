@@ -6,6 +6,7 @@ Please see http://marekburiak.github.io/ILI9341_due
 
 Version History:
 ```
+v1.01.000 - added UTouch examples
 v1.00.001 - removed some unused variables and functions, fixed compiler warnings
 v1.00.000 - Breaking changes:
                 - functions renamed:
@@ -21,8 +22,8 @@ v1.00.000 - Breaking changes:
                     drawStringOffseted -> printAlignedOffseted
                     drawStringPivoted -> printAlignedPivoted
                     drawStringPivotedOffseted -> printAlignedPivotedOffseted
-                - setTextArea (previously defineArea) is now set by x,y,width,height 
-                  (previously x1,y1,x2,y2)
+                - setTextArea (previously defineArea) and all rectangle functions are now set 
+                  by x,y,width,height (previously x1,y1,x2,y2)
                 - images in .565 format must be generated again with the current BMP24toILI565
                   tool
                 - removed glcdfont, use SystemFont5x7 instead
