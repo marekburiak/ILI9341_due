@@ -738,7 +738,7 @@ MIT license, all text above must be included in any redistribution
         addIliFunction("setAngleOffset",
         "Sets the offset in degrees from the default position (set by ARC_ANGLE_OFFSET in ILI9341_due_config.h) where the arc will start (representing arc angle of 0 degrees). If you imagine a compass then the default starting position is at the North point (the arc will start from the top). Setting the offset to 90 degrees will move the starting point 90 degress clockwise so to the East point (the arc will start from the right side), etc.",
         "void setAngleOffset(int16_t angleOffset);",
-        "<ul><li><em>angleOffset</em> - clokwise offset in degrees from the default start point (North point). Can be a negative number which will offset angle's 0 degree position counter-clockwise from the default start point.</li></ul>",
+        "<ul><li><em>angleOffset</em> - clockwise offset in degrees from the default start point (North point). Can be a negative number which will offset angle's 0 degree position counter-clockwise from the default start point.</li></ul>",
         "Set the red arc angle start point to West.<br/>Set the yellow arc angle start point to 45 degrees clockwise from North.<br/>Set the green arc angle start point to default.",
         "tft.setAngleOffset(-90);<br/>tft.fillArc(110, 100, 20, 10, 0, 195, ILI9341_RED);</br>" +
         "tft.setAngleOffset(45);<br/>tft.fillArc(160, 100, 20, 10, 0, 195, ILI9341_YELLOW);</br>" +
