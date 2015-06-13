@@ -747,7 +747,7 @@ MIT license, all text above must be included in any redistribution
         addIliFunction("setArcParams",
         "Sets parameters for drawing arcs. For now it has only one param to set.",
         "void setArcParams(float arcAngleMax);",
-        "<ul><li><em>arcAngleMax</em> - sets the max value corresponding to 360 degrees. By default it is set to value defined by ARC_ANGLE_MAX in ILI9341_due_config.h which is 360. You can set it to any float value, so for example if you set it to 1.0 (which will represent the max angle of 360) then calling fillArc with startAngle of 0 and endAngle of 0.5 then you will get a half circle.</li></ul>",
+        "<ul><li><em>arcAngleMax</em> - sets the max value corresponding to 360 degrees. By default it is set to value defined by ARC_ANGLE_MAX in ILI9341_due_config.h which is 360. You can set it to any float value, so for example if you set it to 1.0 (which will represent the max angle of 360) then calling fillArc with startAngle of 0 and endAngle of 0.5 will get you a half circle.</li></ul>",
         "Set the max angle to 100 so we can draw arcs using percentages. Then draw an arc with an 'angle' of 25% which will draw quarter of a circle.",
         "tft.setArcParams(100);	// set arc max value to 100<br/>" +
         "tft.fillArc(160, 120, 50, 10, 0, 25, ILI9341_WHITE); // draw 25% of a circle", true);
