@@ -1690,6 +1690,42 @@ MIT license, all text above must be included in any redistribution
         "&nbsp;&nbsp;&nbsp;tft.screenshotToConsole();<br/>" +
         "}", true);
 
+        addIliFunction("getDisplayStatus",
+        "Reads the status registers and outputs the settings to Serial.",
+        "void getDisplayStatus();",
+        "",
+        "Get display status.",
+        "getDisplayStatus();<br/><br/>" +
+        "Serial output:<br/>" +
+        "Display Power Mode: 0x9C<br/>" +
+        "&nbsp;&nbsp;Booster: On and working OK<br/>" +
+        "&nbsp;&nbsp;Idle Mode: Off<br/>" +
+        "&nbsp;&nbsp;Partial Mode: Off<br/>" +
+        "&nbsp;&nbsp;Sleep Mode: Off<br/>" +
+        "&nbsp;&nbsp;Display Normal Mode: On<br/>" +
+        "&nbsp;&nbsp;Display: On<br/>" +
+        "MADCTL Mode: 0x48<br/>" +
+        "&nbsp;&nbsp;Top to Bottom<br/>" +
+        "&nbsp;&nbsp;Right to Left<br/>" +
+        "&nbsp;&nbsp;Reverse Mode<br/>" +
+        "&nbsp;&nbsp;LCD Refresh Top to Bottom<br/>" +
+        "&nbsp;&nbsp;BGR<br/>" +
+        "&nbsp;&nbsp;LCD Refresh Left to Right<br/>" +
+        "Pixel Format: 0x5<br/>" +
+        "&nbsp;&nbsp;16 bits/pixel<br/>" +
+        "Image Format: 0x0<br/>" +
+        "&nbsp;&nbsp;Gamma curve 1<br/>" +
+        "Display Signal Mode: 0x0<br/>" +
+        "&nbsp;&nbsp;Tearing effect line: Off<br/>" +
+        "&nbsp;&nbsp;Tearing effect line: mode 1<br/>" +
+        "&nbsp;&nbsp;Horizontal sync: Off<br/>" +
+        "&nbsp;&nbsp;Vertical sync: Off<br/>" +
+        "&nbsp;&nbsp;Pixel clock: Off<br/>" +
+        "&nbsp;&nbsp;Data enable: Off<br/>" +
+        "Self Diagnostic: 0xC0<br/>" +
+        "&nbsp;&nbsp;Register Loading: working<br/>" +
+        "&nbsp;&nbsp;Functionality: working", false);
+
         var sortedSummary = _.sortBy(funcSummaryArray, 'name');
 
         var funcsSummary = document.getElementById("iliFunctionsSummary");
