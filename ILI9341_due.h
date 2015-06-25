@@ -1,5 +1,5 @@
 /*
-v1.01.000
+v1.01.001
 
 ILI9341_due.h - Arduino Due library for interfacing with ILI9341-based TFTs
 
@@ -108,7 +108,8 @@ MIT license, all text above must be included in any redistribution
 #define ILI9341_RDMODE  0x0A
 #define ILI9341_RDMADCTL  0x0B
 #define ILI9341_RDPIXFMT  0x0C
-#define ILI9341_RDIMGFMT  0x0A
+#define ILI9341_RDIMGFMT  0x0D
+#define ILI9341_RDDSPSGNMODE  0x0E
 #define ILI9341_RDSELFDIAG  0x0F
 
 #define ILI9341_INVOFF  0x20
@@ -499,6 +500,7 @@ public:
 
 
 	bool begin(void);
+	void getDisplayStatus();
 	void fillScreen(uint16_t color);
 	void fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color);
 

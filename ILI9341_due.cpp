@@ -162,16 +162,7 @@ bool ILI9341_due::begin(void)
 		delay(120);
 		_isInSleep = _isIdle = false;
 
-		uint8_t x = readcommand8(ILI9341_RDMODE);
-		Serial.print(F("\nDisplay Power Mode: 0x")); Serial.println(x, HEX);
-		x = readcommand8(ILI9341_RDMADCTL);
-		Serial.print(F("MADCTL Mode: 0x")); Serial.println(x, HEX);
-		x = readcommand8(ILI9341_RDPIXFMT);
-		Serial.print(F("Pixel Format: 0x")); Serial.println(x, HEX);
-		x = readcommand8(ILI9341_RDIMGFMT);
-		Serial.print(F("Image Format: 0x")); Serial.println(x, HEX);
-		x = readcommand8(ILI9341_RDSELFDIAG);
-		Serial.print(F("Self Diagnostic: 0x")); Serial.println(x, HEX);
+		
 
 		//#ifdef ILI_USE_SPI_TRANSACTION
 		//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
@@ -202,6 +193,56 @@ bool ILI9341_due::pinIsChipSelect(uint8_t cs)
 #elif SPI_MODE_NORMAL | SPI_MODE_DMA
 	return true;
 #endif
+}
+
+void ILI9341_due::getDisplayStatus(void)
+{
+	beginTransaction();
+	uint8_t x = readcommand8(ILI9341_RDMODE);
+	Serial.print(F("\nDisplay Power Mode: 0x")); Serial.println(x, HEX);
+	Serial.print(F("  Booster: ")); Serial.println(x & 0x80 ? F("On and working OK") : F("Off or has a fault"));
+	Serial.print(F("  Idle Mode: ")); Serial.println(x & 0x40 ? F("On") : F("Off"));
+	Serial.print(F("  Partial Mode: ")); Serial.println(x & 0x20 ? F("On") : F("Off"));
+	Serial.print(F("  Sleep Mode: ")); Serial.println(x & 0x10 ? F("Off") : F("On"));
+	Serial.print(F("  Display Normal Mode: ")); Serial.println(x & 0x08 ? F("On") : F("Off"));
+	Serial.print(F("  Display: ")); Serial.println(x & 0x04 ? F("On") : F("Off"));
+
+	x = readcommand8(ILI9341_RDMADCTL);
+	Serial.print(F("MADCTL Mode: 0x")); Serial.println(x, HEX);
+	Serial.println(x & 0x80 ? F("  Bottom to Top") : F("  Top to Bottom"));
+	Serial.println(x & 0x40 ? F("  Right to Left") : F("  Left to Right"));
+	Serial.println(x & 0x20 ? F("  Normal Mode") : F("  Reverse Mode"));
+	Serial.println(x & 0x10 ? F("  LCD Refresh Bottom to Top") : F("  LCD Refresh Top to Bottom"));
+	Serial.println(x & 0x08 ? F("  BGR") : F("RGB"));
+	Serial.println(x & 0x04 ? F("  LCD Refresh Right to Left") : F("  LCD Refresh Left to Right"));
+
+	x = readcommand8(ILI9341_RDPIXFMT);
+	Serial.print(F("Pixel Format: 0x")); Serial.println(x, HEX);
+	if ((x & 0x07) == 0x05)
+		Serial.println(F("  16 bits/pixel"));
+	if ((x & 0x07) == 0x06)
+		Serial.println(F("  18 bits/pixel"));
+
+	x = readcommand8(ILI9341_RDIMGFMT);
+	Serial.print(F("Image Format: 0x")); Serial.println(x, HEX);
+	if ((x & 0x07) == 0x00)
+		Serial.println(F("  Gamma curve 1"));
+
+	x = readcommand8(ILI9341_RDDSPSGNMODE);
+	Serial.print(F("Display Signal Mode: 0x")); Serial.println(x, HEX);
+	Serial.print(F("  Tearing effect line: ")); Serial.println(x & 0x80 ? F("On") : F("Off"));
+	Serial.print(F("  Tearing effect line: mode ")); Serial.println(x & 0x40 ? F("2") : F("1"));
+	Serial.print(F("  Horizontal sync: ")); Serial.println(x & 0x20 ? F("On") : F("Off"));
+	Serial.print(F("  Vertical sync: ")); Serial.println(x & 0x10 ? F("On") : F("Off"));
+	Serial.print(F("  Pixel clock: ")); Serial.println(x & 0x08 ? F("On") : F("Off"));
+	Serial.print(F("  Data enable: ")); Serial.println(x & 0x04 ? F("On") : F("Off"));
+
+	x = readcommand8(ILI9341_RDSELFDIAG);
+	Serial.print(F("Self Diagnostic: 0x")); Serial.println(x, HEX);
+	Serial.print(F("  Register Loading: ")); Serial.println(x & 0x80 ? F("working") : F("not working"));
+	Serial.print(F("  Functionality: ")); Serial.println(x & 0x40 ? F("working") : F("not working"));
+
+	endTransaction();
 }
 
 void ILI9341_due::setSPIClockDivider(uint8_t divider)
