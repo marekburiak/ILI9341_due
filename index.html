@@ -82,9 +82,9 @@
             <p>Uncomment the line depending on the SPI mode you want to use. DMA mode is the default. For AVR, it does not matter which mode you use, ILI9341_SPI_MODE_NORMAL is always going to be used since there is no Extended SPI or DMA available on AVRs.</p>
 
             <p>
-                <em>SPI_MODE_NORMAL</em> is the standard SPI mode where you can use any digital pin for CS but library has to drive the CS pin.<br>
-                <em>SPI_MODE_EXTENDED</em> is the extended SPI mode available in Due where CS pin is handled by the chip (which is faster than handling it in code). You are restricted to these 3 pins for CS - 4, 10 and 52 (as described <a href="http://arduino.cc/en/Reference/DueExtendedSPI">here</a>).<br>
-                <em>SPI_MODE_DMA</em> is utilizing D(irect) M(emory) A(ddress) to do SPI transfers. You should be able to use any digital pin for CS.
+                <em>SPI_MODE_NORMAL</em> is the standard SPI mode where you can use any digital pin for CS. In this mode the library will drive the CS pin 'manually'.<br>
+                <em>SPI_MODE_EXTENDED</em> is the extended SPI mode available in Due the CS pin is handled by the chip (which is faster than handling it in code 'manually'). You are restricted to these 3 pins for CS - 4, 10 and 52 (as described <a href="http://arduino.cc/en/Reference/DueExtendedSPI">here</a>).<br>
+                <em>SPI_MODE_DMA</em> is utilizing D(irect) M(emory) A(ddress) to do SPI transfers. You can use use any digital pin for CS.
             </p>
 
             <p>
