@@ -6,6 +6,7 @@ Please see http://marekburiak.github.io/ILI9341_due
 
 Version History:
 ```
+v1.01.002 - improved the speed of fillCircleHelper (thanks to Chris_CT for this optimization)
 v1.01.001 - added getDisplayStatus function
 v1.01.000 - added UTouch examples
 v1.00.001 - removed some unused variables and functions, fixed compiler warnings
