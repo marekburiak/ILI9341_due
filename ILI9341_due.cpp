@@ -1085,6 +1085,7 @@ void ILI9341_due::fillCircle(int16_t x0, int16_t y0, int16_t r,
 }
 
 // Used to do circles and roundrects
+// Further optimizations by Chris_CT
 void ILI9341_due::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
 	uint8_t cornername, int16_t delta, uint16_t color)
 {
@@ -1093,6 +1094,7 @@ void ILI9341_due::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
 	int16_t ddF_y = -2 * r;
 	int16_t x = 0;
 	int16_t y = r;
+	int16_t ylm = x0 - r; // **added**
 
 #ifdef ARDUINO_SAM_DUE
 	fillScanline16(color, 2 * max(x, y) + 1 + delta);
@@ -1100,10 +1102,12 @@ void ILI9341_due::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
 	fillScanline16(color);
 #endif
 
-
 	enableCS();
 	while (x < y) {
 		if (f >= 0) {
+			if (cornername & 0x1) drawFastVLine_cont_noFill(x0 + y, y0 - x, 2 * x + 1 + delta, color); // **moved**
+			if (cornername & 0x2) drawFastVLine_cont_noFill(x0 - y, y0 - x, 2 * x + 1 + delta, color); // **moved**
+			ylm = x0 - y; // **added**
 			y--;
 			ddF_y += 2;
 			f += ddF_y;
@@ -1112,14 +1116,10 @@ void ILI9341_due::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
 		ddF_x += 2;
 		f += ddF_x;
 
-		if (cornername & 0x1) {
-			drawFastVLine_cont_noFill(x0 + x, y0 - y, 2 * y + 1 + delta, color);
-			drawFastVLine_cont_noFill(x0 + y, y0 - x, 2 * x + 1 + delta, color);
-		}
-		if (cornername & 0x2) {
-			drawFastVLine_cont_noFill(x0 - x, y0 - y, 2 * y + 1 + delta, color);
-			drawFastVLine_cont_noFill(x0 - y, y0 - x, 2 * x + 1 + delta, color);
-		}
+		if ((x0 - x) > ylm) { // **added**
+			if (cornername & 0x1) drawFastVLine_cont_noFill(x0 + x, y0 - y, 2 * y + 1 + delta, color);
+			if (cornername & 0x2) drawFastVLine_cont_noFill(x0 - x, y0 - y, 2 * y + 1 + delta, color);
+		} // **added**
 	}
 	disableCS();
 }
