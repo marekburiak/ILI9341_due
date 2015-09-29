@@ -1,6 +1,4 @@
 /*
-v1.01.001
-
 ILI9341_due_config.h - Arduino Due library for interfacing with ILI9341-based TFTs
 
 Code: https://github.com/marekburiak/ILI9341_due

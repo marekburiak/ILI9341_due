@@ -17,7 +17,6 @@
 #include <ILI9341_due.h>
 #include "SystemFont5x7.h"
 
-#include <UTFT.h>
 #include <UTouch.h>
 
 

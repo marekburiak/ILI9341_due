@@ -3,7 +3,6 @@
 #include <ILI9341_due.h>
 #include "fonts\Arial_bold_14.h"
 
-#include <UTFT.h>
 #include <UTouch.h>
 
 // For the Adafruit shield, these are the default.

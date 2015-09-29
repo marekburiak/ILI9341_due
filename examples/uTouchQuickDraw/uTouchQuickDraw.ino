@@ -2,7 +2,6 @@
 #include <ILI9341_due_config.h>
 #include <ILI9341_due.h>
 
-#include <UTFT.h>
 #include <UTouch.h>
 
 // For the Adafruit shield, these are the default.
