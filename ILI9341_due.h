@@ -1,5 +1,5 @@
 /*
-v1.01.004
+v1.01.005
 
 ILI9341_due.h - Arduino Due library for interfacing with ILI9341-based TFTs
 
@@ -546,6 +546,11 @@ public:
 	void setTextArea(gTextArea area);
 	void setTextArea(int16_t x, int16_t y, int16_t w, int16_t h); //, textMode mode=DEFAULT_SCROLLDIR);
 	void setTextArea(int16_t x, int16_t y, int16_t columns, int16_t rows, gTextFont font); //, textMode mode=DEFAULT_SCROLLDIR);
+	gTextArea getTextArea()
+	{
+		return _area;
+	}
+
 	void clearTextArea();
 	void clearTextArea(gTextArea area);
 	void clearTextArea(uint16_t color);
@@ -667,12 +672,12 @@ public:
 
 
 	__attribute__((always_inline))
-		uint8_t fontHeight()	{
+		uint8_t getFontHeight()	{
 		return pgm_read_byte(_font + GTEXT_FONT_HEIGHT);
 	};
 
 	__attribute__((always_inline))
-		uint8_t fontHeight(gTextFont font) {
+		static uint8_t getFontHeight(gTextFont font) {
 		return pgm_read_byte(font + GTEXT_FONT_HEIGHT);
 	};
 
@@ -723,10 +728,10 @@ public:
 	virtual size_t println(const Printable&);
 	virtual size_t println(void);
 
-	uint16_t charWidth(uint8_t c);
-	uint16_t stringWidth(const char* str);
-	uint16_t stringWidth(const __FlashStringHelper *str);
-	uint16_t stringWidth(const String &str);
+	uint16_t getCharWidth(uint8_t c);
+	uint16_t getStringWidth(const char* str);
+	uint16_t getStringWidth(const __FlashStringHelper *str);
+	uint16_t getStringWidth(const String &str);
 
 	void eraseTextLine(uint16_t color, gTextEraseLine type = gTextEraseToEOL); //ansi like line erase function 
 	void eraseTextLine(uint16_t color, uint8_t row); // erase the entire text line in the given row and move cursor to left position
@@ -739,12 +744,12 @@ public:
 		return _y;
 	}
 
-	static uint16_t charWidth(uint8_t c, gTextFont font)
+	static uint16_t getCharWidth(uint8_t c, gTextFont font, uint8_t textScale)
 	{
 		int16_t width = 0;
 
 		if (isFixedWidthFont(font){
-			width = pgm_read_byte(font + GTEXT_FONT_FIXED_WIDTH);
+			width = (pgm_read_byte(font + GTEXT_FONT_FIXED_WIDTH)) * textScale;
 		}
 		else{
 			// variable width font 
@@ -754,21 +759,21 @@ public:
 			// read width data
 			if (c >= firstChar && c < (firstChar + charCount)) {
 				c -= firstChar;
-				width = pgm_read_byte(font + GTEXT_FONT_WIDTH_TABLE + c);
+				width = (pgm_read_byte(font + GTEXT_FONT_WIDTH_TABLE + c)) * textScale;
 			}
 		}
 		return width;
 	};
 
-	static uint16_t stringWidth(const char* str, gTextFont font, uint8_t letterSpacing)
+	static uint16_t getStringWidth(const char* str, gTextFont font, uint8_t letterSpacing, uint8_t textScale)
 	{
 		uint16_t width = 0;
 
 		while (*str != 0) {
-			width += charWidth(*str++, font) + letterSpacing;
+			width += getCharWidth(*str++, font, textScale) + letterSpacing  * textScale;
 		}
 		if (width > 0)
-			width -= letterSpacing;
+			width -= letterSpacing * textScale;
 
 		return width;
 	};

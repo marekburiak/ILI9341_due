@@ -6,6 +6,16 @@ Please see http://marekburiak.github.io/ILI9341_due
 
 Version History:
 ```
+v1.01.005 - added getTextArea()
+          - renamed charWidth() -> getCharWidth() (previously undocummented function)
+          - renamed stringWidth() -> getStringWidth() (previously undocummented function)
+          - renamed fontHeight() -> getFontHeight() (previously undocummented function)
+          - added documentation for functions
+               - cursorToXY
+               - cursorTo
+               - getCharWidth
+               - getStringWidth
+               - getFontHeight
 v1.01.004 - added some getters:
                - getCursorX
                - getCursorY

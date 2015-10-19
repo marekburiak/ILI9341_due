@@ -1736,7 +1736,7 @@ void ILI9341_due::setTextArea(int16_t x, int16_t y, int16_t columns, int16_t row
 	setFont(font);
 
 	x1 = x + columns * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1) - 1;
-	y1 = y + rows * (fontHeight() + 1) - 1;
+	y1 = y + rows * (getFontHeight() + 1) - 1;
 
 	setTextArea(x, y, x1, y1); //, mode);
 }
@@ -1758,7 +1758,7 @@ void ILI9341_due::specialChar(uint8_t c)
 
 	if (c == '\n')
 	{
-		uint8_t height = fontHeight();
+		uint8_t height = getFontHeight();
 
 		/*
 		* Erase all pixels remaining to edge of text area.on all wraps
@@ -1927,7 +1927,7 @@ size_t ILI9341_due::write(uint8_t c)
 		return 1;
 	}
 	uint16_t charWidth = 0;
-	uint16_t charHeight = fontHeight();
+	uint16_t charHeight = getFontHeight();
 	uint8_t charHeightInBytes = (charHeight + 7) / 8; /* calculates height in rounded up bytes */
 
 	uint8_t firstChar = pgm_read_byte(_font + GTEXT_FONT_FIRST_CHAR);
@@ -2947,7 +2947,7 @@ void ILI9341_due::clearPixelsOnRight(uint16_t pixelsToClearOnRight){
 		//Serial << "clearing on right from " << _x << " to " << clearX2 << endl;
 		fillRect(_x, _y, clearX2 - _x + 1, scaledFontHeight(), _fontBgColor);
 		//TOTRY
-		//fillRect(_x, _y, clearX2 - _x + 1, fontHeight(), _fontBgColor);
+		//fillRect(_x, _y, clearX2 - _x + 1, getFontHeight(), _fontBgColor);
 	}
 }
 
@@ -3065,12 +3065,12 @@ void ILI9341_due::applyPivot(const __FlashStringHelper *str, gTextPivot pivot, g
 		{
 		case gTextPivotTopCenter:
 		{
-			_x -= stringWidth(str) / 2;
+			_x -= getStringWidth(str) / 2;
 			break;
 		}
 		case gTextPivotTopRight:
 		{
-			_x -= stringWidth(str);
+			_x -= getStringWidth(str);
 			break;
 		}
 		case gTextPivotMiddleLeft:
@@ -3080,13 +3080,13 @@ void ILI9341_due::applyPivot(const __FlashStringHelper *str, gTextPivot pivot, g
 		}
 		case gTextPivotMiddleCenter:
 		{
-			_x -= stringWidth(str) / 2;
+			_x -= getStringWidth(str) / 2;
 			_y -= scaledFontHeight() / 2;
 			break;
 		}
 		case gTextPivotMiddleRight:
 		{
-			_x -= stringWidth(str);
+			_x -= getStringWidth(str);
 			_y -= scaledFontHeight() / 2;
 			break;
 		}
@@ -3097,13 +3097,13 @@ void ILI9341_due::applyPivot(const __FlashStringHelper *str, gTextPivot pivot, g
 		}
 		case gTextPivotBottomCenter:
 		{
-			_x -= stringWidth(str) / 2;
+			_x -= getStringWidth(str) / 2;
 			_y -= scaledFontHeight();
 			break;
 		}
 		case gTextPivotBottomRight:
 		{
-			_x -= stringWidth(str);
+			_x -= getStringWidth(str);
 			_y -= scaledFontHeight();
 			break;
 		}
@@ -3136,12 +3136,12 @@ void ILI9341_due::applyPivot(const char *str, gTextPivot pivot, gTextAlign align
 		{
 		case gTextPivotTopCenter:
 		{
-			_x -= stringWidth(str) / 2;
+			_x -= getStringWidth(str) / 2;
 			break;
 		}
 		case gTextPivotTopRight:
 		{
-			_x -= stringWidth(str);
+			_x -= getStringWidth(str);
 			break;
 		}
 		case gTextPivotMiddleLeft:
@@ -3151,13 +3151,13 @@ void ILI9341_due::applyPivot(const char *str, gTextPivot pivot, gTextAlign align
 		}
 		case gTextPivotMiddleCenter:
 		{
-			_x -= stringWidth(str) / 2;
+			_x -= getStringWidth(str) / 2;
 			_y -= scaledFontHeight() / 2;
 			break;
 		}
 		case gTextPivotMiddleRight:
 		{
-			_x -= stringWidth(str);
+			_x -= getStringWidth(str);
 			_y -= scaledFontHeight() / 2;
 			break;
 		}
@@ -3168,13 +3168,13 @@ void ILI9341_due::applyPivot(const char *str, gTextPivot pivot, gTextAlign align
 		}
 		case gTextPivotBottomCenter:
 		{
-			_x -= stringWidth(str) / 2;
+			_x -= getStringWidth(str) / 2;
 			_y -= scaledFontHeight();
 			break;
 		}
 		case gTextPivotBottomRight:
 		{
-			_x -= stringWidth(str);
+			_x -= getStringWidth(str);
 			_y -= scaledFontHeight();
 			break;
 		}
@@ -3192,7 +3192,7 @@ void ILI9341_due::cursorTo(uint8_t column, uint8_t row)
 	*/
 
 	_x = _xStart = _area.x + column * (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH) + 1);
-	_y = _yStart = _area.y + row * (fontHeight() + _lineSpacing) * _textScale;
+	_y = _yStart = _area.y + row * (getFontHeight() + _lineSpacing) * _textScale;
 	_isFirstChar = true;
 	//#ifndef GLCD_NODEFER_SCROLL
 	//	/*
@@ -3256,7 +3256,7 @@ void ILI9341_due::eraseTextLine(uint16_t color, gTextEraseLine type)
 {
 	/*int16_t x = _x;
 	int16_t y = _y;
-	int16_t height = fontHeight();*/
+	int16_t height = getFontHeight();*/
 	//uint8_t color = (_fontColor == BLACK) ? WHITE : BLACK;
 
 	switch (type)
@@ -3330,7 +3330,7 @@ void ILI9341_due::setFontMode(gTextFontMode fontMode)
 		_fontMode = fontMode;
 }
 
-uint16_t ILI9341_due::charWidth(uint8_t c)
+uint16_t ILI9341_due::getCharWidth(uint8_t c)
 {
 	int16_t width = 0;
 
@@ -3352,40 +3352,40 @@ uint16_t ILI9341_due::charWidth(uint8_t c)
 	return width;
 }
 
-uint16_t ILI9341_due::stringWidth(const char* str)
+uint16_t ILI9341_due::getStringWidth(const char* str)
 {
 	uint16_t width = 0;
 
 	while (*str != 0) {
-		width += charWidth(*str++) + _letterSpacing * _textScale;
+		width += getCharWidth(*str++) + _letterSpacing * _textScale;
 	}
 	if (width > 0)
 		width -= _letterSpacing * _textScale;
 	return width;
 }
 
-uint16_t ILI9341_due::stringWidth(const __FlashStringHelper *str)
+uint16_t ILI9341_due::getStringWidth(const __FlashStringHelper *str)
 {
 	PGM_P p = reinterpret_cast<PGM_P>(str);
 	uint16_t width = 0;
 	uint8_t c;
 	while ((c = pgm_read_byte(p)) != 0) {
-		width += charWidth(c) + _letterSpacing * _textScale;
+		width += getCharWidth(c) + _letterSpacing * _textScale;
 		p++;
 	}
-	width -= _letterSpacing;
+	width -= _letterSpacing * _textScale;
 	return width;
 }
 
-uint16_t ILI9341_due::stringWidth(const String &str)
+uint16_t ILI9341_due::getStringWidth(const String &str)
 {
 	uint16_t width = 0;
 
 	for (uint16_t i = 0; i < str.length(); i++)
 	{
-		width += charWidth(str[i]) + _letterSpacing * _textScale;
+		width += getCharWidth(str[i]) + _letterSpacing * _textScale;
 	}
-	width -= _letterSpacing;
+	width -= _letterSpacing * _textScale;
 	return width;
 }
 
