@@ -384,18 +384,20 @@ MIT license, all text above must be included in any redistribution
                 funcArguments.innerHTML = functionArguments;
             }
 
-            var funcExample = document.createElement("div");
-            funcExample.className = "functionExample";
-            var funcExampleTitle = document.createElement("div");
-            funcExampleTitle.className = "functionExampleTitle";
-            funcExampleTitle.innerHTML = "Example:";
+            if (functionExampleDesc) {
+                var funcExample = document.createElement("div");
+                funcExample.className = "functionExample";
+                var funcExampleTitle = document.createElement("div");
+                funcExampleTitle.className = "functionExampleTitle";
+                funcExampleTitle.innerHTML = "Example:";
 
-            var funcExampleDesc = document.createElement("div");
-            funcExampleDesc.className = "functionExampleDescription";
-            funcExampleDesc.innerHTML = functionExampleDesc;
-            var funcExampleCode = document.createElement("div");
-            funcExampleCode.className = "functionCode";
-            funcExampleCode.innerHTML = functionExampleCode;
+                var funcExampleDesc = document.createElement("div");
+                funcExampleDesc.className = "functionExampleDescription";
+                funcExampleDesc.innerHTML = functionExampleDesc;
+                var funcExampleCode = document.createElement("div");
+                funcExampleCode.className = "functionCode";
+                funcExampleCode.innerHTML = functionExampleCode;
+            }
             //if (_.isArray(functionExampleCode)) {
             //    _.forEach(functionExampleCode, function (functionExample) {
 
@@ -420,12 +422,13 @@ MIT license, all text above must be included in any redistribution
                 funcExampleImage.appendChild(funcExampleImageImg);
             }
 
-            funcExample.appendChild(funcExampleTitle);
-            funcExample.appendChild(funcExampleDesc);
-            funcExample.appendChild(funcExampleCode);
-            if (typeof funcExampleImage !== "undefined")
-                funcExample.appendChild(funcExampleImage);
-
+            if (funcExample) {
+                funcExample.appendChild(funcExampleTitle);
+                funcExample.appendChild(funcExampleDesc);
+                funcExample.appendChild(funcExampleCode);
+                if (typeof funcExampleImage !== "undefined")
+                    funcExample.appendChild(funcExampleImage);
+            }
 
             funcContent.appendChild(funcDesc);
             funcContent.appendChild(funcDeclaration);
@@ -433,7 +436,9 @@ MIT license, all text above must be included in any redistribution
                 funcContent.appendChild(funcArgumentsTitle);
                 funcContent.appendChild(funcArguments);
             }
-            funcContent.appendChild(funcExample);
+            if (funcExample) {
+                funcContent.appendChild(funcExample);
+            }
 
             funcElem.appendChild(funcHeader);
             funcElem.appendChild(funcContent);
@@ -862,6 +867,13 @@ MIT license, all text above must be included in any redistribution
         "tft.clearTextArea(ILI9341_LIGHTBLUE); // just to see where the area is<br/>" +
         'tft.print("My Description");', true, "func_setTextAreaCR.png");
 
+        addIliFunction("getTextArea",
+        "Gets the current text area.",
+        "gTextArea getTextArea();",
+        "",
+        "Get the current text area.",
+        "gTextArea textArea = tft.getTextArea('i');", false);
+
         addIliFunction("clearTextArea",
         "Clears the currently set text area with the currently set text background color.",
         "void clearTextArea();",
@@ -943,6 +955,41 @@ MIT license, all text above must be included in any redistribution
         'tft.setFont(Arial14);<br/>' +
         'tft.print("My Description");', true);
 
+        addIliFunction("getFontHeight",
+        "Gets the current font height.",
+        "uint8_t getFontHeight();",
+        "",
+        "Get the current font height.",
+        'uint8_t fontHeight = tft.getFontHeight();', false);
+
+        addIliFunction("getFontHeight",
+        "Gets the font height.",
+        "uint8_t getFontHeight(gTextFont font);",
+        "<ul>" +
+        "<li><em>font</em> - font to get the height of</li>" +
+        "</ul>",
+        "Get height of the SystemFont5x7 font. Will return number 7.",
+        'uint8_t fontHeight = tft.getFontHeight(SystemFont5x7);', false);
+
+        addIliFunction("getCharWidth",
+        "Gets the width of a character in the current font set and with the current text scale.",
+        "uint16_t getCharWidth(uint8_t c);",
+        "<ul>" +
+        "<li><em>c</em> - character to get the width of</li>" +
+        "</ul>",
+        "Get width of the 'i' character.",
+        "uint16_t charWidth = tft.getCharWidth('i');", false);
+
+        addIliFunction("getCharWidth",
+        "Gets the width of a character.",
+        "uint16_t getCharWidth(uint8_t c, gTextFont font, uint8_t textScale);",
+         "<ul>" +
+        "<li><em>c</em> - character to get the width of</li>" +
+        "<li><em>font</em> - font to use for the width calculation</li>" +
+        "<li><em>textScale</em> - text scale to use for the width calculation</li>" +
+        "</ul>",
+        "Get width of the 'i' character in SystemFont5x7 font set and with text scale of 2.",
+        "uint16_t charWidth = tft.getCharWidth('i', SystemFont5x7, 2);", false);
 
         addIliFunction("setTextColor",
         "Sets the text foreground color.",
@@ -1040,6 +1087,20 @@ MIT license, all text above must be included in any redistribution
         'tft.setTextArea(descriptionArea);<br/>' +
         'tft.setTextColor(0, 255, 0, 0, 0, 255);<br/>' +
         'tft.print("My Description");', true, "func_setTextColorFBRGB.png");
+
+        addIliFunction("getTextColor",
+        "Gets the current text foreground color.",
+        "uint16_t getTextColor();",
+        "",
+        "Get the current text color.",
+        'uint16_t textColor = tft.getTextColor();', false);
+
+        addIliFunction("getTextBackgroundColor",
+        "Gets the current text background color.",
+        "uint16_t getTextBackgroundColor();",
+        "",
+        "Get the current text background color.",
+        'uint16_t textBgColor = tft.getTextBackgroundColor();', false);
 
         addIliFunction("setTextLetterSpacing",
         "Sets the spacing between characters. The default is 2px (DEFAULT_LETTER_SPACING).",
@@ -1160,6 +1221,13 @@ MIT license, all text above must be included in any redistribution
         'tft.setFontMode(gTextFontModeSolid);<br/>' +
         'tft.print("gTextFontModeSolid");', true);
 
+        addIliFunction("getFontMode",
+        "Gets the current font mode. Returns one of the enum values - <em>gTextFontModeSolid</em> or <em>gTextFontModeTransparent</em>",
+        "gTextFontMode getFontMode();",
+        "",
+        "Get the current font mode.",
+        'gTextFontMode fontMode = tft.getFontMode();', false);
+
 
         addIliFunction("setTextScale",
         "Sets text scaling.",
@@ -1188,8 +1256,61 @@ MIT license, all text above must be included in any redistribution
         'tft.setTextScale(5);<br/>' +
         'tft.print("Text Scale 5");', true);
 
+        addIliFunction("getTextScale",
+        "Gets the current font mode. Returns one of the enum values - <em>gTextFontModeSolid</em> or <em>gTextFontModeTransparent</em>",
+        "uint8_t getTextScale();",
+        "",
+        "Get the current text scale.",
+        'uint8_t scale = tft.getTextScale();', false);
+
+        addIliFunction("cursorToXY",
+       "Sets the text cursor coordinates. The coordinates are relative to the current text area upper left corner.",
+       "void cursorToXY(int16_t x, int16_t y)",
+       "<ul>" +
+       "<li><em>x</em> - x-coordinate of the string top left corner" +
+       "<li><em>y</em> - y-coordinate of the string top left corner" +
+       "</ul>",
+       "Print texts at different locations.",
+       '#include "fonts\\Arial_bold_14.h"<br/>' +
+       '...<br/>' +
+       'tft.setFont(Arial_bold_14);<br/>' +
+       'tft.setTextArea(10, 10, 300, 200);<br/>' +
+       'tft.clearTextArea(ILI9341_LIGHTBLUE);<br/>' +
+       'tft.setTextColor(ILI9341_WHITE, ILI9341_NAVY);<br/>' +
+       "<br/>" +
+       'tft.cursorToXY(10, 10);<br/>' +
+       'tft.print("String 1");<br/>' +
+       "<br/>" +
+       'String str2 = "String 2";<br/>' +
+       'tft.cursorToXY(30, 30);<br/>' +
+       'tft.print(str2);<br/>' +
+       "<br/>" +
+       'tft.cursorToXY(50, 50);<br/>' +
+       'tft.print(F("String 3"));', true, "func_printAt.png");
+
+
+        addIliFunction("cursorTo",
+        "Sets the text cursor column and row at which the text rendering should start. Columns and rows are numbered from 0 (so the first column is 0, second column is 1, etc.) and are relative to the current text area. The width of the column matches the width of the widest character in the font set.",
+        "void cursorTo(uint8_t column, uint8_t row);",
+        "<ul>" +
+        "<li><em>column</em> - the column where the text cursor will be set" +
+        "<li><em>row</em> - the row where the text cursor will be set" +
+        "</ul>",
+        "",
+        '', false);
+
+        addIliFunction("cursorTo",
+        "Sets the text cursor column on the current row. Columns are numbered from 0 (so the first column is 0, second column is 1, etc.) and are relative to the current text area. The width of the column matches the width of the widest character in the font set.",
+        "void cursorTo(uint8_t column);",
+        "<ul>" +
+        "<li><em>column</em> - the column where the text cursor will be set" +
+        "</ul>",
+        "",
+        '', false);
+
+
         addIliFunction("printAt",
-        "Prints a string.",
+        "Prints a string. The coordinates are relative to the current text area upper left corner.",
         "void printAt(const char *str, int16_t x, int16_t y);<br/>" +
 	    "void printAt(const String &str, int16_t x, int16_t y);<br/>" +
         "void printAt(const __FlashStringHelper* str, int16_t x, int16_t y);",
