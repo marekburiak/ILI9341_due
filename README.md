@@ -6,6 +6,14 @@ Please see http://marekburiak.github.io/ILI9341_due
 
 Version History:
 ```
+v1.01.004 - added some getters:
+               - getCursorX
+               - getCursorY
+               - getFont
+               - getTextColor
+               - getTextBackgroundColor
+               - getFontMode
+               - getTextScale
 v1.01.003 - removed the reference to UTFT.h from uTouch* examples
 v1.01.002 - improved the speed of fillCircleHelper (thanks to Chris_CT for this optimization)
 v1.01.001 - added getDisplayStatus function

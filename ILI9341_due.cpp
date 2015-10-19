@@ -3319,10 +3319,10 @@ void ILI9341_due::setTextLetterSpacing(uint8_t letterSpacing)
 	_letterSpacing = letterSpacing;
 }
 
-void ILI9341_due::setTextWrap(bool wrap)
-{
-	_wrap = wrap;
-}
+//void ILI9341_due::setTextWrap(bool wrap)
+//{
+//	_wrap = wrap;
+//}
 
 void ILI9341_due::setFontMode(gTextFontMode fontMode)
 {

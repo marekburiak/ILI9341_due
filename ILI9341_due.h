@@ -1,5 +1,5 @@
 /*
-v1.01.003
+v1.01.004
 
 ILI9341_due.h - Arduino Due library for interfacing with ILI9341-based TFTs
 
@@ -454,6 +454,7 @@ protected:
 #endif
 #endif
 
+	gTextFontMode _fontMode;
 	uint16_t _fontColor;
 	uint16_t _fontBgColor;
 	gTextFont _font;
@@ -462,19 +463,17 @@ protected:
 	int16_t	_xStart;
 	int16_t	_y;
 	int16_t	_yStart;
+	uint8_t _letterSpacing;
+	uint8_t _lineSpacing;
+	bool _isFirstChar;
+	//bool _needScroll;
+	//bool _wrap;
+
 #ifdef TEXT_SCALING_ENABLED
 	uint8_t _textScale;
 #else
 #define _textScale 1
 #endif
-	uint8_t _letterSpacing;
-	uint8_t _lineSpacing;
-	bool _isFirstChar;
-	uint8_t _fontMode;
-	bool _needScroll;
-	bool _wrap;
-
-
 	void fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color);
 	void drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, uint16_t color);
 	void fillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, int16_t delta, uint16_t color);
@@ -554,21 +553,44 @@ public:
 
 	// Font Functions
 	void setFont(gTextFont font);
+	gTextFont getFont() {
+		return _font;
+	}
 	void setTextColor(uint16_t color);
 	void setTextColor(uint8_t R, uint8_t G, uint8_t B);
 	void setTextColor(uint16_t color, uint16_t backgroundColor);
 	void setTextColor(uint8_t R, uint8_t G, uint8_t B, uint8_t bgR, uint8_t bgG, uint8_t bgB);
+	uint16_t getTextColor()
+	{
+		return _fontColor;
+	}
+
+	uint16_t getTextBackgroundColor()
+	{
+		return _fontBgColor;
+	}
+
 	void setTextLetterSpacing(uint8_t letterSpacing);
 	uint8_t getTextLetterSpacing()	{
 		return _letterSpacing;
 	};
+
 	void setTextLineSpacing(uint8_t lineSpacing);
 	uint8_t getTextLineSpacing()	{
 		return _lineSpacing;
 	};
-	void setTextWrap(bool wrap);
+
+	//void setTextWrap(bool wrap);
 	void setFontMode(gTextFontMode fontMode);
+	gTextFontMode getFontMode()
+	{
+		return _fontMode;
+	}
+
 	void setTextScale(uint8_t textScale);
+	uint8_t getTextScale() {
+		return _textScale;
+	}
 
 	//void puts(const char *str);
 	//void puts(const String &str);
@@ -643,6 +665,7 @@ public:
 	void cursorTo(int8_t column); // move cursor on the current row
 	void cursorToXY(int16_t x, int16_t y); // coordinates relative to active text area
 
+
 	__attribute__((always_inline))
 		uint8_t fontHeight()	{
 		return pgm_read_byte(_font + GTEXT_FONT_HEIGHT);
@@ -708,6 +731,13 @@ public:
 	void eraseTextLine(uint16_t color, gTextEraseLine type = gTextEraseToEOL); //ansi like line erase function 
 	void eraseTextLine(uint16_t color, uint8_t row); // erase the entire text line in the given row and move cursor to left position
 
+	int16_t getCursorX() {
+		return _x;
+	}
+
+	int16_t getCursorY() {
+		return _y;
+	}
 
 	static uint16_t charWidth(uint8_t c, gTextFont font)
 	{
