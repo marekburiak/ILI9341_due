@@ -13,6 +13,7 @@
 //
 // Instructions will be given on the display.
 //
+#include <SPI.h>
 #include <ILI9341_due_config.h>
 #include <ILI9341_due.h>
 #include "SystemFont5x7.h"
