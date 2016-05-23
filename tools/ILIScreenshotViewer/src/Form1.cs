@@ -14,6 +14,35 @@ namespace ILIScreenshotViewer
     public partial class Form1 : Form
     {
         private bool loadImageFromData = false;
+        private bool _isLandscape;
+        private bool isLandscape
+        {
+            get
+            {
+                return _isLandscape;
+            }
+            set
+            {
+                if (_isLandscape != value)
+                {
+                    _isLandscape = value;
+                    pictureBoxL.Visible = value;
+                    pictureBoxP.Visible = !value;
+                }
+            }
+        }
+
+        private PictureBox pictureBox
+        {
+            get
+            {
+                if (isLandscape)
+                    return pictureBoxL;
+                else
+                    return pictureBoxP;
+            }
+        }
+
         public Form1()
         {
             InitializeComponent();
@@ -52,7 +81,15 @@ namespace ILIScreenshotViewer
         {
             Console.WriteLine(hexString);
             lblFailed.Visible = false;
-            var bitmap = new Bitmap(320, 240, PixelFormat.Format24bppRgb);
+            Bitmap bitmap;
+            if (isLandscape)
+            {
+                bitmap = new Bitmap(320, 240, PixelFormat.Format24bppRgb);
+            }
+            else
+            {
+                bitmap = new Bitmap(240, 320, PixelFormat.Format24bppRgb);
+            }
 
             try
             {
@@ -95,7 +132,7 @@ namespace ILIScreenshotViewer
                         {
                             bitmap.SetPixel(x, y, Color.FromArgb(r, g, b));
                             x++;
-                            if (x > 319)
+                            if (x > (isLandscape ? 319 : 239))
                             {
                                 x = 0;
                                 y++;
@@ -104,6 +141,7 @@ namespace ILIScreenshotViewer
                     }
 
                     pictureBox.Image = bitmap;
+
                     btnSaveAs.Visible = true;
                 }
                 else
@@ -143,6 +181,7 @@ namespace ILIScreenshotViewer
                         imageFormat = ImageFormat.Gif;
                         break;
                 }
+
                 pictureBox.Image.Save(saveFileDialog.FileName, imageFormat);
             }
 
@@ -217,5 +256,14 @@ namespace ILIScreenshotViewer
             Properties.Settings.Default.Save();
         }
 
+        private void rbLandscape_CheckedChanged(object sender, EventArgs e)
+        {
+            isLandscape = true;
+        }
+
+        private void rbPortrait_CheckedChanged(object sender, EventArgs e)
+        {
+            isLandscape = false;
+        }
     }
 }
