@@ -18,7 +18,7 @@
 #include <ILI9341_due.h>
 #include "SystemFont5x7.h"
 
-#include <UTouch.h>
+#include <URTouch.h>
 
 
 // Define the orientation of the touch screen. Further 
@@ -52,7 +52,7 @@ ILI9341_due tft = ILI9341_due(TFT_CS, TFT_DC, TFT_RST);
 // Teensy 3.x TFT Test Board                   : 26,31,27,28,29
 // ElecHouse TFT LCD/SD Shield for Arduino Due : 25,26,27,29,30
 //
-UTouch  myTouch(30, 28, 26, 24, 22);
+URTouch  myTouch(30, 28, 26, 24, 22);
 
 // ************************************
 // DO NOT EDIT ANYTHING BELOW THIS LINE

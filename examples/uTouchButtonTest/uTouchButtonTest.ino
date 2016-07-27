@@ -3,7 +3,7 @@
 #include <ILI9341_due.h>
 #include "fonts\Arial_bold_14.h"
 
-#include <UTouch.h>
+#include <URTouch.h>
 
 // For the Adafruit shield, these are the default.
 #define TFT_RST 8
@@ -13,7 +13,7 @@
 // Use hardware SPI (on Uno, #13, #12, #11) and the above for CS/DC
 ILI9341_due tft = ILI9341_due(TFT_CS, TFT_DC, TFT_RST);
 
-UTouch  myTouch(30, 28, 26, 24, 22);
+URTouch  myTouch(30, 28, 26, 24, 22);
 
 int x, y;
 char strBuff[10];
