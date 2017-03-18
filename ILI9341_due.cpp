@@ -162,7 +162,7 @@ bool ILI9341_due::begin(void)
 		delay(120);
 		_isInSleep = _isIdle = false;
 
-		
+
 
 		//#ifdef ILI_USE_SPI_TRANSACTION
 		//#if SPI_MODE_NORMAL | SPI_MODE_EXTENDED
@@ -179,7 +179,7 @@ bool ILI9341_due::begin(void)
 bool ILI9341_due::pinIsChipSelect(uint8_t cs)
 {
 #if SPI_MODE_EXTENDED
-	if(cs == 4 || cs == 10 || cs == 52)	// in Extended SPI mode only these pins are valid
+	if (cs == 4 || cs == 10 || cs == 52)	// in Extended SPI mode only these pins are valid
 	{
 		return true;
 	}
@@ -395,7 +395,7 @@ void ILI9341_due::pushColors_noTrans_noCS(const uint16_t *colors, uint16_t offse
 		writeScanline16(SCANLINE_PIXEL_COUNT);
 	}
 	uint16_t remainingPixels = len % SCANLINE_PIXEL_COUNT;
-	if (remainingPixels > 0){
+	if (remainingPixels > 0) {
 		for (uint32_t i = 0; i < remainingPixels; i++)
 		{
 			_scanline16[i] = colors[numLoops*SCANLINE_PIXEL_COUNT + i];
@@ -533,6 +533,14 @@ void ILI9341_due::fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_
 	endTransaction();
 }
 
+void ILI9341_due::fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t(*fillShader)(uint16_t rx, uint16_t ry))
+{
+	beginTransaction();
+	fillRect_noTrans(x, y, w, h, fillShader);
+	endTransaction();
+}
+
+
 // fill a rectangle
 void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color)
 {
@@ -548,6 +556,27 @@ void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h,
 	setAddrAndRW_cont(x, y, w, h);
 	setDCForData();
 	writeScanlineLooped(totalPixels);
+	disableCS();
+}
+
+void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t(*fillShader)(uint16_t rx, uint16_t ry))
+{
+	//Serial << "x:" << x << " y:" << y << " w:" << x << " h:" << h << " width:" << _width << " height:" << _height <<endl;
+	// rudimentary clipping (drawChar w/big text requires this)
+	if ((x >= _width) || (y >= _height) || (x + w - 1 < 0) || (y + h - 1 < 0)) return;
+	if ((x + (int16_t)w - 1) >= _width)  w = _width - x;
+	if ((y + (int16_t)h - 1) >= _height) h = _height - y;
+
+	enableCS();
+	setAddrAndRW_cont(x, y, w, h);
+	setDCForData();
+	for (uint16_t ry = 0; ry < h; ry++) {
+		for (uint16_t rx = 0; rx < w; rx++)
+		{
+			_scanline16[rx] = fillShader(rx, ry);
+		}
+		writeScanline16(w);
+	}
 	disableCS();
 }
 
@@ -779,16 +808,16 @@ void ILI9341_due::fillArcOffsetted(uint16_t cx, uint16_t cy, uint16_t radius, ui
 				if (
 					(x2 + y2 < or2 && x2 + y2 >= ir2) && (
 					(y > 0 && startAngle < 180 && x <= y * sslope) ||
-					(y < 0 && startAngle > 180 && x >= y * sslope) ||
-					(y < 0 && startAngle <= 180) ||
-					(y == 0 && startAngle <= 180 && x < 0) ||
-					(y == 0 && startAngle == 0 && x > 0)
-					) && (
-					(y > 0 && endAngle < 180 && x >= y * eslope) ||
-					(y < 0 && endAngle > 180 && x <= y * eslope) ||
-					(y > 0 && endAngle >= 180) ||
-					(y == 0 && endAngle >= 180 && x < 0) ||
-					(y == 0 && startAngle == 0 && x > 0)))
+						(y < 0 && startAngle > 180 && x >= y * sslope) ||
+						(y < 0 && startAngle <= 180) ||
+						(y == 0 && startAngle <= 180 && x < 0) ||
+						(y == 0 && startAngle == 0 && x > 0)
+						) && (
+						(y > 0 && endAngle < 180 && x >= y * eslope) ||
+							(y < 0 && endAngle > 180 && x <= y * eslope) ||
+							(y > 0 && endAngle >= 180) ||
+							(y == 0 && endAngle >= 180 && x < 0) ||
+							(y == 0 && startAngle == 0 && x > 0)))
 				{
 					if (!y1StartFound)	//start of the higher line found
 					{
@@ -938,8 +967,8 @@ void ILI9341_due::screenshotToConsole()
 			lastColor[0] = color[0];
 			lastColor[1] = color[1];
 			lastColor[2] = color[2];
-		}
 	}
+}
 	disableCS();
 	endTransaction();
 	sameColorPixelCount = (uint32_t)_width*(uint32_t)_height - sameColorStartIndex;
@@ -1120,7 +1149,7 @@ void ILI9341_due::fillCircleHelper(int16_t x0, int16_t y0, int16_t r,
 			if (cornername & 0x1) drawFastVLine_cont_noFill(x0 + x, y0 - y, 2 * y + 1 + delta, color);
 			if (cornername & 0x2) drawFastVLine_cont_noFill(x0 - x, y0 - y, 2 * y + 1 + delta, color);
 		} // **added**
-	}
+}
 	disableCS();
 }
 
@@ -1257,7 +1286,7 @@ void ILI9341_due::drawLine_noTrans(int16_t x0, int16_t y0, int16_t x1, int16_t y
 				y0 += ystep;
 				err += dx;
 			}
-		}
+	}
 		if (x0 > xbegin + 1) {
 #ifdef ARDUINO_SAM_DUE
 			writeHLine_cont_noCS_noFill(xbegin, y0, x0 - xbegin);
@@ -1472,7 +1501,7 @@ void ILI9341_due::drawBitmap(const uint8_t *bitmap, int16_t x, int16_t y, uint16
 #elif defined ARDUINO_SAM_DUE
 				_scanline16[i] = bgcolor;
 #endif
-			}
+		}
 		}
 #ifdef ARDUINO_SAM_DUE
 		setAddrAndRW_cont(x, y + j, w, 1);
@@ -1491,7 +1520,7 @@ uint8_t ILI9341_due::getRotation(void) {
 // if true, tft will be blank (white), 
 // display's frame buffer is unaffected
 // (you can write to it without showing content on the screen)
-void ILI9341_due::display(boolean d){
+void ILI9341_due::display(boolean d) {
 	beginTransaction();
 	writecommand_last(d ? ILI9341_DISPON : ILI9341_DISPOFF);
 	endTransaction();
@@ -1506,7 +1535,7 @@ void ILI9341_due::sleep(boolean s)
 	delay(120);
 }
 
-void ILI9341_due::idle(boolean i){
+void ILI9341_due::idle(boolean i) {
 	beginTransaction();
 	writecommand_last(i ? ILI9341_IDMON : ILI9341_IDMOFF);
 	endTransaction();
@@ -1770,83 +1799,83 @@ void ILI9341_due::specialChar(uint8_t c)
 
 		/*if (_fontMode == gTextFontModeSolid && _x < _area.x1)
 			fillRect(_x, _y, _area.x1 - _x, height, _fontBgColor);*/
-		//glcd_Device::SetPixels(_x, _y, _area.x1, _y+height, _fontColor == BLACK ? WHITE : BLACK);
+			//glcd_Device::SetPixels(_x, _y, _area.x1, _y+height, _fontColor == BLACK ? WHITE : BLACK);
 
-		//		/*
-		//		* Check for scroll up vs scroll down (scrollup is normal)
-		//		*/
-		//#ifndef GLCD_NO_SCROLLDOWN
-		//		if (_area.mode == SCROLL_UP)
-		//#endif
-		//		{
-		//
-		//			/*
-		//			* Normal/up scroll
-		//			*/
-		//
-		//			/*
-		//			* Note this comparison and the pixel calcuation below takes into
-		//			* consideration that fonts
-		//			* are atually 1 pixel taller when rendered.
-		//			* This extra pixel is along the bottom for a "gap" between the character below.
-		//			*/
-		//			if (_y + 2 * height >= _area.y1)
-		//			{
-		//#ifndef GLCD_NODEFER_SCROLL
-		//				if (!_needScroll)
-		//				{
-		//					_needScroll = 1;
-		//					return;
-		//				}
-		//#endif
-		//
-		//				/*
-		//				* forumula for pixels to scroll is:
-		//				*	(assumes "height" is one less than rendered height)
-		//				*
-		//				*		pixels = height - ((_area.y1 - _y)  - height) +1;
-		//				*
-		//				*		The forumala below is unchanged
-		//				*		But has been re-written/simplified in hopes of better code
-		//				*
-		//				*/
-		//
-		//				uint8_t pixels = 2 * height + _y - _area.y1 + 1;
-		//
-		//				/*
-		//				* Scroll everything to make room
-		//				* * NOTE: (FIXME, slight "bug")
-		//				* When less than the full character height of pixels is scrolled,
-		//				* There can be an issue with the newly created empty line.
-		//				* This is because only the # of pixels scrolled will be colored.
-		//				* What it means is that if the area starts off as white and the text
-		//				* color is also white, the newly created empty text line after a scroll
-		//				* operation will not be colored BLACK for the full height of the character.
-		//				* The only way to fix this would be alter the code use a "move pixels"
-		//				* rather than a scroll pixels, and then do a clear to end line immediately
-		//				* after the move and wrap.
-		//				*
-		//				* Currently this only shows up when
-		//				* there are are less than 2xheight pixels below the current Y coordinate to
-		//				* the bottom of the text area
-		//				* and the current background of the pixels below the current text line
-		//				* matches the text color
-		//				* and  a wrap was just completed.
-		//				*
-		//				* After a full row of text is printed, the issue will resolve itself.
-		//				*
-		//				*
-		//				*/
-		//				//ScrollUp(_area.x, _area.y, _area.x1, _area.y1, pixels, _fontBgColor);
-		//
-		//				_x = _area.x;
-		//				_y = _area.y1 - height;
-		//			}
-		//			else
-		//			{
-		/*
-		* Room for simple wrap
-		*/
+			//		/*
+			//		* Check for scroll up vs scroll down (scrollup is normal)
+			//		*/
+			//#ifndef GLCD_NO_SCROLLDOWN
+			//		if (_area.mode == SCROLL_UP)
+			//#endif
+			//		{
+			//
+			//			/*
+			//			* Normal/up scroll
+			//			*/
+			//
+			//			/*
+			//			* Note this comparison and the pixel calcuation below takes into
+			//			* consideration that fonts
+			//			* are atually 1 pixel taller when rendered.
+			//			* This extra pixel is along the bottom for a "gap" between the character below.
+			//			*/
+			//			if (_y + 2 * height >= _area.y1)
+			//			{
+			//#ifndef GLCD_NODEFER_SCROLL
+			//				if (!_needScroll)
+			//				{
+			//					_needScroll = 1;
+			//					return;
+			//				}
+			//#endif
+			//
+			//				/*
+			//				* forumula for pixels to scroll is:
+			//				*	(assumes "height" is one less than rendered height)
+			//				*
+			//				*		pixels = height - ((_area.y1 - _y)  - height) +1;
+			//				*
+			//				*		The forumala below is unchanged
+			//				*		But has been re-written/simplified in hopes of better code
+			//				*
+			//				*/
+			//
+			//				uint8_t pixels = 2 * height + _y - _area.y1 + 1;
+			//
+			//				/*
+			//				* Scroll everything to make room
+			//				* * NOTE: (FIXME, slight "bug")
+			//				* When less than the full character height of pixels is scrolled,
+			//				* There can be an issue with the newly created empty line.
+			//				* This is because only the # of pixels scrolled will be colored.
+			//				* What it means is that if the area starts off as white and the text
+			//				* color is also white, the newly created empty text line after a scroll
+			//				* operation will not be colored BLACK for the full height of the character.
+			//				* The only way to fix this would be alter the code use a "move pixels"
+			//				* rather than a scroll pixels, and then do a clear to end line immediately
+			//				* after the move and wrap.
+			//				*
+			//				* Currently this only shows up when
+			//				* there are are less than 2xheight pixels below the current Y coordinate to
+			//				* the bottom of the text area
+			//				* and the current background of the pixels below the current text line
+			//				* matches the text color
+			//				* and  a wrap was just completed.
+			//				*
+			//				* After a full row of text is printed, the issue will resolve itself.
+			//				*
+			//				*
+			//				*/
+			//				//ScrollUp(_area.x, _area.y, _area.x1, _area.y1, pixels, _fontBgColor);
+			//
+			//				_x = _area.x;
+			//				_y = _area.y1 - height;
+			//			}
+			//			else
+			//			{
+			/*
+			* Room for simple wrap
+			*/
 
 		_x = _xStart; // _area.x;
 		_y = _y + (height + _lineSpacing)*_textScale;
@@ -1902,7 +1931,7 @@ void ILI9341_due::specialChar(uint8_t c)
 		//		}
 		//#endif
 	}
-	else if (c == '\r'){
+	else if (c == '\r') {
 		_isFirstChar = true;
 	}
 
@@ -1945,7 +1974,7 @@ size_t ILI9341_due::write(uint8_t c)
 		charWidth = pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH);
 		index = c*charHeightInBytes*charWidth + GTEXT_FONT_WIDTH_TABLE;
 	}
-	else{
+	else {
 		// variable width font, read width data, to get the index
 		//thielefont = 1;
 		/*
@@ -2034,7 +2063,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 	uint16_t charHeightInBytes = (charHeight + 7) / 8; /* calculates height in rounded up bytes */
 
 	uint8_t numRenderBits = 8;
-	const uint8_t numRemainingBits = charHeight % 8;
+	const uint8_t numRemainingBits = charHeight % 8 == 0 ? 8 : charHeight % 8;
 	uint16_t numPixelsInOnePoint = 1;
 	if (_textScale > 1)
 		numPixelsInOnePoint = (uint16_t)_textScale *(uint16_t)_textScale;
@@ -2054,7 +2083,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 	_isFirstChar = false;
 
 #ifdef LINE_SPACING_AS_PART_OF_LETTERS
-	if (_lineSpacing > 0){
+	if (_lineSpacing > 0) {
 		fillRect(_x, _y + charHeight*_textScale, charWidth * _textScale, _lineSpacing *_textScale, _fontBgColor);
 	}
 #endif
@@ -2134,15 +2163,15 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 							setDCForData();
 #ifdef ARDUINO_ARCH_AVR
 							pixelsInOnePointToDraw = numPixelsInOnePoint;
-							while (pixelsInOnePointToDraw--){
+							while (pixelsInOnePointToDraw--) {
 								write16_cont(_fontBgColor);
 							}
 #elif defined ARDUINO_SAM_DUE
 							fillScanline16(_fontBgColor, numPixelsInOnePoint);
 							writeScanlineLooped(numPixelsInOnePoint);
 #endif
-							}
 						}
+					}
 					else
 					{
 						if (_textScale == 1)
@@ -2162,14 +2191,14 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 							setDCForData();
 #ifdef ARDUINO_ARCH_AVR
 							pixelsInOnePointToDraw = numPixelsInOnePoint;
-							while (pixelsInOnePointToDraw--){
+							while (pixelsInOnePointToDraw--) {
 								write16_cont(_fontColor);
 							}
 #elif defined ARDUINO_SAM_DUE
 							fillScanline16(_fontColor, numPixelsInOnePoint);
 							writeScanlineLooped(numPixelsInOnePoint);
 #endif
-					}
+						}
 					}
 					data >>= 1;
 				}
@@ -2183,8 +2212,8 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 				//#endif
 
 				//delay(50);
-			}
-			}
+					}
+				}
 		//Serial << endl;
 #ifdef ARDUINO_SAM_DUE
 		if (_textScale == 1)
@@ -2194,7 +2223,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 #endif
 		_x += _textScale;
 
-		}
+	}
 	disableCS();	// to put CS line back up
 
 	//_x = cx;
@@ -2203,7 +2232,7 @@ void ILI9341_due::drawSolidChar(char c, uint16_t index, uint16_t charWidth, uint
 
 
 	//Serial << "letterSpacing " << _letterSpacing <<" x: " << _x <<endl;
-}
+			}
 
 void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth, uint16_t charHeight)
 {
@@ -2224,7 +2253,7 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 	uint16_t charHeightInBytes = (charHeight + 7) / 8; /* calculates height in rounded up bytes */
 
 	uint8_t numRenderBits = 8;
-	const uint8_t numRemainingBits = charHeight % 8;
+	const uint8_t numRemainingBits = charHeight % 8 == 0 ? 8 : charHeight % 8;
 
 	enableCS();
 
@@ -2330,56 +2359,56 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 	//_x = cx;
 }
 
-size_t ILI9341_due::print(char c){
+size_t ILI9341_due::print(char c) {
 	_isFirstChar = true;
 	beginTransaction();
 	write(c);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::print(unsigned char c, int b){
+size_t ILI9341_due::print(unsigned char c, int b) {
 	_isFirstChar = true;
 	beginTransaction();
-	Print::print(c,b);
+	Print::print(c, b);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::print(int d, int b){
+size_t ILI9341_due::print(int d, int b) {
 	_isFirstChar = true;
 	beginTransaction();
-	Print::print(d,b);
+	Print::print(d, b);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::print(unsigned int u, int b){
+size_t ILI9341_due::print(unsigned int u, int b) {
 	_isFirstChar = true;
 	beginTransaction();
-	Print::print(u,b);
+	Print::print(u, b);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::print(long l, int b){
+size_t ILI9341_due::print(long l, int b) {
 	_isFirstChar = true;
 	beginTransaction();
-	Print::print(l,b);
+	Print::print(l, b);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::print(unsigned long ul, int b){
+size_t ILI9341_due::print(unsigned long ul, int b) {
 	_isFirstChar = true;
 	beginTransaction();
-	Print::print(ul,b);
+	Print::print(ul, b);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::print(double d, int b){
+size_t ILI9341_due::print(double d, int b) {
 	_isFirstChar = true;
 	beginTransaction();
-	Print::print(d,b);
+	Print::print(d, b);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::print(const Printable& str){
+size_t ILI9341_due::print(const Printable& str) {
 	_isFirstChar = true;
 	beginTransaction();
 	Print::print(str);
@@ -2387,84 +2416,84 @@ size_t ILI9341_due::print(const Printable& str){
 	return 0;
 }
 
-size_t ILI9341_due::println(const __FlashStringHelper *str){
+size_t ILI9341_due::println(const __FlashStringHelper *str) {
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println(str);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::println(const String &str){
+size_t ILI9341_due::println(const String &str) {
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println(str);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::println(const char* str){
+size_t ILI9341_due::println(const char* str) {
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println(str);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::println(char c){
+size_t ILI9341_due::println(char c) {
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println(c);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::println(unsigned char c, int b){
+size_t ILI9341_due::println(unsigned char c, int b) {
 	_isFirstChar = true;
 	beginTransaction();
-	Print::println(c,b);
+	Print::println(c, b);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::println(int d, int b){
+size_t ILI9341_due::println(int d, int b) {
 	_isFirstChar = true;
 	beginTransaction();
-	Print::println(d,b);
+	Print::println(d, b);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::println(unsigned int u, int b){
+size_t ILI9341_due::println(unsigned int u, int b) {
 	_isFirstChar = true;
 	beginTransaction();
-	Print::println(u,b);
+	Print::println(u, b);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::println(long l, int b){
+size_t ILI9341_due::println(long l, int b) {
 	_isFirstChar = true;
 	beginTransaction();
-	Print::println(l,b);
+	Print::println(l, b);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::println(unsigned long ul, int b){
+size_t ILI9341_due::println(unsigned long ul, int b) {
 	_isFirstChar = true;
 	beginTransaction();
-	Print::println(ul,b);
+	Print::println(ul, b);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::println(double d, int b){
+size_t ILI9341_due::println(double d, int b) {
 	_isFirstChar = true;
 	beginTransaction();
-	Print::println(d,b);
+	Print::println(d, b);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::println(const Printable& str){
+size_t ILI9341_due::println(const Printable& str) {
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println(str);
 	endTransaction();
 	return 0;
 }
-size_t ILI9341_due::println(void){
+size_t ILI9341_due::println(void) {
 	_isFirstChar = true;
 	beginTransaction();
 	Print::println();
@@ -2926,7 +2955,7 @@ void ILI9341_due::printAlignedPivotedOffseted(const __FlashStringHelper *str, gT
 }
 
 __attribute__((always_inline))
-void ILI9341_due::clearPixelsOnLeft(uint16_t pixelsToClearOnLeft){
+void ILI9341_due::clearPixelsOnLeft(uint16_t pixelsToClearOnLeft) {
 	// CLEAR PIXELS ON THE LEFT
 	if (pixelsToClearOnLeft > 0)
 	{
@@ -2938,7 +2967,7 @@ void ILI9341_due::clearPixelsOnLeft(uint16_t pixelsToClearOnLeft){
 }
 
 __attribute__((always_inline))
-void ILI9341_due::clearPixelsOnRight(uint16_t pixelsToClearOnRight){
+void ILI9341_due::clearPixelsOnRight(uint16_t pixelsToClearOnRight) {
 	// CLEAR PIXELS ON THE RIGHT
 	if (pixelsToClearOnRight > 0)
 	{
@@ -2951,7 +2980,7 @@ void ILI9341_due::clearPixelsOnRight(uint16_t pixelsToClearOnRight){
 	}
 }
 
-void ILI9341_due::applyAlignPivotOffset(const char *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY){
+void ILI9341_due::applyAlignPivotOffset(const char *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY) {
 	//PIVOT
 	if (pivot != gTextPivotTopLeft)
 		applyPivot(str, pivot, align);
@@ -2960,7 +2989,7 @@ void ILI9341_due::applyAlignPivotOffset(const char *str, gTextAlign align, gText
 	applyAlignOffset(align, offsetX, offsetY);
 }
 
-void ILI9341_due::applyAlignPivotOffset(const String &str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY){
+void ILI9341_due::applyAlignPivotOffset(const String &str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY) {
 	//PIVOT
 	if (pivot != gTextPivotTopLeft)
 		applyPivot(str, pivot, align);
@@ -2969,7 +2998,7 @@ void ILI9341_due::applyAlignPivotOffset(const String &str, gTextAlign align, gTe
 	applyAlignOffset(align, offsetX, offsetY);
 }
 
-void ILI9341_due::applyAlignPivotOffset(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY){
+void ILI9341_due::applyAlignPivotOffset(const __FlashStringHelper *str, gTextAlign align, gTextPivot pivot, int16_t offsetX, int16_t offsetY) {
 	//PIVOT
 	if (pivot != gTextPivotTopLeft)
 		applyPivot(str, pivot, align);
@@ -3273,7 +3302,7 @@ void ILI9341_due::eraseTextLine(uint16_t color, gTextEraseLine type)
 	}
 
 	//cursorToXY(x, y);
-}
+		}
 
 void ILI9341_due::eraseTextLine(uint16_t color, uint8_t row)
 {
@@ -3334,10 +3363,10 @@ uint16_t ILI9341_due::getCharWidth(uint8_t c)
 {
 	int16_t width = 0;
 
-	if (isFixedWidthFont(_font){
+	if (isFixedWidthFont(_font) {
 		width = (pgm_read_byte(_font + GTEXT_FONT_FIXED_WIDTH)) * _textScale;
 	}
-	else{
+	else {
 		// variable width font 
 		uint8_t firstChar = pgm_read_byte(_font + GTEXT_FONT_FIRST_CHAR);
 		uint8_t charCount = pgm_read_byte(_font + GTEXT_FONT_CHAR_COUNT);
