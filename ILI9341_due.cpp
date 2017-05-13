@@ -533,10 +533,10 @@ void ILI9341_due::fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_
 	endTransaction();
 }
 
-void ILI9341_due::fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t(*fillShader)(uint16_t rx, uint16_t ry))
+void ILI9341_due::fillRectWithShader(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t(*fillShader)(uint16_t rx, uint16_t ry))
 {
 	beginTransaction();
-	fillRect_noTrans(x, y, w, h, fillShader);
+	fillRectWithShader_noTrans(x, y, w, h, fillShader);
 	endTransaction();
 }
 
@@ -559,7 +559,7 @@ void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h,
 	disableCS();
 }
 
-void ILI9341_due::fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t(*fillShader)(uint16_t rx, uint16_t ry))
+void ILI9341_due::fillRectWithShader_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t(*fillShader)(uint16_t rx, uint16_t ry))
 {
 	//Serial << "x:" << x << " y:" << y << " w:" << x << " h:" << h << " width:" << _width << " height:" << _height <<endl;
 	// rudimentary clipping (drawChar w/big text requires this)

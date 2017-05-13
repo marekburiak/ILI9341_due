@@ -1,5 +1,5 @@
 /*
-v1.01.006
+v1.01.007
 
 ILI9341_due.h - Arduino Due library for interfacing with ILI9341-based TFTs
 
@@ -474,7 +474,7 @@ protected:
 #define _textScale 1
 #endif
 	void fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color);
-	void fillRect_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t(*fillShader)(uint16_t rx, uint16_t ry));
+	void fillRectWithShader_noTrans(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t(*fillShader)(uint16_t rx, uint16_t ry));
 	void drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, uint16_t color);
 	void fillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername, int16_t delta, uint16_t color);
 	void pushColors_noTrans_noCS(const uint16_t *colors, uint16_t offset, uint32_t len);
@@ -502,7 +502,7 @@ public:
 	void getDisplayStatus();
 	void fillScreen(uint16_t color);
 	void fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t color);
-	void fillRect(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t(*fillShader)(uint16_t rx, uint16_t ry));
+	void fillRectWithShader(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t(*fillShader)(uint16_t rx, uint16_t ry));
 
 	void pushColor(uint16_t color);
 	void pushColors(const uint16_t *colors, uint16_t offset, uint32_t len);
