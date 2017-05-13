@@ -6,6 +6,7 @@ Please see http://marekburiak.github.io/ILI9341_due
 
 Version History:
 ```
+v1.01.007 - fixed fillRect function ambiguity when compiling some examples (thanks MartyMacGyver)
 v1.01.006 - fixed font rendering for font heights that are multiples of 8 (thanks Wolf)
 v1.01.005 - added getTextArea()
           - renamed charWidth() -> getCharWidth() (previously undocummented function)
