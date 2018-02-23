@@ -1,5 +1,5 @@
 /*
-v1.01.007
+v1.01.008
 
 ILI9341_due.h - Arduino Due library for interfacing with ILI9341-based TFTs
 
@@ -1288,9 +1288,10 @@ protected:
 			}	
 		}
 
-		uint16_t remainingPixels = n % SCANLINE_PIXEL_COUNT;
-		if (remainingPixels > 0)
+		uint16_t remainingPixels = n == SCANLINE_PIXEL_COUNT ? SCANLINE_PIXEL_COUNT : n % SCANLINE_PIXEL_COUNT;
+		if (remainingPixels > 0) {
 			writeScanline16(remainingPixels);
+		}
 	}
 
 	// writes n-bytes from the scanline buffer via DMA
