@@ -1,0 +1,29 @@
+https://forum.arduino.cc/index.php?topic=265806.msg3689745#msg3689745
+
+Changes:
+
+New version of font creator:
+Skipped version 3 for no reason
+Font creator will give a name for fonts
+It will use the name of the font as the name (this can be changed manually)
+
+It will add the font size to the end of the name and if it is bold or italic
+
+E.g. if you create Arial size 16 that is bold it will be called Arial_B_14pt
+
+E.g. if you create Arial size 19 that is bold and italic it will be called Arial_IB_19pt
+
+E.g. if you create Arial size 8 it will be called Arial_8pt
+
+E.g. if you create Comic Sans size 20 and rename it to "Best font ever" it will be called Best Font Ever_20pt
+
+Exporting fonts will use the name of the created font and add .h extension to the end of the file
+You can now export a font in many sizes without having to use a macro program
+Mass exported fonts will be put into a folder to avoid mess
+
+Can now import the same font in many sizes
+Removed 'edit font settings', as it did nothing
+New font editor windows don't move all over the place anymore
+
+Font creator now chooses the font properly...
+Now saves manually exported font to location specified
