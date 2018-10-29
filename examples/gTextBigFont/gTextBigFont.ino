@@ -2,7 +2,7 @@
 #include <ILI9341_due_config.h>
 #include <ILI9341_due.h>
 
-#include "fonts\jokerman_255.h"
+#include "fonts/jokerman_255.h"
 
 #define TFT_CS 10
 #define TFT_DC 9
