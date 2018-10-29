@@ -45,7 +45,7 @@ MIT license, all text above must be included in any redistribution.
 #include <SPI.h>
 #endif
 
-//#include "..\Streaming\Streaming.h"
+//#include "../Streaming/Streaming.h"
 
 #pragma GCC diagnostic push 
 #pragma GCC diagnostic ignored "-Wattributes"
