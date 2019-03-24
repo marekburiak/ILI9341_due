@@ -6,7 +6,7 @@ Please see http://marekburiak.github.io/ILI9341_due
 
 Version History:
 ```
-v1.01.009 - added QWERTY touch keyboard example by Mark Miles (ZioGuido)
+v1.01.009 - added QWERTY touch keyboard example by Mark Miles (ZioGuido), thanks
 v1.01.008 - fixed buffered line drawing in cases where the line length is equal to buffer size (thanks doppelT)
 v1.01.007 - fixed fillRect function ambiguity when compiling some examples (thanks MartyMacGyver)
 v1.01.006 - fixed font rendering for font heights that are multiples of 8 (thanks Wolf)
