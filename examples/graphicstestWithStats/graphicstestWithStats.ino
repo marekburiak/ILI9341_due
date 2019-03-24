@@ -17,8 +17,8 @@ MIT license, all text above must be included in any redistribution
 #include <SPI.h>
 #include <ILI9341_due_config.h>
 #include <ILI9341_due.h>
-#include "fonts\SystemFont5x7.h"
-#include "fonts\Arial_bold_14.h"
+#include "fonts/SystemFont5x7.h"
+#include "fonts/Arial_bold_14.h"
 
 #define TFT_RST 8
 #define TFT_DC 9
