@@ -2259,6 +2259,7 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 
 	for (uint8_t j = 0; j < charWidth; j++) /* each column */
 	{
+		bool lineOpen = false; // Reset pixel line detection status on each column
 		//Serial << "Printing row" << endl;
 		numRenderBits = 8;
 
@@ -2300,6 +2301,7 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 						if (bit ^ 0x00) // if bit != 0 (so it's 1)
 						{
 							lineStart = lineEnd = (i * 8 + bitId) * _textScale;
+							lineOpen = true; // We are within a vertical line of pixels
 						}
 						else
 						{
@@ -2309,6 +2311,7 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 							setRW();
 							setDCForData();
 							writeScanlineLooped(totalPixels);
+							lineOpen = false; // We are not within a vertical line of pixels
 
 							//setAddrAndRW_cont(_x, _y + lineStart, _textScale, lineEnd - lineStart + _textScale);
 							////fillRect(cx, cy + lineStart, _textScale, lineEnd - lineStart + _textScale, ILI9341_BLUEVIOLET);
@@ -2330,26 +2333,31 @@ void ILI9341_due::drawTransparentChar(char c, uint16_t index, uint16_t charWidth
 					data >>= 1;
 				}
 
-				if (lineEnd == (charHeight - 1) * _textScale)	// we have a line that goes all the way to the bottom
-				{
-					const uint32_t totalPixels = uint32_t(lineEnd - lineStart + _textScale)*(uint32_t)_textScale;
-					//setRowAddr(_y + lineStart, _y + lineEnd + _textScale - 1);
-					setRowAddr(_y + lineStart, lineEnd - lineStart + _textScale);
-					setRW();
-					setDCForData();
-					writeScanlineLooped(totalPixels);
 
-					////fillRect(cx, cy + lineStart, _textScale, lineEnd - lineStart + _textScale, ILI9341_BLUEVIOLET);
-					//setAddrAndRW_cont(_x, _y + lineStart, _textScale, lineEnd - lineStart + _textScale);
-					//setDCForData();
-
-					//for (uint8_t s = 0; s < _textScale; s++)
-					//{
-					//	writeScanline16(lineEnd - lineStart + _textScale);
-					//	//delay(25);
-					//}
-				}
 			}
+			// If we have finished a vertical column but not "closed"
+			// a line of pixels, then we need to complete it now.
+			if (lineOpen) {
+				const uint32_t totalPixels = uint32_t(lineEnd - lineStart + _textScale)*(uint32_t)_textScale;
+				//setRowAddr(_y + lineStart, _y + lineEnd + _textScale - 1);
+				setRowAddr(_y + lineStart, lineEnd - lineStart + _textScale);
+				setRW();
+				setDCForData();
+				writeScanlineLooped(totalPixels);
+
+				////fillRect(cx, cy + lineStart, _textScale, lineEnd - lineStart + _textScale, ILI9341_BLUEVIOLET);
+				//setAddrAndRW_cont(_x, _y + lineStart, _textScale, lineEnd - lineStart + _textScale);
+				//setDCForData();
+
+				//for (uint8_t s = 0; s < _textScale; s++)
+				//{
+				//	writeScanline16(lineEnd - lineStart + _textScale);
+				//	//delay(25);
+				//}
+
+				lineOpen = false;
+			}
+
 		}
 		//Serial << endl;
 		_x += _textScale;
