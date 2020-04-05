@@ -6,6 +6,8 @@ Please see http://marekburiak.github.io/ILI9341_due
 
 Version History:
 ```
+v1.01.010 - merged fix from Calvin Hass/ImpulseAdventure. This actually happened a few months back so there's 
+            no real changes at this time but wanted to give him the credit here that was long due. Fixed version number in .h.
 v1.01.009 - added QWERTY touch keyboard example by Mark Miles (ZioGuido), thanks
 v1.01.008 - fixed buffered line drawing in cases where the line length is equal to buffer size (thanks doppelT)
 v1.01.007 - fixed fillRect function ambiguity when compiling some examples (thanks MartyMacGyver)
